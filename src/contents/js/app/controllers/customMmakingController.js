@@ -3,12 +3,13 @@
  */
 angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit', 'navigationHandler', '$translate',
     'translationHandler', 'authHandler', 'audioHandler', '$location', 'sessionHandler', 'gameData', 'scopeService',
-    'chatHandler', 'settings',
+    'chatHandler', 'settings', 'visibilityHandler',
     function ($scope, rabbit, navigationHandler, $translate, translationHandler, authHandler,
               audioHandler, $location, sessionHandler, gameData, scopeService,
-              chatHandler, settings) {
+              chatHandler, settings, visibilityHandler) {
 
         gameData.getGeneral().gameType = gameData.getGameTypes().custom;
+
 
         let quitGame = function() {
             rabbit.quitGame();
@@ -23,6 +24,15 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback(function() {
+            rabbit.sendPlayerQuitRequest();
+            quitGame();
+            scopeService.safeApply($scope, function () {
+                translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
+                $scope.forceExitModal = true;
+            });
+        });
 
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {

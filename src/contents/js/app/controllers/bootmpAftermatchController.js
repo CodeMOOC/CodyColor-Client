@@ -3,9 +3,10 @@
  * portarne avanti una con lo stesso avversario
  */
 angular.module('codyColor').controller('bootmpAftermatchCtrl', ['$scope', 'rabbit', 'gameData', 'scopeService',
-    '$location', 'navigationHandler', 'audioHandler', 'sessionHandler', '$translate', 'authHandler', 'translationHandler',
+    '$location', 'navigationHandler', 'audioHandler', 'sessionHandler', '$translate', 'authHandler',
+    'translationHandler', 'visibilityHandler',
     function ($scope, rabbit, gameData, scopeService, $location, navigationHandler,
-              audioHandler, sessionHandler, $translate, authHandler, translationHandler) {
+              audioHandler, sessionHandler, $translate, authHandler, translationHandler, visibilityHandler) {
 
         // chiusura 'sicura' della partita
         let quitGame = function() {
@@ -19,6 +20,8 @@ angular.module('codyColor').controller('bootmpAftermatchCtrl', ['$scope', 'rabbi
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback();
 
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {

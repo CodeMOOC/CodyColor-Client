@@ -2,9 +2,10 @@
  * Controller Empty, gestisce le schermate che non necessitano di funzioni specifiche.
  */
 angular.module('codyColor').controller('bootmpMatchCtrl', [ '$scope', 'gameData', 'scopeService', 'pathHandler',
-    '$location', '$translate', 'navigationHandler', 'audioHandler', 'sessionHandler', 'authHandler', 'translationHandler',
+    '$location', '$translate', 'navigationHandler', 'audioHandler', 'sessionHandler', 'authHandler',
+    'translationHandler', 'visibilityHandler',
     function ($scope, gameData, scopeService, pathHandler, $location, $translate,
-              navigationHandler, audioHandler, sessionHandler, authHandler, translationHandler) {
+              navigationHandler, audioHandler, sessionHandler, authHandler, translationHandler, visibilityHandler) {
         let startCountdownTimer;
         let gameTimer;
 
@@ -28,6 +29,8 @@ angular.module('codyColor').controller('bootmpMatchCtrl', [ '$scope', 'gameData'
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback();
 
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {

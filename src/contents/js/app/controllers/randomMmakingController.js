@@ -3,10 +3,10 @@
  * casuale dei giocatori
  */
 angular.module('codyColor').controller('randomMmakingCtrl',['$scope', 'rabbit', 'gameData', '$location',
-    'scopeService', '$translate', 'authHandler', 'navigationHandler', 'audioHandler', 'sessionHandler', 'chatHandler',
-    'translationHandler',
-    function ($scope, rabbit, gameData, $location, scopeService, $translate, authHandler,
-              navigationHandler, audioHandler, sessionHandler, chatHandler, translationHandler) {
+    'scopeService', '$translate', 'authHandler', 'navigationHandler', 'audioHandler', 'visibilityHandler',
+    'sessionHandler', 'chatHandler', 'translationHandler',
+    function ($scope, rabbit, gameData, $location, scopeService, $translate, authHandler, navigationHandler,
+              audioHandler, visibilityHandler, sessionHandler, chatHandler, translationHandler) {
         gameData.getGeneral().gameType = gameData.getGameTypes().random;
 
         // matchmakingTimer: interrompe la ricerca della partita nel caso in cui vada troppo per le lunghe
@@ -24,6 +24,7 @@ angular.module('codyColor').controller('randomMmakingCtrl',['$scope', 'rabbit', 
             chatHandler.clearChat();
             if (mmakingTimer !== undefined) {
                 clearInterval(mmakingTimer);
+                mmakingTimer = undefined;
             }
         };
 
@@ -34,6 +35,15 @@ angular.module('codyColor').controller('randomMmakingCtrl',['$scope', 'rabbit', 
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback(function() {
+            rabbit.sendPlayerQuitRequest();
+            quitGame();
+            scopeService.safeApply($scope, function () {
+                translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
+                $scope.forceExitModal = true;
+            });
+        });
 
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {
@@ -84,7 +94,7 @@ angular.module('codyColor').controller('randomMmakingCtrl',['$scope', 'rabbit', 
 
                 // nemico validato <==> nemico presente
                 if (gameData.getEnemy().validated) {
-                    clearInterval(mmakingTimer);
+                    clearInterval(timers.mmakingTimer);
                     mmakingTimer = undefined;
                     changeScreen(screens.enemyFound);
 
@@ -124,6 +134,11 @@ angular.module('codyColor').controller('randomMmakingCtrl',['$scope', 'rabbit', 
                 })
 
             }, onStartMatch: function (message) {
+                if (backgroundTimer !== undefined) {
+                    clearInterval(backgroundTimer);
+                    backgroundTimer = undefined;
+                }
+
                 gameData.editMatch({ tiles: gameData.formatMatchTiles(message.tiles) });
                 scopeService.safeApply($scope, function () {
                     navigationHandler.goToPage($location, '/arcade-match');

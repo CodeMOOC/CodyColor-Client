@@ -3,9 +3,9 @@
  */
 angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit', 'navigationHandler',
     'scopeService', '$translate', 'translationHandler', 'audioHandler', '$location', 'sessionHandler', 'gameData',
-    'authHandler',
+    'authHandler', 'visibilityHandler',
     function ($scope, rabbit, navigationHandler, scopeService, $translate, translationHandler,
-              audioHandler, $location, sessionHandler, gameData, authHandler) {
+              audioHandler, $location, sessionHandler, gameData, authHandler, visibilityHandler) {
 
         gameData.getGeneral().gameType = gameData.getGameTypes().royale;
 
@@ -22,6 +22,14 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback(function() {
+            quitGame();
+            scopeService.safeApply($scope, function () {
+                translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
+                $scope.forceExitModal = true;
+            });
+        });
 
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {

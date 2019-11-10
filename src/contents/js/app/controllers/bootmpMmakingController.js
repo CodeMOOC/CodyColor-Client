@@ -3,8 +3,9 @@
  */
 angular.module('codyColor').controller('bootmpMmakingCtrl', ['$scope', 'rabbit', 'navigationHandler', '$translate',
     'authHandler', 'translationHandler', 'audioHandler', '$location', 'sessionHandler', 'gameData', 'scopeService',
+    'visibilityHandler',
     function ($scope, rabbit, navigationHandler, $translate, authHandler, translationHandler,
-              audioHandler, $location, sessionHandler, gameData, scopeService) {
+              audioHandler, $location, sessionHandler, gameData, scopeService, visibilityHandler) {
 
         gameData.getGeneral().gameType = gameData.getGameTypes().bootmp;
 
@@ -21,6 +22,7 @@ angular.module('codyColor').controller('bootmpMmakingCtrl', ['$scope', 'rabbit',
             return;
         }
 
+        visibilityHandler.setDeadlineCallback();
         rabbit.setPageCallbacks({});
 
         // visualizza user nickname in fondo a dx se disponibile

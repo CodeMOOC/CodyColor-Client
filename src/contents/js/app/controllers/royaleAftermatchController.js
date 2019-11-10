@@ -4,9 +4,9 @@
  */
 angular.module('codyColor').controller('royaleAftermatchCtrl', ['$scope', 'rabbit', 'gameData', 'scopeService',
     '$location', '$translate', 'authHandler', 'navigationHandler', 'audioHandler', 'sessionHandler', 'chatHandler',
-    'translationHandler',
+    'translationHandler', 'visibilityHandler',
     function ($scope, rabbit, gameData, scopeService, $location, $translate, authHandler,
-              navigationHandler, audioHandler, sessionHandler, chatHandler, translationHandler) {
+              navigationHandler, audioHandler, sessionHandler, chatHandler, translationHandler, visibilityHandler) {
         let newMatchTimer;
 
         // chiude la partita in modo sicuro
@@ -27,6 +27,15 @@ angular.module('codyColor').controller('royaleAftermatchCtrl', ['$scope', 'rabbi
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback(function() {
+            rabbit.sendPlayerQuitRequest();
+            quitGame();
+            scopeService.safeApply($scope, function () {
+                translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
+                $scope.forceExitModal = true;
+            });
+        });
 
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {

@@ -2,9 +2,9 @@
  * Controller Empty, gestisce le schermate che non necessitano di funzioni specifiche.
  */
 angular.module('codyColor').controller('emptyCtrl', ['$scope', 'rabbit', 'navigationHandler', '$translate',
-    'authHandler', 'audioHandler', '$location', 'sessionHandler', 'translationHandler',
+    'authHandler', 'audioHandler', '$location', 'sessionHandler', 'translationHandler', 'visibilityHandler',
     function ($scope, rabbit, navigationHandler, $translate, authHandler,
-              audioHandler, $location, sessionHandler, translationHandler) {
+              audioHandler, $location, sessionHandler, translationHandler, visibilityHandler) {
 
         // inizializzazione sessione
         navigationHandler.initializeBackBlock($scope);
@@ -12,6 +12,8 @@ angular.module('codyColor').controller('emptyCtrl', ['$scope', 'rabbit', 'naviga
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback();
 
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {

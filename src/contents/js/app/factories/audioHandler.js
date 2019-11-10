@@ -36,6 +36,20 @@ angular.module('codyColor').factory("audioHandler", ['$cookies', function($cooki
         }
     };
 
+    audioHandler.stopAudioBackground = function () {
+        if (audioHandler.isAudioEnabled()) {
+            isAudioEnabled = false;
+            musicBase.pause();
+        }
+    };
+
+    audioHandler.playAudioForeground = function () {
+        if (!audioHandler.isAudioEnabled() && $cookies.get('audioEnabled') === 'true') {
+            isAudioEnabled = true;
+            musicBase.play();
+        }
+    };
+
     audioHandler.splashStartBase = function () {
         if (audioHandler.isAudioEnabled() && musicBase.paused) {
             musicBase.play();

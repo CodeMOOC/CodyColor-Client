@@ -39,6 +39,11 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
             translationHandler.setTranslation($scope, 'userNickname', 'NOT_LOGGED');
         }
 
+        // inizializza data e ora
+        let now = new Date();
+        $scope.hours = now.getHours();
+        $scope.minutes = now.getMinutes();
+
         // timer setting selector
         $scope.currentTimerIndex = 1;
         $translate(['15_SECONDS', '30_SECONDS', '1_MINUTE', '2_MINUTES']).then(function (translations) {

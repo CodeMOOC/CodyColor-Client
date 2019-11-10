@@ -6,7 +6,6 @@ angular.module('codyColor').controller('rankingsCtrl', ['$scope', 'rabbit', 'nav
     'scopeService',
     function ($scope, rabbit, navigationHandler, $translate, authHandler, gameData, rankingsHandler,
               audioHandler, $location, sessionHandler, translationHandler, scopeService) {
-        console.log("Rankings controller ready.");
 
         // inizializzazione sessione
         navigationHandler.initializeBackBlock($scope);

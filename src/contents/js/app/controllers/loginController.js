@@ -5,7 +5,6 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
     'sessionHandler', '$translate', 'scopeService', 'authHandler', 'rabbit', 'translationHandler', 'gameData',
     function (navigationHandler, $scope, audioHandler, $location, sessionHandler,
               $translate, scopeService, authHandler, rabbit, translationHandler, gameData) {
-        console.log("Controller login ready.");
 
         // inizializzazione sessione
         navigationHandler.initializeBackBlock($scope);

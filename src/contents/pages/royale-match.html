@@ -8,29 +8,19 @@
 
             <!-- match component -->
             <div id="match-in-progress" ng-show="!countdownInProgress" class="page--component">
-                <!-- Top centered columns with player-enemy data-->
-                <div class="centered-columns">
-                    <div class="centered-columns--pair">
-                        <div class="centered-columns--column-big">
-                           <div class="playerlist-match">
-                               <table class="playerlist-match-table">
-                                   <tr ng-repeat="player in players">
-                                       <td>{{$index + 1}}.</td>
-                                       <td ng-class="player.match.positioned ? 'timer--stop' : 'timer--normal'">
-                                           <i class="far fa-clock"></i>
-                                           {{timerFormatter(player.match.timerValue)}}
-                                       </td>
-                                       <td class="text-align-left">{{player.nickname}}</td>
-                                   </tr>
-                                </table>
-                           </div>
-                        </div>
+                <div class="two-columns">
+                    <div class="two-columns--column-large clock ellipsize" ng-class="clockAnimation">
+                        <i class="far fa-clock"></i> {{ timerFormatter(gameTimerValue) }}
+                    </div>
 
-                        <div class="centered-columns--column-small">
-                            <div class="big-text ellipsize">{{userPlayer.points}}</div>
-                            <div class="ellipsize">{{userPlayer.nickname}}</div>
-                            <div class="ellipsize" ng-class="{'timer--stop-no-margin' : userPlayer.match.positioned}">
-                                {{timerFormatter(userPlayer.match.timerValue)}}</div>
+                    <div class="two-columns--column-small">
+                        <div class="ellipsize">
+                            <i class="fas fa-robot"></i>
+                            {{ 'PLAYERS_COMPOSITE' | translate : { 'numPlayers': aggregated.connectedPlayers} }}
+                        </div>
+                        <div class="ellipsize">
+                            <i class="fas fa-stopwatch"></i>
+                            {{ 'POSITIONED_COMPOSITE' | translate : { 'numPositioned': aggregated.positionedPlayers} }}
                         </div>
                     </div>
                 </div>
@@ -401,9 +391,19 @@
                      data-drag="{{showDraggableRoby}}" data-jqyoui-options="{revert: 'invalid'}"
                      jqyoui-draggable="{ animate:true, onStart:'startDragging', onStop:'endDragging' }"/>
 
+                <div class="centered-container" ng-show="match.positioned && match.time > 0">
+                    <i class="fas fa-stopwatch"></i>
+                    {{ 'TIME_PLAYER' | translate : { 'time': finalTimeFormatter(match.time) } }}
+                </div>
+
+                <div class="centered-container" ng-show="match.positioned && match.time === 0">
+                    <i class="fas fa-stopwatch"></i>
+                    {{ 'TIME_OUT' | translate }}
+                </div>
+
                 <!-- Skip button -->
                 <div class="centered-container" ng-show="startAnimation && !askedForSkip">
-                    <button class="navigation--button flashing-animation" ng-click="skip()">Skip
+                    <button class="navigation--button flashing-animation" ng-click="skip()">{{ 'SKIP' | translate }}
                         <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
                     </button>
                 </div>

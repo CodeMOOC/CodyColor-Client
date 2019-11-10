@@ -5,7 +5,6 @@ angular.module('codyColor').controller('splashCtrl', ['$scope', 'rabbit', 'navig
     '$location', 'sessionHandler', '$routeParams', 'gameData', 'authHandler',
     function ($scope, rabbit, navigationHandler, audioHandler,
               $location, sessionHandler, $routeParams, gameData, authHandler) {
-        console.log("Controller splash ready.");
 
         // validazione sessione
         navigationHandler.initializeBackBlock($scope);

@@ -5,7 +5,6 @@ angular.module('codyColor').controller('homeCtrl', ['$scope', 'rabbit', 'navigat
     '$location', 'sessionHandler', 'scopeService', '$translate', 'authHandler', 'translationHandler',
     function ($scope, rabbit, navigationHandler, audioHandler, $location, sessionHandler,
               scopeService, $translate, authHandler, translationHandler) {
-        console.log("Controller home ready.");
 
         // inizializzazione sessione
         navigationHandler.initializeBackBlock($scope);

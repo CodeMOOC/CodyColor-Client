@@ -121,25 +121,31 @@ angular.module('codyColor').factory("pathHandler", ['gameData','scopeService', f
     };
 
 
-    // pone l'immagine di roby, avversario o non, in posizione (senza animazione),
-    // sulla casella passata in ingresso dall'utente
+    // pone un roby in posizione (senza animazione), sulla casella passata in ingresso dall'utente,
+    // quindi calcola e prepara il percorso; ritorna il path del robot
     pathHandler.positionRoby = function (isPlayer, selectedStart) {
-        if (selectedStart.side === -1 && selectedStart.distance === -1)
-            return;
+        let robotPath = pathHandler.calculatePath(selectedStart);
 
-        let roby = (isPlayer ? playerRoby : enemiesRoby[selectedStart.side][selectedStart.distance]);
+        if (selectedStart.side !== -1 && selectedStart.distance !== -1) {
+            let roby = (isPlayer ? playerRoby : enemiesRoby[selectedStart.side][selectedStart.distance]);
 
-        if (roby === undefined) return;
+            if (roby === undefined) return robotPath;
 
-        roby.setShow(true);
-        let startPosition = startPositionsTiles[selectedStart.side][selectedStart.distance].position();
-        let rotationValue = 'rotate(' + getAngle((selectedStart.side + 2).mod(4)).toString() + 'deg)';
-        roby.element.css({
-            left: startPosition.left,
-            top: startPosition.top,
-            transform: rotationValue
-        });
-        roby.changeImage(roby.positionedImage);
+            roby.setShow(true);
+            let startPosition = startPositionsTiles[selectedStart.side][selectedStart.distance].position();
+            let rotationValue = 'rotate(' + getAngle((selectedStart.side + 2).mod(4)).toString() + 'deg)';
+            roby.element.css({
+                left: startPosition.left,
+                top: startPosition.top,
+                transform: rotationValue
+            });
+            roby.changeImage(roby.positionedImage);
+
+            // crea le coordinate percorso del robot
+            $.extend(true, roby, robotPath);
+        }
+
+        return robotPath;
     };
 
 
@@ -154,6 +160,7 @@ angular.module('codyColor').factory("pathHandler", ['gameData','scopeService', f
             }
         }
     };
+
 
     // anima il movimento di roby
     let animateRoby = function (roby, endCallback, isPlayer) {
@@ -251,37 +258,29 @@ angular.module('codyColor').factory("pathHandler", ['gameData','scopeService', f
     };
 
 
-    // calcola e salva nei gameData tutti i percorsi fatti dai giocatori
-    pathHandler.calculateAllPlayersPath = function() {
-        for (let i = 0; i < gameData.getAllPlayers().length; i++) {
-            calculatePath({ player: gameData.getAllPlayers()[i] });
-        }
-    };
-
-    pathHandler.calculateUserPlayerPath = function() {
-        calculatePath({ player: gameData.getUserPlayer() });
-    };
-
-
-    // algoritmo di calcolo del percorso dell'IA, in base al livello di difficoltà selezionato
-    pathHandler.calculateBootEnemyPath = function() {
+    // algoritmo di calcolo del percorso dell'IA, in base al livello di difficolta' selezionato
+    // return: il path dell'IA
+    pathHandler.calculateBotPath = function(difficulty) {
         let allPaths = [];
+
+        // calcola tutti i possibili percorsi
         for (let sideValue = 0; sideValue < 4; sideValue++) {
             for (let distanceValue = 0; distanceValue < 5; distanceValue++) {
-                allPaths.push(calculatePath({
-                    customStart: {
-                        side: sideValue,
-                        distance: distanceValue
-                    }
+                allPaths.push(pathHandler.calculatePath({
+                    side: sideValue,
+                    distance: distanceValue
                 }));
             }
         }
+
+        // ordina tutti i percorsi in base alla lunghezza
         allPaths.sort(function(a, b){
             return a.pathLength - b.pathLength;
         });
 
+        // scegli il percorso in base al livello di difficolta'
         let selectedPath;
-        switch (gameData.getGeneral().bootEnemySetting) {
+        switch (difficulty) {
             case 1:
                 // facile: seleziona un percorso casuale tra i più corti
                 selectedPath = allPaths[Math.floor(Math.random() * 10)];
@@ -298,64 +297,55 @@ angular.module('codyColor').factory("pathHandler", ['gameData','scopeService', f
                 break;
         }
 
-        gameData.editEnemy1vs1({ match: selectedPath });
-        $.extend(true, enemiesRoby[selectedPath.startPosition.side][selectedPath.startPosition.distance],
-            selectedPath);
+        return selectedPath;
     };
 
 
     // algoritmo per il calcolo del percorso di uno dei roby, salvandone un oggetto che lo descrive
-    let calculatePath = function (args) {
-        let pathInfo = {
-            startPosition: { side: -1, distance: -1 },
+    // return: il path corrispondente
+    pathHandler.calculatePath = function (startPosition) {
+        // oggetto da memorizzare nel roby per attuare il percorso
+        let path = {
+            startPosition: startPosition,
             endPosition: { side: -1, distance: -1 },
             tilesCoords: [],
             direction: [],
             pathLength: 0,
         };
 
-        // ottieni start position
-        if (args.customStart !== undefined) {
-            pathInfo.startPosition = args.customStart;
-        } else {
-            pathInfo.startPosition = args.player.match.startPosition;
-        }
-
         // roby non posizionato entro il tempo limite
-        if (pathInfo.startPosition.distance === -1 && pathInfo.startPosition.side === -1) {
-            if (args.player !== undefined)
-                gameData.editPlayer({ match: pathInfo }, args.player.playerId);
-            return pathInfo;
+        if (path.startPosition.distance === -1 && path.startPosition.side === -1) {
+            return path;
         }
 
         // ottieni primo elemento
-        switch (pathInfo.startPosition.side) {
+        switch (path.startPosition.side) {
             case 0:
-                pathInfo.tilesCoords.push({ x: 0, y: pathInfo.startPosition.distance });
+                path.tilesCoords.push({ x: 0, y: path.startPosition.distance });
                 break;
             case 1:
-                pathInfo.tilesCoords.push({ x: pathInfo.startPosition.distance, y: 4 });
+                path.tilesCoords.push({ x: path.startPosition.distance, y: 4 });
                 break;
             case 2:
-                pathInfo.tilesCoords.push({ x: 4, y: pathInfo.startPosition.distance });
+                path.tilesCoords.push({ x: 4, y: path.startPosition.distance });
                 break;
             case 3:
-                pathInfo.tilesCoords.push({ x: pathInfo.startPosition.distance, y: 0 });
+                path.tilesCoords.push({ x: path.startPosition.distance, y: 0 });
                 break;
         }
-        pathInfo.direction.push((pathInfo.startPosition.side + 2).mod(4));
-        pathInfo.pathLength++;
+        path.direction.push((path.startPosition.side + 2).mod(4));
+        path.pathLength++;
 
         // ottieni elementi successivi tramite while
         let endOfThePath = false;
         while (!endOfThePath) {
-            let lastTileCoords = pathInfo.tilesCoords[pathInfo.pathLength - 1];
-            let lastTileDirection = pathInfo.direction[pathInfo.pathLength - 1];
+            let lastTileCoords = path.tilesCoords[path.pathLength - 1];
+            let lastTileDirection = path.direction[path.pathLength - 1];
             let nextTileCoords = {x: -1, y: -1};
             let nextTileDirection = -1;
 
             // 1. trova la prossima direction
-            switch(gameData.getGeneral().tiles[lastTileCoords.x][lastTileCoords.y]) {
+            switch(gameData.getMatch().tiles[lastTileCoords.x][lastTileCoords.y]) {
                 case 'Y':
                     // vai verso sinistra
                     nextTileDirection = (lastTileDirection - 1).mod( 4);
@@ -397,47 +387,38 @@ angular.module('codyColor').factory("pathHandler", ['gameData','scopeService', f
             // exit checks
             if (nextTileDirection === 0 && nextTileCoords.x < 0) {
                 // uscita dal lato in alto
-                pathInfo.endPosition.side = 0;
-                pathInfo.endPosition.distance = nextTileCoords.y;
+                path.endPosition.side = 0;
+                path.endPosition.distance = nextTileCoords.y;
                 endOfThePath = true;
 
             } else if (nextTileDirection === 1 && nextTileCoords.y > 4) {
                 // uscita dal lato destro
-                pathInfo.endPosition.side = 1;
-                pathInfo.endPosition.distance = nextTileCoords.x;
+                path.endPosition.side = 1;
+                path.endPosition.distance = nextTileCoords.x;
                 endOfThePath = true;
 
             } else if (nextTileDirection === 2 && nextTileCoords.x > 4) {
                 // uscita dal lato in basso
-                pathInfo.endPosition.side = 2;
-                pathInfo.endPosition.distance = nextTileCoords.y;
+                path.endPosition.side = 2;
+                path.endPosition.distance = nextTileCoords.y;
                 endOfThePath = true;
 
             } else if (nextTileDirection === 3 && nextTileCoords.y < 0) {
                 // uscita dal lato sinistro
-                pathInfo.endPosition.side = 3;
-                pathInfo.endPosition.distance = nextTileCoords.x;
+                path.endPosition.side = 3;
+                path.endPosition.distance = nextTileCoords.x;
                 endOfThePath = true;
             }
 
             // la prossima tile è valida: aggiungila alla struttura dati
             if (endOfThePath === false) {
-                pathInfo.pathLength++;
-                pathInfo.direction.push(nextTileDirection);
-                pathInfo.tilesCoords.push(nextTileCoords);
+                path.pathLength++;
+                path.direction.push(nextTileDirection);
+                path.tilesCoords.push(nextTileCoords);
             }
         }
 
-        if (args.player !== undefined) {
-            $.extend(true, args.player.match, pathInfo);
-            //gameData.editPlayer({ match: pathInfo }, args.player.playerId);
-
-            if (args.player.userPlayer)
-                $.extend(true, playerRoby, pathInfo);
-            else
-                $.extend(true, enemiesRoby[pathInfo.startPosition.side][pathInfo.startPosition.distance], pathInfo);
-        }
-        return pathInfo;
+        return path;
     };
 
 

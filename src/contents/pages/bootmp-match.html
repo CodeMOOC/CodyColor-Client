@@ -8,20 +8,21 @@
 
             <!-- match component -->
             <div id="match-in-progress" ng-hide="countdownInProgress" class="page--component">
+
                 <!-- Top centered columns with player-enemy data-->
-                <div class="centered-columns" ng-show="enemy !== undefined">
+                <div class="centered-columns" ng-show="general.botSetting !== 0">
                     <div class="centered-columns--pair">
                         <div class="centered-columns--column">
-                            <div class="big-text ellipsize">{{player.points}}</div>
+                            <div class="big-text ellipsize">{{userPoints}}</div>
                         </div>
                         <div class="centered-columns--column">
-                            <div class="big-text ellipsize">{{enemy.points}}</div>
+                            <div class="big-text ellipsize">{{enemyPoints}}</div>
                         </div>
                     </div>
 
                     <div class="centered-columns--pair">
                         <div class="centered-columns--column ellipsize">
-                            {{player.nickname}}
+                            {{user.nickname}}
                         </div>
                         <div class="centered-columns--column ellipsize">
                             {{enemy.nickname}}
@@ -29,28 +30,27 @@
                     </div>
 
                     <div class="centered-columns--pair">
-                        <div class="centered-columns--column ellipsize"
-                             ng-class="player.match.positioned ? 'timer--stop' : 'timer--normal'">
+                        <div class="centered-columns--column ellipsize" ng-class="userTimerAnimation">
                             <i class="far fa-clock"></i>
-                            {{timerFormatter(player.match.timerValue)}}
+                            {{timerFormatter(userTimerValue)}}
                         </div>
 
-                        <div class="centered-columns--column ellipsize"
-                             ng-class="enemy.match.positioned ? 'timer--stop' : 'timer--normal'">
+                        <div class="centered-columns--column ellipsize" ng-class="enemyTimerAnimation">
                             <i class="far fa-clock"></i>
-                            {{timerFormatter(enemy.match.timerValue)}}
+                            {{timerFormatter(enemyTimerValue)}}
                         </div>
                     </div>
                 </div>
 
                 <!-- Top player-only data-->
-                <div class="centered-columns" ng-show="enemy === undefined">
-                    <div class="big-text ellipsize">{{player.points}}</div>
-                    <div class="ellipsize">{{player.nickname}}</div>
-                    <div class="ellipsize"
-                         ng-class="player.match.positioned ? 'timer--stop' : 'timer--normal'">
-                        <i class="far fa-clock"></i>
-                        {{timerFormatter(player.match.timerValue)}}
+                <div class="two-columns" ng-show="general.botSetting === 0">
+                    <div class="two-columns--column clock ellipsize" ng-class="userTimerAnimation">
+                        <i class="far fa-clock"></i> {{ timerFormatter(userTimerValue) }}
+                    </div>
+
+                    <div class="two-columns--column">
+                        <div class="big-text ellipsize">{{userPoints}}</div>
+                        <div class="ellipsize">{{user.nickname}}</div>
                     </div>
                 </div>
 
@@ -420,6 +420,16 @@
                      ng-class="showCompleteGrid ? 'roby-draggable' : 'roby-draggable floating-up-animation'"
                      data-drag="{{showDraggableRoby}}" data-jqyoui-options="{revert: 'invalid'}"
                      jqyoui-draggable="{ animate:true, onStart:'startDragging', onStop:'endDragging' }"/>
+
+                <div class="centered-container" ng-show="match.positioned && match.time > 0">
+                    <i class="fas fa-stopwatch"></i>
+                    {{ 'TIME_PLAYER' | translate : { 'time': finalTimeFormatter(match.time) } }}
+                </div>
+
+                <div class="centered-container" ng-show="match.positioned && match.time === 0">
+                    <i class="fas fa-stopwatch"></i>
+                    {{ 'TIME_OUT' | translate }}
+                </div>
 
                 <!-- Skip button -->
                 <div class="centered-container" ng-show="startAnimation && !askedForSkip">

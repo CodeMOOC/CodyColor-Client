@@ -27,7 +27,7 @@
                             <div class="selector--button" ng-click="editTimer(false)">
                                 <i class="fas fa-minus"></i>
                             </div>
-                            <div class="selector--text">{{timerSettings[currentTimerIndex].text}}</div>
+                            <div class="selector--text">{{ timerSettings[currentTimerIndex].text }}</div>
                             <div class="selector--button" ng-click="editTimer(true)">
                                 <i class="fas fa-plus"></i>
                             </div>
@@ -46,27 +46,6 @@
                     </li>
                 </ul>
             </form>
-
-            <!-- Chat module -->
-            <div class="chat" ng-show="mmakingState === 'waitingConfirm' || mmakingState === 'enemyFound'">
-                <div class="chat--bubbles-container">
-                    {{ 'CHAT_TITLE' | translate }}
-                    <div class="chat--bubbles-sub-container" ng-repeat="bubble in chatBubbles">
-                        <div class="chat--bubble-row">
-                            <div ng-class="getBubbleStyle(bubble)">
-                                <div class="chat--bubble-sender">{{bubble.sender}}</div>
-                                {{bubble.body}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="chat--hints-container">
-                    {{ 'CHAT_SEND' | translate }}
-                    <div class="chat--hints-sub-container" ng-repeat="hint in chatHints">
-                        <button class="chat--hint" ng-click="sendChatMessage(hint)">{{hint}}</button>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Push module -->

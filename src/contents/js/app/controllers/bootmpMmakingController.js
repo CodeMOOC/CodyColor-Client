@@ -5,7 +5,7 @@ angular.module('codyColor').controller('bootmpMmakingCtrl', ['$scope', 'rabbit',
     'authHandler', 'translationHandler', 'audioHandler', '$location', 'sessionHandler', 'gameData', 'scopeService',
     function ($scope, rabbit, navigationHandler, $translate, authHandler, translationHandler,
               audioHandler, $location, sessionHandler, gameData, scopeService) {
-        console.log("Bootcamp making controller ready.");
+
         gameData.getGeneral().gameType = gameData.getGameTypes().bootmp;
 
         // chiude la partita in modo sicuro
@@ -57,43 +57,44 @@ angular.module('codyColor').controller('bootmpMmakingCtrl', ['$scope', 'rabbit',
             else
                 $scope.currentTimerIndex = ($scope.currentTimerIndex > 0 ? $scope.currentTimerIndex - 1 : 0);
 
-            gameData.getGeneral().timerSetting = $scope.timerSettings[$scope.currentTimerIndex].value;
+            gameData.editGeneral({ timerSetting: $scope.timerSettings[$scope.currentTimerIndex].value });
         };
 
         // mode selector
         $translate(['NO_ENEMY', 'AI_EASY', 'AI_MEDIUM', 'AI_HARD'])
             .then(function (translations) {
-                $scope.bootEnemySettings = [
+                $scope.botSettings = [
                     { text: translations['NO_ENEMY'],  value: 0 },
                     { text: translations['AI_EASY'],   value: 1 },
                     { text: translations['AI_MEDIUM'], value: 2 },
                     { text: translations['AI_HARD'],   value: 3 }
                 ];
         });
-        $scope.currentBootEnemySettingIndex = 0;
-        gameData.getGeneral().bootEnemySetting = 0;
-        $scope.editBootEnemySetting = function(increment) {
+        $scope.currentBotSettingIndex = 0;
+        gameData.editGeneral({ botSetting: 0 });
+        $scope.editBotSetting = function(increment) {
             if (increment) {
-                $scope.currentBootEnemySettingIndex
-                    = ($scope.currentBootEnemySettingIndex < 3 ? $scope.currentBootEnemySettingIndex + 1 : 3);
+                $scope.currentBotSettingIndex
+                    = ($scope.currentBotSettingIndex < 3 ? $scope.currentBotSettingIndex + 1 : 3);
             } else {
-                $scope.currentBootEnemySettingIndex
-                    = ($scope.currentBootEnemySettingIndex > 0 ? $scope.currentBootEnemySettingIndex - 1 : 0);
+                $scope.currentBotSettingIndex
+                    = ($scope.currentBotSettingIndex > 0 ? $scope.currentBotSettingIndex - 1 : 0);
             }
-            gameData.getGeneral().bootEnemySetting = $scope.bootEnemySettings[$scope.currentBootEnemySettingIndex].value;
+            gameData.editGeneral({ botSetting: $scope.botSettings[$scope.currentBotSettingIndex].value });
         };
 
         // tasto 'inizia partita'
         $scope.createBootcamp = function() {
-            gameData.getUserPlayer().nickname = $scope.nickname;
-            gameData.getUserPlayer().playerId = 0;
+            gameData.editUser({
+                nickname: $scope.nickname,
+                playerId: 0
+            });
+            gameData.editEnemy({
+                nickname: 'CodyColor',
+                playerId: 1
+            });
+            gameData.editMatch({ tiles: gameData.generateNewMatchTiles() });
 
-            if (gameData.getGeneral().bootEnemySetting !== 0) {
-                gameData.addEnemy(1);
-                gameData.getEnemy1vs1().nickname = 'CodyColor';
-                gameData.getEnemy1vs1().playerId = 1;
-            }
-            gameData.getGeneral().tiles = gameData.generateNewMatchTiles();
             navigationHandler.goToPage($location, '/bootmp-match');
         };
 

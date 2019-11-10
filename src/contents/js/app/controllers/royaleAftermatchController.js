@@ -7,7 +7,6 @@ angular.module('codyColor').controller('royaleAftermatchCtrl', ['$scope', 'rabbi
     'translationHandler',
     function ($scope, rabbit, gameData, scopeService, $location, $translate, authHandler,
               navigationHandler, audioHandler, sessionHandler, chatHandler, translationHandler) {
-        console.log("Controller aftermatch ready.");
         let newMatchTimer;
 
         // chiude la partita in modo sicuro
@@ -45,12 +44,11 @@ angular.module('codyColor').controller('royaleAftermatchCtrl', ['$scope', 'rabbi
                 }
                 scopeService.safeApply($scope, function () {
                     $scope.newMatchTimerValue = 0;
+                    if (!$scope.newMatchClicked) {
+                        $scope.newMatchClicked = true;
+                        rabbit.sendReadyMessage();
+                    }
                 });
-
-                if (!gameData.getUserPlayer().ready) {
-                    gameData.getUserPlayer().ready = true;
-                    rabbit.sendReadyMessage();
-                }
 
             } else {
                 scopeService.safeApply($scope, function () {
@@ -59,76 +57,102 @@ angular.module('codyColor').controller('royaleAftermatchCtrl', ['$scope', 'rabbi
             }
         }, 1000);
 
-        let updateRanking = function() {
-           // riordina classifica generale
-            $scope.players = gameData.getAllPlayers();
-            gameData.getAllPlayers().sort(function (a, b) {
-                if (b.points - a.points !== 0) {
-                    return b.points - a.points;
-                } else if (b.wonMatches - a.wonMatches !== 0) {
-                    return b.wonMatches - a.wonMatches;
-
-                } else if (b.match.points - a.match.points !== 0) {
-                    return b.match.points - a.match.points;
-
-                } else if (b.match.pathLength - a.match.pathLength !== 0) {
-                    return b.match.pathLength - a.match.pathLength;
-
-                } else {
-                    return b.match.time - a.match.time;
-                }
-            });
-
-            // riordina classifica match
-            $scope.matchPlayers = gameData.duplicateAllPlayers();
-            $scope.matchPlayers.sort(function (a, b) {
-
-                if (b.match.points - a.match.points !== 0) {
-                    return b.match.points - a.match.points;
-
-                } else if (b.match.pathLength - a.match.pathLength !== 0) {
-                    return b.match.pathLength - a.match.pathLength;
-
-                } else {
-                    return b.match.time - a.match.time;
-                }
-            });
-        };
-
-        // aggiorna punteggio players
-        updateRanking();
         $scope.timeFormatter = gameData.formatTimeDecimals;
         $scope.timeFormatterCountdown = gameData.formatTimeSeconds;
+        $scope.draw = gameData.getMatch().winnerId === -1;
         $scope.winner = gameData.getMatchWinner().nickname;
-        $scope.matchCount = gameData.getGeneral().matchCount;
+        $scope.matchRanking = gameData.getMatchRanking();
+        $scope.globalRanking = gameData.getGlobalRanking();
+        $scope.userMatchResult = gameData.getUserMatchResult();
+        $scope.userGlobalResult = gameData.getUserGlobalResult();
+        $scope.general = gameData.getGeneral();
+        $scope.aggregated = gameData.getAggregated();
+        $scope.user = gameData.getUser();
+        $scope.newMatchClicked = false;
 
-        if ($scope.winner === gameData.getUserPlayer().nickname) {
+        if ($scope.winner === gameData.getUser().nickname) {
             audioHandler.playSound('win');
         }
 
         // richiede all'avversario l'avvio di una nuova partita tra i due
         $scope.newMatch = function () {
-            if (!gameData.getUserPlayer().ready) {
-                gameData.getUserPlayer().ready = true;
-                rabbit.sendReadyMessage();
+            gameData.editAggregated({ readyPlayers: gameData.getAggregated().readyPlayers + 1 });
+            $scope.newMatchClicked = true;
+            rabbit.sendReadyMessage();
+        };
+
+        $scope.share = function() {
+            let shareText = 'I took ' + $scope.userMatchResult.pathLength +
+                ' steps with my Roby in a ' + $scope.general.gameType + ' match!';
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'CodyColor Multiplayer',
+                    text: shareText,
+                    url: 'https://codycolor.codemooc.net'
+                }).then(() => {
+                    console.log('Thanks for sharing!');
+                }).catch(console.error);
+            } else {
+                // fallback
+                $scope.sharedLegacy = true;
+                copyStringToClipboard(shareText + ' Play with me in https://codycolor.codemooc.net');
             }
-            scopeService.safeApply($scope, function () {
-                $scope.newMatchClicked = true;
-            });
+        };
+
+        let copyStringToClipboard = function (text) {
+            // Create new element
+            let el = document.createElement('textarea');
+            // Set value (string to be copied)
+            el.value = text;
+            // Set non-editable to avoid focus and move outside of view
+            el.setAttribute('readonly', '');
+            el.style = {position: 'absolute', left: '-9999px'};
+            document.body.appendChild(el);
+            // Select text inside element
+            el.select();
+            // Copy text to clipboard
+            document.execCommand('copy');
+            // Remove temporary element
+            document.body.removeChild(el);
+        };
+
+        $scope.userInGlobalPodium = function() {
+            let inPodium = false;
+            for(let i = 0; i < gameData.getGlobalRanking().length; i++) {
+                if (gameData.getGlobalRanking()[i].playerId === gameData.getUser().playerId)
+                    inPodium = true;
+            }
+            return inPodium;
+        };
+
+        $scope.userInMatchPodium = function() {
+            let inPodium = false;
+            for(let i = 0; i < gameData.getMatchRanking().length; i++) {
+                if (gameData.getMatchRanking()[i].playerId === gameData.getUser().playerId)
+                    inPodium = true;
+            }
+            return inPodium;
         };
 
         rabbit.setPageCallbacks({
-            onReadyMessage: function (message) {
-                gameData.getPlayerById(message.playerId).ready = true;
+            onReadyMessage: function () {
+                scopeService.safeApply($scope, function () {
+                    gameData.editAggregated({
+                        readyPlayers: gameData.getAggregated().readyPlayers + 1
+                    });
+                });
 
             }, onStartMatch: function (message) {
+                gameData.initializeMatchData();
+                gameData.editAggregated(message.aggregated);
+                gameData.editMatch({ tiles: gameData.formatMatchTiles(message.tiles) });
+
                 if (newMatchTimer !== undefined) {
                     clearInterval(newMatchTimer);
                     newMatchTimer = undefined;
                 }
 
-                gameData.initializeMatchData();
-                gameData.syncGameData(message.gameData);
                 scopeService.safeApply($scope, function () {
                     navigationHandler.goToPage($location, '/royale-match');
                 });
@@ -141,7 +165,7 @@ angular.module('codyColor').controller('royaleAftermatchCtrl', ['$scope', 'rabbi
                 });
 
             }, onPlayerRemoved: function (message) {
-                if (message.removedPlayerId === gameData.getUserPlayer().playerId) {
+                if (message.removedPlayerId === gameData.getUser().playerId) {
                     quitGame();
                     scopeService.safeApply($scope, function () {
                         translationHandler.setTranslation($scope, 'forceExitText', 'ENEMY_LEFT');
@@ -150,8 +174,7 @@ angular.module('codyColor').controller('royaleAftermatchCtrl', ['$scope', 'rabbi
 
                 } else {
                     scopeService.safeApply($scope, function () {
-                        gameData.syncGameData(message.gameData);
-                        updateRanking();
+                        gameData.editAggregated(message.aggregated);
                     });
                 }
 
@@ -174,7 +197,7 @@ angular.module('codyColor').controller('royaleAftermatchCtrl', ['$scope', 'rabbi
         // impostazioni chat
         $scope.chatBubbles = chatHandler.getChatMessages();
         $scope.getBubbleStyle = function(chatMessage) {
-            if (chatMessage.playerId === gameData.getUserPlayer().playerId)
+            if (chatMessage.playerId === gameData.getUser().playerId)
                 return 'chat--bubble-player';
             else
                 return 'chat--bubble-enemy';

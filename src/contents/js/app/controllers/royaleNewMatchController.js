@@ -6,7 +6,9 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
     'authHandler',
     function ($scope, rabbit, navigationHandler, scopeService, $translate, translationHandler,
               audioHandler, $location, sessionHandler, gameData, authHandler) {
-        console.log("New match royale controller ready.");
+
+        gameData.getGeneral().gameType = gameData.getGameTypes().royale;
+
 
         let quitGame = function () {
             rabbit.quitGame();
@@ -47,7 +49,7 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
             else
                 $scope.currentTimerIndex = ($scope.currentTimerIndex > 0 ? $scope.currentTimerIndex - 1 : 0);
 
-            gameData.getGeneral().timerSetting = $scope.timerSettings[$scope.currentTimerIndex].value;
+            gameData.editGeneral({ timerSetting: $scope.timerSettings[$scope.currentTimerIndex].value });
         };
 
         // maxPlayers setting selector
@@ -68,7 +70,7 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
             else
                 $scope.currentMaxPlayersIndex = ($scope.currentMaxPlayersIndex > 0 ? $scope.currentMaxPlayersIndex - 1 : 0);
 
-            gameData.getGeneral().maxPlayersSetting = $scope.maxPlayersSettings[$scope.currentMaxPlayersIndex].value;
+            gameData.editGeneral({ maxPlayersSetting: $scope.maxPlayersSettings[$scope.currentMaxPlayersIndex].value });
         };
 
         // start mode selector
@@ -110,9 +112,14 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
                     return;
                 }
             }
-            gameData.getGeneral().gameName = $scope.gameName;
-            gameData.getUserPlayer().nickname = $scope.nickname;
-            gameData.getUserPlayer().organizer = true;
+            gameData.editGeneral({
+                gameName: $scope.gameName,
+                code: '0000'
+            });
+            gameData.editUser({
+                nickname: $scope.nickname,
+                organizer: true
+            });
             navigationHandler.goToPage($location, '/royale-mmaking');
         };
 

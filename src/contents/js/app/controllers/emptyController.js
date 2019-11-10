@@ -5,7 +5,6 @@ angular.module('codyColor').controller('emptyCtrl', ['$scope', 'rabbit', 'naviga
     'authHandler', 'audioHandler', '$location', 'sessionHandler', 'translationHandler',
     function ($scope, rabbit, navigationHandler, $translate, authHandler,
               audioHandler, $location, sessionHandler, translationHandler) {
-        console.log("Empty controller ready.");
 
         // inizializzazione sessione
         navigationHandler.initializeBackBlock($scope);

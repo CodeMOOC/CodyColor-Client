@@ -1,0 +1,17 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    <Riccardo Maldini> -- <Programmer@DigitSrl> -- <https://github.com/maldins46>
+
+# THANKS
+
+    <Prof. Alessandro Bogliolo>
+
+# TECHNOLOGY COLOPHON
+
+    Technologies: CSS3, HTML5, JavaScript
+    Framework:    AngularJs
+    Libraries:    Angular-dragdrop, Angular-animate, angular-cookies, Stomp.js, NoSleep.js
+                  Apache Server Configs, jQuery, Modernizr, Normalize.css

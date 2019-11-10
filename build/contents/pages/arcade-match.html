@@ -1,0 +1,508 @@
+<div id="arcade-match" class="page">
+    <div class="page--wrapper">
+        <div class="page--body">
+            <!-- countdown component -->
+            <div id="countdown" ng-show="countdownInProgress" class="page--component">
+                {{ startCountdownText }}
+            </div>
+
+            <!-- match component -->
+            <div id="match-in-progress" ng-show="!countdownInProgress" class="page--component">
+                <!-- Top centered columns with player-enemy data-->
+                <div class="centered-columns">
+                    <div class="centered-columns--pair">
+                        <div class="centered-columns--column">
+                            <div class="big-text ellipsize">{{userGlobal.points}}</div>
+                        </div>
+                        <div class="centered-columns--column">
+                            <div class="big-text ellipsize">{{enemyGlobal.points}}</div>
+                        </div>
+                    </div>
+
+                    <div class="centered-columns--pair">
+                        <div class="centered-columns--column ellipsize">
+                            {{user.nickname}}
+                        </div>
+                        <div class="centered-columns--column ellipsize">
+                            {{enemy.nickname}}
+                        </div>
+                    </div>
+
+                    <div class="centered-columns--pair">
+                        <div class="centered-columns--column ellipsize" ng-class="userTimerAnimation">
+                            <i class="far fa-clock"></i>
+                            {{timerFormatter(userTimerValue)}}
+                        </div>
+
+                        <div class="centered-columns--column ellipsize" ng-class="enemyTimerAnimation">
+                            <i class="far fa-clock"></i>
+                            {{timerFormatter(enemyTimerValue)}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Playground module -->
+                <div class="playground">
+                    <!-- Big grid (reduced) -->
+                    <table class="playground--table" ng-hide="showCompleteGrid">
+                        <tr>
+                            <td>
+                                <div ng-class="tilesCss[0][0]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[0][1]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[0][2]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[0][3]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[0][4]"></div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <div ng-class="tilesCss[1][0]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[1][1]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[1][2]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[1][3]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[1][4]"></div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <div ng-class="tilesCss[2][0]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[2][1]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[2][2]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[2][3]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[2][4]"></div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <div ng-class="tilesCss[3][0]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[3][1]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[3][2]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[3][3]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[3][4]"></div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <div ng-class="tilesCss[4][0]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[4][1]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[4][2]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[4][3]"></div>
+                            </td>
+                            <td>
+                                <div ng-class="tilesCss[4][4]"></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Small grid (complete) -->
+                    <table class="playground--table" ng-show="showCompleteGrid">
+                        <tr>
+                            <td>
+                                <div class="playground--tile-placeholder"></div>
+                            </td>
+                            <td id="start-00" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(0,0)', onOut:'robyOut(0,0)', onDrop:'robyDropped(0,0)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[0][0]"></i>
+                            </td>
+                            <td id="start-01" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(0,1)', onOut:'robyOut(0,1)', onDrop:'robyDropped(0,1)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[0][1]"></i>
+                            </td>
+                            <td id="start-02" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(0,2)', onOut:'robyOut(0,2)', onDrop:'robyDropped(0,2)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[0][2]"></i>
+                            </td>
+                            <td id="start-03" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(0,3)', onOut:'robyOut(0,3)', onDrop:'robyDropped(0,3)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[0][3]"></i>
+                            </td>
+                            <td id="start-04" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(0,4)', onOut:'robyOut(0,4)', onDrop:'robyDropped(0,4)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[0][4]"></i>
+                            </td>
+                            <td>
+                                <div class="playground--tile-placeholder"></div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td id="start-30" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(3,0)', onOut:'robyOut(3,0)', onDrop:'robyDropped(3,0)'}">
+                                <i class="fas fa-angle-right playground--arrow"
+                                   ng-show="showArrows"
+                                   ng-class="startPositionsCss[3][0]"></i>
+                            </td>
+                            <td id="tile-00">
+                                <div ng-class="tilesCss[0][0]"></div>
+                            </td>
+                            <td id="tile-01">
+                                <div ng-class="tilesCss[0][1]"></div>
+                            </td>
+                            <td id="tile-02">
+                                <div ng-class="tilesCss[0][2]"></div>
+                            </td>
+                            <td id="tile-03">
+                                <div ng-class="tilesCss[0][3]"></div>
+                            </td>
+                            <td id="tile-04">
+                                <div ng-class="tilesCss[0][4]"></div>
+                            </td>
+                            <td id="start-10" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(1,0)', onOut:'robyOut(1,0)',  onDrop:'robyDropped(1,0)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[1][0]"></i>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td id="start-31" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(3,1)', onOut:'robyOut(3,1)', onDrop:'robyDropped(3,1)'}">
+                                <i class="fas fa-angle-right playground--arrow"
+                                   ng-show="showArrows"
+                                   ng-class="startPositionsCss[3][1]"></i>
+                            </td>
+                            <td id="tile-10">
+                                <div ng-class="tilesCss[1][0]"></div>
+                            </td>
+                            <td id="tile-11">
+                                <div ng-class="tilesCss[1][1]"></div>
+                            </td>
+                            <td id="tile-12">
+                                <div ng-class="tilesCss[1][2]"></div>
+                            </td>
+                            <td id="tile-13">
+                                <div ng-class="tilesCss[1][3]"></div>
+                            </td>
+                            <td id="tile-14">
+                                <div ng-class="tilesCss[1][4]"></div>
+                            </td>
+                            <td id="start-11" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(1,1)', onOut:'robyOut(1,1)',  onDrop:'robyDropped(1,1)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[1][1]"></i>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td id="start-32" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(3,2)', onOut:'robyOut(3,2)',  onDrop:'robyDropped(3,2)'}">
+                                <i class="fas fa-angle-right playground--arrow"
+                                   ng-show="showArrows"
+                                   ng-class="startPositionsCss[3][2]"></i>
+                            </td>
+                            <td id="tile-20">
+                                <div ng-class="tilesCss[2][0]"></div>
+                            </td>
+                            <td id="tile-21">
+                                <div ng-class="tilesCss[2][1]"></div>
+                            </td>
+                            <td id="tile-22">
+                                <div ng-class="tilesCss[2][2]"></div>
+                            </td>
+                            <td id="tile-23">
+                                <div ng-class="tilesCss[2][3]"></div>
+                            </td>
+                            <td id="tile-24">
+                                <div ng-class="tilesCss[2][4]"></div>
+                            </td>
+                            <td id="start-12" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(1,2)', onOut:'robyOut(1,2)', onDrop:'robyDropped(1,2)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[1][2]"></i>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td id="start-33" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(3,3)', onOut:'robyOut(3,3)', onDrop:'robyDropped(3,3)'}">
+                                <i class="fas fa-angle-right playground--arrow"
+                                   ng-show="showArrows"
+                                   ng-class="startPositionsCss[3][3]"></i>
+                            </td>
+                            <td id="tile-30">
+                                <div ng-class="tilesCss[3][0]"></div>
+                            </td>
+                            <td id="tile-31">
+                                <div ng-class="tilesCss[3][1]"></div>
+                            </td>
+                            <td id="tile-32">
+                                <div ng-class="tilesCss[3][2]"></div>
+                            </td>
+                            <td id="tile-33">
+                                <div ng-class="tilesCss[3][3]"></div>
+                            </td>
+                            <td id="tile-34">
+                                <div ng-class="tilesCss[3][4]"></div>
+                            </td>
+                            <td id="start-13" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(1,3)', onOut:'robyOut(1,3)', onDrop:'robyDropped(1,3)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[1][3]"></i>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td id="start-34" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(3,4)', onOut:'robyOut(3,4)',  onDrop:'robyDropped(3,4)'}">
+                                <i class="fas fa-angle-right playground--arrow"
+                                   ng-show="showArrows"
+                                   ng-class="startPositionsCss[3][4]"></i>
+                            </td>
+                            <td id="tile-40">
+                                <div ng-class="tilesCss[4][0]"></div>
+                            </td>
+                            <td id="tile-41">
+                                <div ng-class="tilesCss[4][1]"></div>
+                            </td>
+                            <td id="tile-42">
+                                <div ng-class="tilesCss[4][2]"></div>
+                            </td>
+                            <td id="tile-43">
+                                <div ng-class="tilesCss[4][3]"></div>
+                            </td>
+                            <td id="tile-44">
+                                <div ng-class="tilesCss[4][4]"></div>
+                            </td>
+                            <td id="start-14" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(1,4)', onOut:'robyOut(1,4)', onDrop:'robyDropped(1,4)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[1][4]"></i>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <div class="playground--tile-placeholder"></div>
+                            </td>
+                            <td id="start-20" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(2,0)', onOut:'robyOut(2,0)', onDrop:'robyDropped(2,0)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[2][0]"></i>
+                            </td>
+                            <td id="start-21" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(2,1)', onOut:'robyOut(2,1)', onDrop:'robyDropped(2,1)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[2][1]"></i>
+                            </td>
+                            <td id="start-22" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(2,2)', onOut:'robyOut(2,2)', onDrop:'robyDropped(2,2)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[2][2]"></i>
+                            </td>
+                            <td id="start-23" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(2,3)', onOut:'robyOut(2,3)', onDrop:'robyDropped(2,3)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[2][3]"></i>
+                            </td>
+                            <td id="start-24" data-drop="true"
+                                jqyoui-droppable="{onOver: 'robyOver(2,4)', onOut:'robyOut(2,4)', onDrop:'robyDropped(2,4)'}">
+                                <i ng-show="showArrows"
+                                   ng-class="startPositionsCss[2][4]"></i>
+                            </td>
+                            <td>
+                                <div class="playground--tile-placeholder"></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Enemy roby in automatic movement-->
+                    <img id="enemy-roby-00" src="img/{{enemiesRoby[0][0].image}}.png" alt="Roby enemy 00"
+                         class="roby-automove" ng-show="enemiesRoby[0][0].show"/>
+                    <img id="enemy-roby-01" src="img/{{enemiesRoby[0][1].image}}.png" alt="Roby enemy 01"
+                         class="roby-automove" ng-show="enemiesRoby[0][1].show"/>
+                    <img id="enemy-roby-02" src="img/{{enemiesRoby[0][2].image}}.png" alt="Roby enemy 02"
+                         class="roby-automove" ng-show="enemiesRoby[0][2].show"/>
+                    <img id="enemy-roby-03" src="img/{{enemiesRoby[0][3].image}}.png" alt="Roby enemy 03"
+                         class="roby-automove" ng-show="enemiesRoby[0][3].show"/>
+                    <img id="enemy-roby-04" src="img/{{enemiesRoby[0][4].image}}.png" alt="Roby enemy 04"
+                         class="roby-automove" ng-show="enemiesRoby[0][4].show"/>
+
+                    <img id="enemy-roby-10" src="img/{{enemiesRoby[1][0].image}}.png" alt="Roby enemy 10"
+                         class="roby-automove" ng-show="enemiesRoby[1][0].show"/>
+                    <img id="enemy-roby-11" src="img/{{enemiesRoby[1][1].image}}.png" alt="Roby enemy 11"
+                         class="roby-automove" ng-show="enemiesRoby[1][1].show"/>
+                    <img id="enemy-roby-12" src="img/{{enemiesRoby[1][2].image}}.png" alt="Roby enemy 12"
+                         class="roby-automove" ng-show="enemiesRoby[1][2].show"/>
+                    <img id="enemy-roby-13" src="img/{{enemiesRoby[1][3].image}}.png" alt="Roby enemy 13"
+                         class="roby-automove" ng-show="enemiesRoby[1][3].show"/>
+                    <img id="enemy-roby-14" src="img/{{enemiesRoby[1][4].image}}.png" alt="Roby enemy 14"
+                         class="roby-automove" ng-show="enemiesRoby[1][4].show"/>
+
+                    <img id="enemy-roby-20" src="img/{{enemiesRoby[2][0].image}}.png" alt="Roby enemy 20"
+                         class="roby-automove" ng-show="enemiesRoby[2][0].show"/>
+                    <img id="enemy-roby-21" src="img/{{enemiesRoby[2][1].image}}.png" alt="Roby enemy 21"
+                         class="roby-automove" ng-show="enemiesRoby[2][1].show"/>
+                    <img id="enemy-roby-22" src="img/{{enemiesRoby[2][2].image}}.png" alt="Roby enemy 22"
+                         class="roby-automove" ng-show="enemiesRoby[2][2].show"/>
+                    <img id="enemy-roby-23" src="img/{{enemiesRoby[2][3].image}}.png" alt="Roby enemy 23"
+                         class="roby-automove" ng-show="enemiesRoby[2][3].show"/>
+                    <img id="enemy-roby-24" src="img/{{enemiesRoby[2][4].image}}.png" alt="Roby enemy 24"
+                         class="roby-automove" ng-show="enemiesRoby[2][4].show"/>
+
+                    <img id="enemy-roby-30" src="img/{{enemiesRoby[3][0].image}}.png" alt="Roby enemy 30"
+                         class="roby-automove" ng-show="enemiesRoby[3][0].show"/>
+                    <img id="enemy-roby-31" src="img/{{enemiesRoby[3][1].image}}.png" alt="Roby enemy 31"
+                         class="roby-automove" ng-show="enemiesRoby[3][1].show"/>
+                    <img id="enemy-roby-32" src="img/{{enemiesRoby[3][2].image}}.png" alt="Roby enemy 32"
+                         class="roby-automove" ng-show="enemiesRoby[3][2].show"/>
+                    <img id="enemy-roby-33" src="img/{{enemiesRoby[3][3].image}}.png" alt="Roby enemy 33"
+                         class="roby-automove" ng-show="enemiesRoby[3][3].show"/>
+                    <img id="enemy-roby-34" src="img/{{enemiesRoby[3][4].image}}.png" alt="Roby enemy 34"
+                         class="roby-automove" ng-show="enemiesRoby[3][4].show"/>
+
+                    <!-- Player roby in automatic movement-->
+                    <img id="player-roby" src="img/{{playerRoby.image}}.png" alt="Roby"
+                         class="roby-automove" ng-show="playerRoby.show"/>
+                </div>
+
+                <!-- Draggable player roby image -->
+                <img src="img/{{draggableRobyImage}}.png" alt="Draggable roby" ng-show="showDraggableRoby"
+                     ng-class="showCompleteGrid ? 'roby-draggable' : 'roby-draggable floating-up-animation'"
+                     data-drag="{{showDraggableRoby}}" data-jqyoui-options="{revert: 'invalid'}"
+                     jqyoui-draggable="{ animate:true, onStart:'startDragging', onStop:'endDragging' }"/>
+
+                <div class="centered-container" ng-show="match.positioned && match.time > 0">
+                    <i class="fas fa-stopwatch"></i>
+                    {{ 'TIME_PLAYER' | translate : { 'time': finalTimeFormatter(match.time) } }}
+                </div>
+
+                <div class="centered-container" ng-show="match.positioned && match.time === 0">
+                    <i class="fas fa-stopwatch"></i>
+                    {{ 'TIME_OUT' | translate }}
+                </div>
+
+                <!-- Skip button -->
+                <div class="centered-container" ng-show="startAnimation && !askedForSkip">
+                    <button class="navigation--button flashing-animation" ng-click="skip()">{{ 'SKIP' | translate }}
+                        <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
+                    </button>
+                </div>
+
+                <!-- Wait enemy skip-->
+                <div class="centered-container flashing-animation" ng-show="startAnimation && askedForSkip">
+                    {{ 'WAIT_SKIP' | translate }}
+                </div>
+            </div>
+        </div>
+
+        <div class="page--push"></div>
+    </div>
+
+
+    <!-- Footer module -->
+    <div class="page--footer">
+        <div class="page--footer-column-left ellipsize">
+             <button class="page--footer-button" ng-click="exitGame()">
+                <i class="fa  fa-times page--footer-icons"></i>
+            </button>
+            <button class="page--footer-button" ng-click="toggleBase()">
+                <i class="page--footer-icons" ng-class="basePlaying ? 'fas fa-volume-up': 'fas fa-volume-mute'"></i>
+            </button>
+            <button class="page--footer-button" ng-click="openLanguageModal()">
+                <i class="page--footer-icons fas"
+                   ng-class="('LANGUAGE' | translate) == 'it' ? 'fa-globe-europe' : 'fa-globe-americas'"></i>
+            </button>
+        </div>
+        <div class="page--footer-column-right ellipsize">
+            <button class="page--footer-button" ng-click=""> <span class="ellipsize">
+                <i ng-class="userLogged ? 'fas fa-user-circle': 'far fa-user-circle'"
+                   class="page--footer-icons"></i> {{ userNickname }} </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Exit game modal -->
+    <div class="modal" ng-show="exitGameModal">
+        <div class="modal--content">
+            <p>{{ 'MODAL_EXIT_DESC' | translate}}</p>
+            <div class="modal--buttons-container">
+                <button class="modal--button-secondary" ng-click="stopExitGame()">{{ 'UNDO' | translate}}</button>
+                <button class="modal--button-primary" ng-click="continueExitGame()">{{ 'OK' | translate}}</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Force exit modal -->
+    <div class="modal" ng-show="forceExitModal">
+        <div class="modal--content">
+            <p>{{forceExitText}}</p>
+            <div class="modal--buttons-container">
+                <button class="modal--button-primary" ng-click="continueForceExit()">{{ 'OK' | translate}}</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language modal -->
+    <div class="modal" ng-show="languageModal">
+        <div class="modal--content">
+            <p>{{ 'LANG_DESC' | translate }}</p>
+            <ul class="list">
+                <li class="list--simple-element">
+                    <button class="modal--button-language" ng-click="changeLanguage('it')">
+                        {{ 'LANG_ITALIAN' | translate }}
+                    </button>
+                </li>
+                <li class="list--simple-element">
+                    <button class="modal--button-language" ng-click="changeLanguage('en')">
+                        {{ 'LANG_ENGLISH' | translate }}
+                    </button>
+                </li>
+                <li class="list--simple-element">
+                    <button class="modal--button-language" ng-click="changeLanguage('hu')">
+                        {{ 'LANG_HUNGARIAN' | translate }}
+                    </button>
+                </li>
+            </ul>
+            <div class="modal--buttons-container">
+                <button class="modal--button-primary" ng-click="closeLanguageModal()">{{ 'OK' | translate }}</button>
+            </div>
+        </div>
+    </div>
+</div>

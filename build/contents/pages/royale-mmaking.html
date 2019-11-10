@@ -1,0 +1,230 @@
+<div id="royale-mmaking" class="page">
+    <div class="page--wrapper">
+        <div class="page--body">
+            <!-- Join match -->
+            <div ng-show="mmakingState === screens.joinMatch" class="page--component">
+                <ul class="list">
+                    <li class="list--simple-element"><h2>{{'AGA_MATCH' | translate}}</h2></li>
+                    <li class="list--spaced-element">
+                        {{'AGA_MATCH_DESC' | translate}}
+                    </li>
+                    <li class="list--spaced-element">
+                        <button class="navigation--button flashing-animation" ng-click="goToCreateMatch()">
+                            <span translate="NEW_AGA"></span>
+                            <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
+                        </button>
+                    </li>
+                </ul>
+                <br>
+                <form name="customMatchForm">
+                    <ul class="list">
+                        <li class="list--simple-element"><h2>{{ 'JOIN_BATTLE' | translate }}</h2></li>
+                        <li class="list--spaced-element">
+                            {{'JOIN_DESC' | translate}}
+                        </li>
+                        <li class="list--simple-element">
+                            <label for="code">{{'CODE' | translate}}</label>
+                        </li>
+                        <li class="list--spaced-element">
+                            <input type="number" name="code" max="9999" min="1" ID="code" class="standard-input"
+                                   ng-model="code" placeholder="{{'CODE_EXAMPLE' | translate}}" required autofocus/>
+                        </li>
+                        <li class="list--spaced-element">
+                            <button class="navigation--button flashing-animation"
+                                    ng-click="joinGame(customMatchForm.code.$viewValue)"
+                                    ng-disabled="customMatchForm.codeValue.$invalid || mmakingRequested">
+                                {{ 'JOIN' | translate }}
+                                <i class="fas fa-angle-double-right navigation--icon-in-text floating-right-animation"></i>
+                            </button>
+                        </li>
+                        <li class="list--spaced-element" ng-show="joinMessage !== undefined"
+                            ng-class="joinMessage !== undefined ? 'flashing-component' : ''">
+                            {{joinMessage}}
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+            <!-- Enemy found -->
+            <div ng-show="mmakingState === screens.nicknameSelection" class="page--component">
+                <form name="landingMatchForm">
+                    <ul class="list">
+                        <li class="list--spaced-element">
+                            {{'AGA_FOUND' | translate}}
+                        </li>
+                        <li class="list--simple-element">
+                            <label for="nickname">{{ 'NICKNAME' | translate }}</label>
+                        </li>
+                        <li class="list--spaced-element">
+                            <input type="text" name="nickname" ng-maxlength="22" ng-model="nickname" id="nickname"
+                                   placeholder="{{'NICKNAME_EXAMPLE' | translate}}" class="standard-input"
+                                   ng-disabled="userLogged" required autofocus/>
+                        </li>
+                        <li class="list--spaced-element">
+                            <button class="navigation--button flashing-animation"
+                                    ng-click="validPlayer()"
+                                    ng-disabled="landingMatchForm.nickname.$invalid || playerValidated">{{ 'START' | translate}}
+                                <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+            <!-- Waiting confirm -->
+            <div ng-show="mmakingState === screens.waitingEnemies" class="page--component">
+                <ul class="list">
+                    <li class="list--simple-element"><h2>{{'WELCOME' | translate}}</h2></li>
+                    <li class="list--spaced-element">
+                        {{ 'BATTLE_WELCOME' | translate : { 'gameName': general.gameName, 'battleTime': battleTime,
+                        'maxPlayers': general.maxPlayersSetting} }}
+                    </li>
+                    <li class="list--simple-element">
+                        <div class="infoblock--container">
+                            <div class="infoblock">
+                                <div ng-show="general.scheduledStart">
+                                    {{ 'WHEN_TIMER' | translate }}<br>
+                                    <h2>{{ countdownFormatter(startMatchTimerValue) }}</h2>
+                                </div>
+                                <div ng-hide="general.scheduledStart">
+                                    {{ 'WHEN_INSTANT' | translate }}
+                                </div>
+                            </div>
+                            <div class="infoblock">
+                                {{ 'NUM_PLAYERS' | translate }}<br>
+                                <h2>{{ aggregated.connectedPlayers }}</h2>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list--spaced-element"
+                        ng-show="!general.scheduledStart && user.organizer">
+                        <button class="navigation--button flashing-animation" ng-click="playerReady()"
+                                ng-disabled="readyClicked || aggregated.connectedPlayers === 1">
+                            {{ 'START' | translate }}
+                            <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
+                        </button>
+                    </li>
+                    <li class="list--simple-element"><h2>{{ 'INVITE_YOUR_FRIENDS' | translate }}</h2></li>
+                    <li class="list--spaced-element">
+                        {{ 'INVITE_DESC' | translate }}
+                    </li>
+
+                    <li class="list--spaced-element">
+                        <div class="copyable--container">
+                            <div class="copyable" ng-click="copyCode()">
+                                <div class="copyable--big-text">{{general.code}}</div>
+                                <div class="copyable--copy-text" ng-show="codeCopied">
+                                    <i class="far fa-copy copyable--copy-icon"></i> {{ 'COPIED' | translate }}
+                                </div>
+                            </div>
+
+                            <div class="copyable" ng-click="copyLink()">
+                                <div class="copyable--small-text">{{ matchUrl }}
+                                </div>
+                                <div class="copyable--copy-text" ng-show="linkCopied">
+                                    <i class="far fa-copy copyable--copy-icon"></i> {{ 'COPIED' | translate }}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list--simple-element"><h2>{{ 'CHAT_TITLE' | translate }}</h2></li>
+                    <li class="list--simple-element">
+                        <!-- Chat module -->
+                        <div class="chat">
+                            <div class="chat--bubbles-container">
+                                {{ 'CHAT_TITLE' | translate }}
+                                <div class="chat--bubbles-sub-container" ng-repeat="bubble in chatBubbles">
+                                    <div class="chat--bubble-row">
+                                        <div ng-class="getBubbleStyle(bubble)">
+                                            <div class="chat--bubble-sender">{{bubble.sender}}</div>
+                                            {{bubble.body | translate}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat--hints-container">
+                                {{ 'CHAT_SEND' | translate }}
+                                <div class="chat--hints-sub-container" ng-repeat="hint in chatHints">
+                                    <button class="chat--hint" ng-click="sendChatMessage(hint)">{{hint | translate}}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="page--push"></div>
+    </div>
+
+    <!-- Footer module -->
+    <div class="page--footer">
+        <div class="page--footer-column-left ellipsize">
+            <button class="page--footer-button" ng-click="exitGame()">
+                <i class="fa  fa-times page--footer-icons"></i>
+            </button>
+            <button class="page--footer-button" ng-click="toggleBase()">
+                <i class="page--footer-icons" ng-class="basePlaying ? 'fas fa-volume-up': 'fas fa-volume-mute'"></i>
+            </button>
+            <button class="page--footer-button" ng-click="openLanguageModal()">
+                <i class="page--footer-icons fas"
+                   ng-class="('LANGUAGE' | translate) == 'it' ? 'fa-globe-europe' : 'fa-globe-americas'"></i>
+            </button>
+        </div>
+        <div class="page--footer-column-right ellipsize">
+            <button class="page--footer-button" ng-click="">
+                <span class="ellipsize">
+                    <i ng-class="userLogged ? 'fas fa-user-circle': 'far fa-user-circle'"
+                       class="page--footer-icons"></i> {{ userNickname }}
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Exit game modal -->
+    <div class="modal" ng-show="exitGameModal">
+        <div class="modal--content">
+            <p>{{ 'MODAL_EXIT_DESC' | translate}}</p>
+            <div class="modal--buttons-container">
+                <button class="modal--button-secondary" ng-click="stopExitGame()">{{ 'UNDO' | translate }}</button>
+                <button class="modal--button-primary" ng-click="continueExitGame()">{{ 'OK' | translate }}</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Force exit modal -->
+    <div class="modal" ng-show="forceExitModal">
+        <div class="modal--content">
+            <p>{{forceExitText}}</p>
+            <div class="modal--buttons-container">
+                <button class="modal--button-primary" ng-click="continueForceExit()">{{ 'OK' | translate }}</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language modal -->
+    <div class="modal" ng-show="languageModal">
+        <div class="modal--content">
+            <p>{{ 'LANG_DESC' | translate }}</p>
+            <ul class="list">
+                <li class="list--simple-element">
+                    <button class="modal--button-language" ng-click="changeLanguage('it')">
+                        {{ 'LANG_ITALIAN' | translate }}
+                    </button>
+                </li>
+                <li class="list--simple-element">
+                    <button class="modal--button-language" ng-click="changeLanguage('en')">
+                        {{ 'LANG_ENGLISH' | translate }}
+                    </button>
+                </li>
+                <li class="list--simple-element">
+                    <button class="modal--button-language" ng-click="changeLanguage('hu')">
+                        {{ 'LANG_HUNGARIAN' | translate }}
+                    </button>
+                </li>
+            </ul>
+            <div class="modal--buttons-container">
+                <button class="modal--button-primary" ng-click="closeLanguageModal()">{{ 'OK' | translate }}</button>
+            </div>
+        </div>
+    </div>
+</div>

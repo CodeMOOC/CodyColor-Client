@@ -1,0 +1,21 @@
+<!-- Schermata principale dell'app. Contiene il menù principale di navigazione -->
+<div id="splash" class="page">
+    <div class="page--wrapper" ng-click="goToHome()">
+        <div class="page--body">
+            <img class="big-image floating-up-animation" src="img/logo.png" alt="Game logo">
+            <h1 class="ellipsize">{{ 'APP_NAME_SHORT' | translate }}</h1>
+            <div class="ellipsize">{{ 'APP_SUBTITLE' | translate }}</div>
+            <div class="press-to-continue flashing-animation ellipsize">
+                {{ 'PRESS_TO_CONTINUE' | translate }}
+            </div>
+        </div>
+        <div class="page--push"></div>
+    </div>
+
+    <div class="page--footer">
+        <div class="page--footer-single-column ellipsize">
+            Beta v.{{clientVersion}} - <a href="https://www.riccardomaldini.it/blog/codycolor-changelog">Changelog</a><br>
+            <span translate="SPLASH_FOOTER"></span>
+        </div>
+    </div>
+</div>

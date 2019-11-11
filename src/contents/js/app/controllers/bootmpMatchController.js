@@ -370,7 +370,7 @@ angular.module('codyColor').controller('bootmpMatchCtrl', [ '$scope', 'gameData'
                 gameData.editAggregated({ matchCount: gameData.getAggregated().matchCount + 1});
 
                 // aggiusta-calcola punti e results
-                gameData.editMatch({ winnerId: gameData.getBootcampWinnerId() });
+                gameData.editMatch({ winnerId: gameData.getMatchWinner().playerId });
 
                 if (gameData.getMatch().winnerId === 0) {
                     gameData.editUserMatchResult({

@@ -187,6 +187,14 @@ angular.module('codyColor').factory('gameData', function () {
 
     gameData.editGlobalRanking = function(modifiedProperties) {
         $.extend(true, data.globalRanking, modifiedProperties);
+
+        // nei match 1vs1 online, imposta anche le strutture userMatchResult e enemyMatchResult specularmente
+        if (data.general.gameType === gameTypes.random || data.general.gameType === gameTypes.custom) {
+            let userGlobalIndex = data.globalRanking[0].playerId === data.user.playerId ? 0 : 1;
+            let enemyGlobalIndex = userGlobalIndex === 0 ? 1 : 0;
+            $.extend(true, data.userGlobalResult, data.globalRanking[userGlobalIndex]);
+            $.extend(true, data.enemyGlobalResult, data.globalRanking[enemyGlobalIndex]);
+        }
     };
 
     gameData.getMatchRanking = function () {
@@ -195,6 +203,14 @@ angular.module('codyColor').factory('gameData', function () {
 
     gameData.editMatchRanking = function(modifiedProperties) {
         $.extend(true, data.matchRanking, modifiedProperties);
+
+        // nei match 1vs1 online, imposta anche le strutture userMatchGlobal e enemyMatchGlobal specularmente
+        if (data.general.gameType === gameTypes.random || data.general.gameType === gameTypes.custom) {
+            let userMatchIndex = data.matchRanking[0].playerId === data.user.playerId ? 0 : 1;
+            let enemyMatchIndex = userMatchIndex === 0 ? 1 : 0;
+            $.extend(true, data.userMatchResult, data.matchRanking[userMatchIndex]);
+            $.extend(true, data.enemyMatchResult, data.matchRanking[enemyMatchIndex]);
+        }
     };
 
 
@@ -245,31 +261,11 @@ angular.module('codyColor').factory('gameData', function () {
         // ogni passo vale 2 punti
         points += pathLength * 2;
 
+        // DISATTIVATO PER MAGGIORE COERENZA NEI PUNTEGGI
         // il tempo viene scalato su un massimo di 15 punti
-        points += Math.floor(15 * time / data.general.timerSetting);
+        // points += Math.floor(15 * time / data.general.timerSetting);
 
         return points;
-    };
-
-
-    gameData.getBootcampWinnerId = function() {
-          if (data.userMatchResult.pathLength > data.enemyMatchResult.pathLength) {
-              return data.user.playerId;
-
-          } else if (data.match.enemyPositioned === false) {
-              return data.user.playerId;
-
-          } else if (data.userMatchResult.pathLength < data.enemyMatchResult.pathLength) {
-              return data.enemy.playerId;
-
-          } else if (data.userMatchResult.time > data.enemyMatchResult.time) {
-              return data.user.playerId;
-
-          } else if (data.userMatchResult.time > data.enemyMatchResult.time) {
-              return data.enemy.playerId;
-          } else {
-              return -1;
-          }
     };
 
 
@@ -381,14 +377,26 @@ angular.module('codyColor').factory('gameData', function () {
     // restituisce il vincitore della partita corrente in base
     // nell'ordine a: passi effettuati e tempo impiegato
     gameData.getMatchWinner = function () {
-        if(data.general.gameType === gameTypes.royale) {
+        if (data.general.gameType === gameTypes.royale) {
             return data.matchRanking[0];
-        } else if (data.userMatchResult.points > data.enemyMatchResult.points) {
+
+        } else if (data.general.botSetting === 0) {
             return data.userMatchResult;
-        } else if (data.userMatchResult.points < data.enemyMatchResult.points) {
+
+        } else if (data.userMatchResult.pathLength > data.enemyMatchResult.pathLength) {
+            return data.userMatchResult;
+
+        } else if (data.userMatchResult.pathLength < data.enemyMatchResult.pathLength) {
             return data.enemyMatchResult;
-        } else {
+
+        } else if (data.userMatchResult.time > data.enemyMatchResult.time) {
             return data.userMatchResult;
+
+        } else if (data.userMatchResult.time < data.enemyMatchResult.time) {
+            return data.enemyMatchResult;
+
+        } else {
+            return { playerId: -1, nickname: 'Draw!' };
         }
     };
 

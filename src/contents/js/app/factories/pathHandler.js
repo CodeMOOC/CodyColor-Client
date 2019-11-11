@@ -121,6 +121,22 @@ angular.module('codyColor').factory("pathHandler", ['gameData','scopeService', f
     };
 
 
+    // funzione d'appoggio per posizionare tutti i roby passati dal server a fine match
+    pathHandler.positionAllEnemies = function(startPositions) {
+        for (let i = 0; i < startPositions.length; i++) {
+            let currentPosition   = startPositions[i].position;
+            let playersInPosition = startPositions[i].playerCount;
+            let userPosition      = gameData.getMatch().startPosition;
+
+            // non posizionare il nemico nel caso in cui quella posizione si riferisca solo all'utente
+            if (playersInPosition > 1
+                || currentPosition.side     !== userPosition.side
+                || currentPosition.distance !== userPosition.distance) {
+                pathHandler.positionRoby(false, currentPosition);
+            }
+        }
+    };
+
     // pone un roby in posizione (senza animazione), sulla casella passata in ingresso dall'utente,
     // quindi calcola e prepara il percorso; ritorna il path del robot
     pathHandler.positionRoby = function (isPlayer, selectedStart) {

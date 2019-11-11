@@ -94,7 +94,7 @@ angular.module('codyColor').controller('randomMmakingCtrl',['$scope', 'rabbit', 
 
                 // nemico validato <==> nemico presente
                 if (gameData.getEnemy().validated) {
-                    clearInterval(timers.mmakingTimer);
+                    clearInterval(mmakingTimer);
                     mmakingTimer = undefined;
                     changeScreen(screens.enemyFound);
 
@@ -134,11 +134,6 @@ angular.module('codyColor').controller('randomMmakingCtrl',['$scope', 'rabbit', 
                 })
 
             }, onStartMatch: function (message) {
-                if (backgroundTimer !== undefined) {
-                    clearInterval(backgroundTimer);
-                    backgroundTimer = undefined;
-                }
-
                 gameData.editMatch({ tiles: gameData.formatMatchTiles(message.tiles) });
                 scopeService.safeApply($scope, function () {
                     navigationHandler.goToPage($location, '/arcade-match');

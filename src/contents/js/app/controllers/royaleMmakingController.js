@@ -96,6 +96,7 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
         } else {
             // connessione già pronta: richiedi i dati della battle al server
             if (gameData.getGeneral().code !== '0000' || gameData.getUser().organizer) {
+                $scope.code = gameData.getGeneral().code;
                 rabbit.sendGameRequest();
                 translationHandler.setTranslation($scope, 'joinMessage', 'SEARCH_MATCH_INFO');
             }
@@ -103,141 +104,132 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
 
         rabbit.setPageCallbacks({
             onConnected: function () {
-                if (requiredDelayedGameRequest) {
-                    if (gameData.getGeneral().code !== '0000' || gameData.getUser().organizer) {
-                        rabbit.sendGameRequest();
-                        scopeService.safeApply($scope, function () {
-                            translationHandler.setTranslation($scope, 'joinMessage', 'SEARCH_MATCH_INFO');
-                        });
-                    }
-                    requiredDelayedGameRequest = false;
-                }
-
-            }, onGeneralInfoMessage: function() {
-                if (!sessionHandler.isClientVersionValid()) {
-                    quitGame();
-                    scopeService.safeApply($scope, function () {
-                        translationHandler.setTranslation($scope, 'forceExitText', 'OUTDATED_VERSION_DESC');
-                        $scope.forceExitModal = true;
-                    });
-                }
-
-            }, onGameRequestResponse: function (message) {
-                // la risposta 0000 indica che la game room con il codice passato non è più accessibile
-                if (message.code.toString() === '0000') {
-                    scopeService.safeApply($scope, function () {
-                        $scope.mmakingRequested = false;
-                        translationHandler.setTranslation($scope, 'joinMessage', 'CODE_NOT_VALID');
-                        gameData.editGeneral({ code: '0000' });
-                    });
-                    return;
-                }
-
                 scopeService.safeApply($scope, function () {
-                    gameData.editGeneral(message.general);
-                    gameData.editAggregated(message.aggregated);
-                    gameData.editUser(message.user);
-                    $scope.matchUrl = settings.webBaseUrl + '/#!?royale=' + message.general.code;
+                    if (requiredDelayedGameRequest) {
+                        if (gameData.getGeneral().code !== '0000' || gameData.getUser().organizer) {
+                            $scope.code = gameData.getGeneral().code;
+                            rabbit.sendGameRequest();
+                            translationHandler.setTranslation($scope, 'joinMessage', 'SEARCH_MATCH_INFO');
+                        }
+                        requiredDelayedGameRequest = false;
+                    }
                 });
 
-                rabbit.subscribeGameRoom();
+            }, onGeneralInfoMessage: function() {
+                scopeService.safeApply($scope, function () {
+                    if (!sessionHandler.isClientVersionValid()) {
+                        quitGame();
+                        translationHandler.setTranslation($scope, 'forceExitText', 'OUTDATED_VERSION_DESC');
+                        $scope.forceExitModal = true;
+                    }
+                });
 
-                // testo che mostra la durata di ogni match
-                let formattedTranslateCode = gameData.formatTimeStatic(gameData.getGeneral().timerSetting);
-                translationHandler.setTranslation($scope, 'battleTime', formattedTranslateCode);
+            }, onGameRequestResponse: function (message) {
+                scopeService.safeApply($scope, function () {
+                    // la risposta 0000 indica che la game room con il codice passato non è più accessibile
+                    if (message.code.toString() === '0000') {
+                        $scope.mmakingRequested = false;
+                        translationHandler.setTranslation($scope, 'joinMessage', 'CODE_NOT_VALID');
+                        gameData.editGeneral({code: '0000'});
 
-                if (gameData.getGeneral().scheduledStart) {
-                    scopeService.safeApply($scope, function () {
-                        // calcola la data di avvio della partita in base al valore millisecondi mancanti comunicato dal server
-                        $scope.relativeStartDate = (new Date()).getTime() + message.msToStart;
-                        $scope.startMatchTimerValue = message.msToStart;
-                    });
+                    } else {
+                        gameData.editGeneral(message.general);
+                        gameData.editAggregated(message.aggregated);
+                        gameData.editUser(message.user);
+                        $scope.matchUrl = settings.webBaseUrl + '/#!?royale=' + message.general.code;
+                        rabbit.subscribeGameRoom();
 
-                    startMatchTimer = setInterval(function () {
-                        if ($scope.startMatchTimerValue > 1000) {
-                            scopeService.safeApply($scope, function () {
-                                $scope.startMatchTimerValue = $scope.relativeStartDate - (new Date()).getTime();
-                            });
-                        } else {
-                            scopeService.safeApply($scope, function () {
-                                $scope.startMatchTimerValue = 0;
-                            });
-                            clearInterval(startMatchTimer);
-                            startMatchTimer = undefined;
+                        // testo che mostra la durata di ogni match
+                        let formattedTranslateCode = gameData.formatTimeStatic(gameData.getGeneral().timerSetting);
+                        translationHandler.setTranslation($scope, 'battleTime', formattedTranslateCode);
+
+                        if (gameData.getGeneral().scheduledStart) {
+                            // calcola la data di avvio della partita in base al valore millisecondi mancanti;
+                            // comunicati dal server
+                            $scope.relativeStartDate = (new Date()).getTime() + message.msToStart;
+                            $scope.startMatchTimerValue = message.msToStart;
+
+                            startMatchTimer = setInterval(function () {
+                                if ($scope.startMatchTimerValue > 1000) {
+                                    $scope.startMatchTimerValue = $scope.relativeStartDate - (new Date()).getTime();
+
+                                } else {
+                                    scopeService.safeApply($scope, function () {
+                                        $scope.startMatchTimerValue = 0;
+                                    });
+                                    clearInterval(startMatchTimer);
+                                    startMatchTimer = undefined;
+                                }
+                            }, 1000)
                         }
-                    }, 1000)
-                }
 
-                if (gameData.getUser().validated) {
-                    changeScreen(screens.waitingEnemies);
-                } else {
-                    changeScreen(screens.nicknameSelection);
-                }
+                        if (gameData.getUser().validated) {
+                            changeScreen(screens.waitingEnemies);
+                        } else {
+                            changeScreen(screens.nicknameSelection);
+                        }
+                    }
+                });
 
             }, onPlayerAdded: function (message) {
-                if (message.addedPlayerId === gameData.getUser().playerId) {
-                    if (gameData.getUser().validated === false)
-                        changeScreen(screens.waitingEnemies);
-
-                    scopeService.safeApply($scope, function () {
-                        gameData.editUser(message.addedPlayer);
-                    });
-                }
-
                 scopeService.safeApply($scope, function () {
-                    gameData.edit({ aggregated: message.aggregated });
+                    if (message.addedPlayerId === gameData.getUser().playerId) {
+                        if (gameData.getUser().validated === false)
+                            changeScreen(screens.waitingEnemies);
+                        gameData.editUser(message.addedPlayer);
+                    }
+
+                    gameData.editAggregated(message.aggregated);
 
                     translationHandler.setTranslation($scope, 'totTime',
                         gameData.formatTimeStatic(gameData.getGeneral().timerSetting));
                 });
 
             }, onPlayerRemoved: function (message) {
-                if (message.removedPlayerId === gameData.getUser().playerId) {
-                    quitGame();
-                    scopeService.safeApply($scope, function () {
+                scopeService.safeApply($scope, function () {
+                    if (message.removedPlayerId === gameData.getUser().playerId) {
+                        quitGame();
                         translationHandler.setTranslation($scope, 'forceExitText', 'ENEMY_LEFT');
                         $scope.forceExitModal = true;
-                    });
 
-                } else {
-                    scopeService.safeApply($scope, function () {
+                    } else {
                         gameData.editAggregated(message.aggregated);
                         translationHandler.setTranslation($scope, 'totTime',
                             gameData.formatTimeStatic(gameData.getGeneral().timerSetting));
-                    });
-                }
+                    }
+                });
 
             }, onStartMatch: function (message) {
-                gameData.editAggregated(message.aggregated);
-                gameData.editMatch({ tiles: gameData.formatMatchTiles(message.tiles) });
-
-                if (startMatchTimer !== undefined) {
-                    clearInterval(startMatchTimer);
-                    startMatchTimer = undefined;
-                }
-
                 scopeService.safeApply($scope, function () {
+                    gameData.editAggregated(message.aggregated);
+                    gameData.editMatch({tiles: gameData.formatMatchTiles(message.tiles)});
+
+                    if (startMatchTimer !== undefined) {
+                        clearInterval(startMatchTimer);
+                        startMatchTimer = undefined;
+                    }
+
                     navigationHandler.goToPage($location, '/royale-match');
                 });
 
             }, onGameQuit: function () {
-                quitGame();
                 scopeService.safeApply($scope, function () {
+                    quitGame();
                     translationHandler.setTranslation($scope, 'forceExitText', 'ENEMY_LEFT');
                     $scope.forceExitModal = true;
                 });
 
             }, onConnectionLost: function () {
-                quitGame();
                 scopeService.safeApply($scope, function () {
+                    quitGame();
                     translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
                     $scope.forceExitModal = true;
                 });
 
             }, onChatMessage: function (message) {
-                audioHandler.playSound('roby-over');
-                chatHandler.enqueueChatMessage(message);
                 scopeService.safeApply($scope, function () {
+                    audioHandler.playSound('roby-over');
+                    chatHandler.enqueueChatMessage(message);
                     $scope.chatBubbles = chatHandler.getChatMessages();
                 });
             }

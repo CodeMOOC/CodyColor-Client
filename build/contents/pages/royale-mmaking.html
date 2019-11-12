@@ -9,7 +9,8 @@
                         {{'AGA_MATCH_DESC' | translate}}
                     </li>
                     <li class="list--spaced-element">
-                        <button class="navigation--button flashing-animation" ng-click="goToCreateMatch()">
+                        <button class="navigation--button flashing-animation"
+                                ng-click="goToCreateMatch()" ng-disabled="mmakingRequested">
                             <span translate="NEW_AGA"></span>
                             <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
                         </button>

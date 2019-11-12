@@ -265,6 +265,7 @@ angular.module('codyColor').controller('arcadeMatchCtrl', ['$scope', 'rabbit', '
         $scope.robyOver = function (event, ui, side, distance) {
             audioHandler.playSound('roby-over');
             scopeService.safeApply($scope, function () {
+                $scope.draggableRobyImage = 'roby-over';
                 setArrowCss(side, distance, true);
             });
         };
@@ -272,6 +273,7 @@ angular.module('codyColor').controller('arcadeMatchCtrl', ['$scope', 'rabbit', '
         // invocato quando roby viene spostato da una posizione di partenza valida
         $scope.robyOut = function (event, ui, side, distance) {
             scopeService.safeApply($scope, function () {
+                $scope.draggableRobyImage = 'roby-dragging-trasp';
                 setArrowCss(side, distance, false);
             });
         };

@@ -85,12 +85,14 @@ angular.module('codyColor').controller('royaleAftermatchCtrl', ['$scope', 'rabbi
 
         // richiede all'avversario l'avvio di una nuova partita tra i due
         $scope.newMatch = function () {
+            audioHandler.playSound('menu-click');
             gameData.editAggregated({ readyPlayers: gameData.getAggregated().readyPlayers + 1 });
             $scope.newMatchClicked = true;
             rabbit.sendReadyMessage();
         };
 
         $scope.share = function() {
+            audioHandler.playSound('menu-click');
             let shareText = 'I took ' + $scope.userMatchResult.pathLength +
                 ' steps with my Roby in a ' + $scope.general.gameType + ' match!';
 

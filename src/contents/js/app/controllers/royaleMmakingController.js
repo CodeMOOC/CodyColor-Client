@@ -257,12 +257,14 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
         // click su 'iniziamo' dall'inserimento nickname
         $scope.readyClicked = false;
         $scope.playerReady = function () {
+            audioHandler.playSound('menu-click');
             rabbit.sendReadyMessage();
             $scope.readyClicked = true;
         };
 
         // associa il nickname al giocatore e trasmettilo alla game room, convalidando la partecipazione alla partita
         $scope.validPlayer = function () {
+            audioHandler.playSound('menu-click');
             $scope.playerValidated = true;
             gameData.editUser({ nickname: $scope.nickname });
             rabbit.sendValidationMessage();

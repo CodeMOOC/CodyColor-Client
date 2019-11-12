@@ -52,12 +52,14 @@ angular.module('codyColor').controller('bootmpAftermatchCtrl', ['$scope', 'rabbi
 
         // richiede all'avversario l'avvio di una nuova partita tra i due
         $scope.newMatch = function () {
+            audioHandler.playSound('menu-click');
             gameData.initializeMatchData();
             gameData.editMatch({ tiles: gameData.generateNewMatchTiles() });
             navigationHandler.goToPage($location, '/bootmp-match');
         };
 
         $scope.share = function() {
+            audioHandler.playSound('menu-click');
             let shareText = 'I took ' + gameData.getUserMatchResult().pathLength +
                 ' steps with my Roby in a ' + gameData.getGeneral().gameType + ' match!';
 

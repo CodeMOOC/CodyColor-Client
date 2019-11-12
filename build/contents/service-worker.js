@@ -242,7 +242,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "js/app/app.min.js",
-    "revision": "82b4de4c661dd2b688c6cdfd264bfa39"
+    "revision": "73a8282e53767bab9c87405399021c0f"
   },
   {
     "url": "locales/locale-en.json",

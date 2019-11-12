@@ -188,6 +188,7 @@ angular.module('codyColor').controller('randomMmakingCtrl',['$scope', 'rabbit', 
 
         // invocata una volta premuto il tasto 'iniziamo'
         $scope.playerReady = function () {
+            audioHandler.playSound('menu-click');
             $scope.readyClicked = true;
             rabbit.sendReadyMessage();
 

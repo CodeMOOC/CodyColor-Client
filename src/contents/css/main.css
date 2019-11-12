@@ -505,9 +505,9 @@ button.chat--hint:hover {
 
 .chat--bubble-player, .chat--bubble-enemy {
     display: inline-block;
-    max-width: 180px;
+    max-width: 100%;
     box-sizing: border-box;
-    margin: 0;
+    margin: 0 10px;
     border-radius: 8px;
     color: white;
     padding: 10px 20px;

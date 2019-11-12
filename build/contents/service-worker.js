@@ -58,7 +58,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "css/app.min.css",
-    "revision": "959e68ebc36df7453bd554ee72f75899"
+    "revision": "d487bcf18e80269ddfc31250cc8bbe2b"
   },
   {
     "url": "favicon.ico",

@@ -380,7 +380,14 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
                     gameData.editMatchRanking(message.matchRanking);
                     gameData.editGlobalRanking(message.globalRanking);
 
-                    // aggiorna i risultati globali dell'utente
+                    // aggiorna i risultati dell'utente
+                    if (gameData.getMatch().winnerId === gameData.getUser().playerId) {
+                        gameData.editUserMatchResult( {
+                            points: gameData.getUserMatchResult().points
+                                + gameData.calculateWinnerBonusPoints(gameData.getUserMatchResult().time)
+                        })
+                    }
+
                     gameData.editUserGlobalResult({
                         nickname: gameData.getUser().nickname,
                         playerId: gameData.getUser().playerId,

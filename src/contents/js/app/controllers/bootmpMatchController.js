@@ -374,7 +374,9 @@ angular.module('codyColor').controller('bootmpMatchCtrl', [ '$scope', 'gameData'
 
                 if (gameData.getMatch().winnerId === 0) {
                     gameData.editUserMatchResult({
-                        points: gameData.calculateMatchPoints(gameData.getUserMatchResult().pathLength, gameData.getUserMatchResult().time)
+                        points:
+                            gameData.calculateMatchPoints(gameData.getUserMatchResult().pathLength) +
+                            gameData.calculateWinnerBonusPoints(gameData.getUserMatchResult().time)
                     });
                     gameData.editUserGlobalResult({
                         points: gameData.getUserGlobalResult().points + gameData.getUserMatchResult().points,
@@ -383,7 +385,9 @@ angular.module('codyColor').controller('bootmpMatchCtrl', [ '$scope', 'gameData'
 
                 } else if (gameData.getMatch().winnerId === 1) {
                     gameData.editEnemyMatchResult({
-                        points: gameData.calculateMatchPoints(gameData.getEnemyMatchResult().pathLength, gameData.getEnemyMatchResult().time)
+                        points:
+                            gameData.calculateMatchPoints(gameData.getEnemyMatchResult().pathLength) +
+                            gameData.calculateWinnerBonusPoints(gameData.getEnemyMatchResult().time)
                     });
                     gameData.editEnemyGlobalResult({
                         points: gameData.getEnemyGlobalResult().points + gameData.getEnemyMatchResult().points,

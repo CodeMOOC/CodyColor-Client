@@ -255,17 +255,19 @@ angular.module('codyColor').factory('gameData', function () {
      * di determinate proprieta'
      * -------------------------------------------------------------------- */
 
-    gameData.calculateMatchPoints = function(pathLength, time) {
+    gameData.calculateMatchPoints = function(pathLength) {
         let points = 0;
 
         // ogni passo vale 2 punti
         points += pathLength * 2;
 
-        // DISATTIVATO PER MAGGIORE COERENZA NEI PUNTEGGI
-        // il tempo viene scalato su un massimo di 15 punti
-        // points += Math.floor(15 * time / data.general.timerSetting);
-
         return points;
+    };
+
+
+    gameData.calculateWinnerBonusPoints = function(time) {
+        // il tempo viene scalato su un massimo di 15 punti
+        return Math.floor(15 * time / data.general.timerSetting);
     };
 
 

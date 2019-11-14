@@ -27,12 +27,12 @@
                             <label for="code">{{'CODE' | translate}}</label>
                         </li>
                         <li class="list--spaced-element">
-                            <input type="number" name="code" max="9999" min="1" ID="code" class="standard-input"
-                                   ng-model="code" placeholder="{{'CODE_EXAMPLE' | translate}}" required autofocus/>
+                            <input type="number" name="codeValue" max="9999" min="1" ID="code" class="standard-input"
+                                   ng-model="codeValue" placeholder="{{'CODE_EXAMPLE' | translate}}" required autofocus/>
                         </li>
                         <li class="list--spaced-element">
                             <button class="navigation--button flashing-animation"
-                                    ng-click="joinGame(customMatchForm.code.$viewValue)"
+                                    ng-click="joinGame(customMatchForm.codeValue.$viewValue)"
                                     ng-disabled="customMatchForm.codeValue.$invalid || mmakingRequested">
                                 {{ 'JOIN' | translate }}
                                 <i class="fas fa-angle-double-right navigation--icon-in-text floating-right-animation"></i>

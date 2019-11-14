@@ -139,30 +139,24 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
         $scope.startCountdownText = startCountdownValue.toString();
         $scope.countdownInProgress = true;
         startCountdownTimer = setInterval(function () {
-            startCountdownValue--;
-            if (startCountdownValue > 0) {
-                audioHandler.playSound('countdown');
-                scopeService.safeApply($scope, function () {
+            scopeService.safeApply($scope, function () {
+                startCountdownValue--;
+                if (startCountdownValue > 0) {
+                    audioHandler.playSound('countdown');
                     $scope.startCountdownText = startCountdownValue.toString();
-                });
 
-            } else if (startCountdownValue === 0) {
-                audioHandler.playSound('start');
-                scopeService.safeApply($scope, function () {
+                } else if (startCountdownValue === 0) {
+                    audioHandler.playSound('start');
                     $scope.startCountdownText = "Let's Cody!";
-                });
 
-            } else {
-                // interrompi countdown e mostra schermata di gioco
-                clearInterval(startCountdownTimer);
-                startCountdownTimer = undefined;
-
-                scopeService.safeApply($scope, function () {
+                } else {
+                    // interrompi countdown e mostra schermata di gioco
+                    clearInterval(startCountdownTimer);
+                    startCountdownTimer = undefined;
                     $scope.countdownInProgress = false;
-                });
-
-                startMatchTimer();
-            }
+                    startMatchTimer();
+                }
+            });
         }, 1000);
 
         // avvia i timer per visualizzare tempo rimanente di giocatore e avversario; questo timer non utilizza
@@ -174,37 +168,36 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
             gameTimer = setTimeout(step, interval);
 
             function step() {
-                if ($scope.startAnimation) {
-                    return;
-                }
+                scopeService.safeApply($scope, function () {
+                    let drift = Date.now() - expected;
+                    if (drift > interval) {
+                        console.log("Timer lagged!")
+                    }
+                    nextGameTimerValue -= (interval + drift);
 
-                let drift = Date.now() - expected;
-                if (drift > interval) {
-                    console.log("Timer lagged!")
-                }
-                nextGameTimerValue -= (interval + drift);
+                    if (nextGameTimerValue > 0) {
+                        // condizione di decremento ordinario
 
-                // condizione di decremento ordinario
-                if (nextGameTimerValue > 0) {
-                    scopeService.safeApply($scope, function () {
                         // animazione degli ultimi 10 secondi
-                        if(nextGameTimerValue < 10000)
+                        if (nextGameTimerValue < 10000)
                             $scope.clockAnimation = "clock-ending-animation";
 
                         // fai avanzare il timer
                         $scope.gameTimerValue = nextGameTimerValue;
-                    });
 
-                    // schedula nuovo decremento
-                    expected = Date.now() + interval;
-                    gameTimer = setTimeout(step, interval); // take into account drift
+                        // schedula nuovo decremento se necessario
+                        if (!$scope.startAnimation) {
+                            expected = Date.now() + interval;
+                            gameTimer = setTimeout(step, interval); // take into account drift
+                        } else {
+                            nextGameTimerValue = 0;
+                        }
 
-                } else {
-                    // fine del tempo
+                    } else {
+                        // fine del tempo
 
-                    // invia un segnale di posizionato, se necessario
-                    if (!gameData.getMatch().positioned) {
-                        scopeService.safeApply($scope, function () {
+                        // invia un segnale di posizionato, se necessario
+                        if (!gameData.getMatch().positioned) {
                             gameData.editMatch({
                                 positioned: true,
                                 time: 0,
@@ -229,9 +222,9 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
                             $scope.showDraggableRoby = false;
                             calculateAllStartPositionCss(false);
                             rabbit.sendPlayerPositionedMessage();
-                        });
+                        }
                     }
-                }
+                });
             }
         };
 
@@ -244,9 +237,8 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
         // quando roby viene trascinato, viene mostrata la griglia completa (con le posizioni di partenza), e
         // modificata l'immagine di roby
         $scope.startDragging = function () {
-            console.log("Start dragging");
-            audioHandler.playSound('roby-drag');
             scopeService.safeApply($scope, function () {
+                audioHandler.playSound('roby-drag');
                 $scope.showCompleteGrid = true;
                 $scope.draggableRobyImage = 'roby-dragging-trasp';
                 $scope.showArrows = true;
@@ -256,8 +248,8 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
 
         // invocato quando roby viene posizionato, ma non rilasciato, sopra una posizione di partenza valida
         $scope.robyOver = function (event, ui, side, distance) {
-            audioHandler.playSound('roby-over');
             scopeService.safeApply($scope, function () {
+                audioHandler.playSound('roby-over');
                 $scope.draggableRobyImage = 'roby-over';
                 setArrowCss(side, distance, true);
             });
@@ -273,38 +265,35 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
 
         // quando roby viene rilasciato, ritorna nella posizione iniziale...
         $scope.endDragging = function () {
-            console.log("End dragging");
-            audioHandler.playSound('roby-drop');
-            if (!$scope.startAnimation) {
-                scopeService.safeApply($scope, function () {
+            scopeService.safeApply($scope, function () {
+                audioHandler.playSound('roby-drop');
+                if (!$scope.startAnimation) {
                     $scope.showArrows = false;
                     $scope.showCompleteGrid = false;
                     $scope.draggableRobyImage = 'roby-idle';
                     calculateAllStartPositionCss(false);
-                });
-            }
+                }
+            });
         };
 
         //...a meno che, non venga rilasciato in una posizione valida. In quel caso, viene utilizzata un secondo tag
         // img, per mostrare roby nella sua posizione di partenza. Viene inoltre fermato il timer, e notificato
         // l'avversario dell'avvenuta presa di posizione
         $scope.robyDropped = function (event, ui, sideValue, distanceValue) {
-            console.log("Roby dropped");
-            audioHandler.playSound('roby-positioned');
-            $scope.showCompleteGrid = true;
-            if (!$scope.startAnimation) {
-                scopeService.safeApply($scope, function () {
+            scopeService.safeApply($scope, function () {
+                audioHandler.playSound('roby-positioned');
+                $scope.showDraggableRoby = false;
+                $scope.showCompleteGrid = true;
+
+                if (!$scope.startAnimation) {
+                    // aggiorna i risultati match dell'utente
                     gameData.editMatch({
                         positioned: true,
                         time: nextGameTimerValue,
-                        startPosition: { side: sideValue, distance: distanceValue },
+                        startPosition: {side: sideValue, distance: distanceValue},
                     });
-                    $scope.showDraggableRoby = false;
-                });
-                let userPath = pathHandler.positionRoby(true, gameData.getMatch().startPosition);
 
-                // aggiorna i risultati match dell'utente
-                scopeService.safeApply($scope, function () {
+                    let userPath = pathHandler.positionRoby(true, gameData.getMatch().startPosition);
                     gameData.editUserMatchResult({
                         nickname: gameData.getUser().nickname,
                         playerId: gameData.getUser().playerId,
@@ -317,10 +306,10 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
                     gameData.editAggregated({
                         positionedPlayers: gameData.getAggregated().positionedPlayers + 1
                     });
-                });
 
-                rabbit.sendPlayerPositionedMessage();
-            }
+                    rabbit.sendPlayerPositionedMessage();
+                }
+            });
         };
 
         // callback passati alla classe responsabile della comunicazione con il broker.

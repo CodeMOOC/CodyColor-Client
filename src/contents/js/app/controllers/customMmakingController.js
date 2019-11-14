@@ -3,10 +3,10 @@
  */
 angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit', 'navigationHandler', '$translate',
     'translationHandler', 'authHandler', 'audioHandler', '$location', 'sessionHandler', 'gameData', 'scopeService',
-    'chatHandler', 'settings', 'visibilityHandler',
+    'chatHandler', 'settings', 'visibilityHandler', 'shareHandler',
     function ($scope, rabbit, navigationHandler, $translate, translationHandler, authHandler,
               audioHandler, $location, sessionHandler, gameData, scopeService,
-              chatHandler, settings, visibilityHandler) {
+              chatHandler, settings, visibilityHandler, shareHandler) {
 
         gameData.getGeneral().gameType = gameData.getGameTypes().custom;
 
@@ -92,7 +92,6 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
         } else {
             // connessione già pronta: richiedi i dati della battle al server
             if (gameData.getGeneral().code !== '0000' || gameData.getUser().organizer) {
-                $scope.code = gameData.getGeneral().code;
                 rabbit.sendGameRequest();
                 translationHandler.setTranslation($scope, 'joinMessage', 'SEARCH_MATCH_INFO');
             }
@@ -103,7 +102,6 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
                 scopeService.safeApply($scope, function () {
                     if (requiredDelayedGameRequest) {
                         if (gameData.getGeneral().code !== '0000' || gameData.getUser().organizer) {
-                            $scope.code = gameData.getGeneral().code;
                             rabbit.sendGameRequest();
                             translationHandler.setTranslation($scope, 'joinMessage', 'SEARCH_MATCH_INFO');
                         }
@@ -221,7 +219,7 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
         };
 
         // click su 'unisciti', invio code
-        $scope.joinGame = function() {
+        $scope.joinGame = function(codeValue) {
             $scope.mmakingRequested = true;
             audioHandler.playSound('menu-click');
             $translate('SEARCH_MATCH_INFO').then(function (text) {
@@ -229,7 +227,7 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
             }, function (translationId) {
                 $scope.joinMessage = translationId;
             });
-            gameData.editGeneral({ code: $scope.code });
+            gameData.editGeneral({ code: codeValue });
             rabbit.sendGameRequest();
         };
 
@@ -255,32 +253,16 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
         $scope.codeCopied = false;
         $scope.copyLink = function () {
             audioHandler.playSound('menu-click');
-            copyStringToClipboard($scope.matchUrl);
+            shareHandler.copyTextToClipboard($scope.matchUrl);
             $scope.linkCopied = true;
             $scope.codeCopied = false;
         };
+
         $scope.copyCode = function () {
             audioHandler.playSound('menu-click');
-            copyStringToClipboard(gameData.getGeneral().code);
+            shareHandler.copyTextToClipboard(gameData.getGeneral().code);
             $scope.linkCopied = false;
             $scope.codeCopied = true;
-        };
-
-        let copyStringToClipboard = function (text) {
-            // Create new element
-            let el = document.createElement('textarea');
-            // Set value (string to be copied)
-            el.value = text;
-            // Set non-editable to avoid focus and move outside of view
-            el.setAttribute('readonly', '');
-            el.style = { position: 'absolute', left: '-9999px' };
-            document.body.appendChild(el);
-            // Select text inside element
-            el.select();
-            // Copy text to clipboard
-            document.execCommand('copy');
-            // Remove temporary element
-            document.body.removeChild(el);
         };
 
         // termina la partita alla pressione sul tasto corrispondente

@@ -4,9 +4,9 @@
  */
 angular.module('codyColor').controller('bootmpAftermatchCtrl', ['$scope', 'rabbit', 'gameData', 'scopeService',
     '$location', 'navigationHandler', 'audioHandler', 'sessionHandler', '$translate', 'authHandler',
-    'translationHandler', 'visibilityHandler',
+    'translationHandler', 'visibilityHandler', 'shareHandler',
     function ($scope, rabbit, gameData, scopeService, $location, navigationHandler,
-              audioHandler, sessionHandler, $translate, authHandler, translationHandler, visibilityHandler) {
+              audioHandler, sessionHandler, $translate, authHandler, translationHandler, visibilityHandler, shareHandler) {
 
         // chiusura 'sicura' della partita
         let quitGame = function() {
@@ -63,36 +63,8 @@ angular.module('codyColor').controller('bootmpAftermatchCtrl', ['$scope', 'rabbi
             let shareText = 'I took ' + gameData.getUserMatchResult().pathLength +
                 ' steps with my Roby in a ' + gameData.getGeneral().gameType + ' match!';
 
-            if (navigator.share) {
-                navigator.share({
-                    title: 'CodyColor Multiplayer',
-                    text: shareText,
-                    url: 'https://codycolor.codemooc.net'
-                }).then(() => {
-                    console.log('Thanks for sharing!');
-                }).catch(console.error);
-            } else {
-                // fallback
-                $scope.sharedLegacy = true;
-                copyStringToClipboard(shareText + ' Play with me in https://codycolor.codemooc.net');
-            }
-        };
-
-        let copyStringToClipboard = function (text) {
-            // Create new element
-            let el = document.createElement('textarea');
-            // Set value (string to be copied)
-            el.value = text;
-            // Set non-editable to avoid focus and move outside of view
-            el.setAttribute('readonly', '');
-            el.style = {position: 'absolute', left: '-9999px'};
-            document.body.appendChild(el);
-            // Select text inside element
-            el.select();
-            // Copy text to clipboard
-            document.execCommand('copy');
-            // Remove temporary element
-            document.body.removeChild(el);
+            $scope.sharedLegacy =
+                shareHandler.shareText('CodyColor Multiplayer', shareText, 'https://codycolor.codemooc.net');
         };
 
         // termina la partita alla pressione sul tasto corrispondente

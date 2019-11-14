@@ -242,7 +242,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "js/app/app.min.js",
-    "revision": "73a8282e53767bab9c87405399021c0f"
+    "revision": "4d802626f29285fa14962e9e817c4ab3"
   },
   {
     "url": "locales/locale-en.json",
@@ -286,7 +286,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/custom-mmaking.html",
-    "revision": "96eebea5735bf67cd4e83d48b4d5753e"
+    "revision": "ccd5546e1670bee657365eae3b77cf55"
   },
   {
     "url": "pages/custom-new-match.html",
@@ -322,7 +322,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/royale-mmaking.html",
-    "revision": "96baa4a5465fbcbb5a282267830f73fa"
+    "revision": "8490e06a2a73837a41ea49b074250c51"
   },
   {
     "url": "pages/royale-new-match.html",

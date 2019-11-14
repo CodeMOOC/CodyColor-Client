@@ -3,10 +3,10 @@
  */
 angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit', 'navigationHandler', '$translate',
     'translationHandler', 'audioHandler', '$location', 'sessionHandler', 'gameData', 'scopeService', 'chatHandler',
-    'settings', 'authHandler', 'visibilityHandler',
+    'settings', 'authHandler', 'visibilityHandler', 'shareHandler',
     function ($scope, rabbit, navigationHandler, $translate, translationHandler,
               audioHandler, $location, sessionHandler, gameData, scopeService,
-              chatHandler, settings, authHandler, visibilityHandler) {
+              chatHandler, settings, authHandler, visibilityHandler, shareHandler) {
 
         gameData.getGeneral().gameType = gameData.getGameTypes().royale;
 
@@ -96,7 +96,6 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
         } else {
             // connessione già pronta: richiedi i dati della battle al server
             if (gameData.getGeneral().code !== '0000' || gameData.getUser().organizer) {
-                $scope.code = gameData.getGeneral().code;
                 rabbit.sendGameRequest();
                 translationHandler.setTranslation($scope, 'joinMessage', 'SEARCH_MATCH_INFO');
             }
@@ -107,7 +106,6 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
                 scopeService.safeApply($scope, function () {
                     if (requiredDelayedGameRequest) {
                         if (gameData.getGeneral().code !== '0000' || gameData.getUser().organizer) {
-                            $scope.code = gameData.getGeneral().code;
                             rabbit.sendGameRequest();
                             translationHandler.setTranslation($scope, 'joinMessage', 'SEARCH_MATCH_INFO');
                         }
@@ -150,16 +148,16 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
                             $scope.startMatchTimerValue = message.msToStart;
 
                             startMatchTimer = setInterval(function () {
-                                if ($scope.startMatchTimerValue > 1000) {
-                                    $scope.startMatchTimerValue = $scope.relativeStartDate - (new Date()).getTime();
+                                scopeService.safeApply($scope, function () {
+                                    if ($scope.startMatchTimerValue > 1000) {
+                                        $scope.startMatchTimerValue = $scope.relativeStartDate - (new Date()).getTime();
 
-                                } else {
-                                    scopeService.safeApply($scope, function () {
+                                    } else {
                                         $scope.startMatchTimerValue = 0;
-                                    });
-                                    clearInterval(startMatchTimer);
-                                    startMatchTimer = undefined;
-                                }
+                                        clearInterval(startMatchTimer);
+                                        startMatchTimer = undefined;
+                                    }
+                                });
                             }, 1000)
                         }
 
@@ -242,7 +240,9 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
         };
 
         // click su 'unisciti', invio code
-        $scope.joinGame = function () {
+        $scope.joinGame = function (codeValue) {
+            // viene passato il codice come parametro così da riconoscerlo come una stringa
+            // anziche' un numero. Evita problemi nei numeri con zeri davanti
             $scope.mmakingRequested = true;
             audioHandler.playSound('menu-click');
             $translate('SEARCH_MATCH_INFO').then(function (text) {
@@ -250,7 +250,7 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
             }, function (translationId) {
                 $scope.joinMessage = translationId;
             });
-            gameData.editGeneral({ code: $scope.code });
+            gameData.editGeneral({ code: codeValue });
             rabbit.sendGameRequest();
         };
 
@@ -292,32 +292,16 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
         $scope.codeCopied = false;
         $scope.copyLink = function () {
             audioHandler.playSound('menu-click');
-            copyStringToClipboard($scope.matchUrl);
+            shareHandler.copyTextToClipboard($scope.matchUrl);
             $scope.linkCopied = true;
             $scope.codeCopied = false;
         };
+
         $scope.copyCode = function () {
             audioHandler.playSound('menu-click');
-            copyStringToClipboard(gameData.getGeneral().code);
+            shareHandler.copyTextToClipboard(gameData.getGeneral().code);
             $scope.linkCopied = false;
             $scope.codeCopied = true;
-        };
-
-        let copyStringToClipboard = function (text) {
-            // Create new element
-            let el = document.createElement('textarea');
-            // Set value (string to be copied)
-            el.value = text;
-            // Set non-editable to avoid focus and move outside of view
-            el.setAttribute('readonly', '');
-            el.style = {position: 'absolute', left: '-9999px'};
-            document.body.appendChild(el);
-            // Select text inside element
-            el.select();
-            // Copy text to clipboard
-            document.execCommand('copy');
-            // Remove temporary element
-            document.body.removeChild(el);
         };
 
         // termina la partita alla pressione sul tasto corrispondente

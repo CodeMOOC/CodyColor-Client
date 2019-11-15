@@ -2,13 +2,14 @@
  * Controller login
  */
 angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scope', 'audioHandler', '$location',
-    'sessionHandler', '$translate', 'scopeService', 'authHandler', 'rabbit', 'translationHandler', 'gameData',
+    'sessionHandler', '$translate', 'scopeService', 'authHandler', 'rabbit', 'translationHandler', 'gameData', 'visibilityHandler',
     function (navigationHandler, $scope, audioHandler, $location, sessionHandler,
-              $translate, scopeService, authHandler, rabbit, translationHandler, gameData) {
-        console.log("Controller login ready.");
+              $translate, scopeService, authHandler, rabbit, translationHandler, gameData, visibilityHandler) {
 
         // inizializzazione sessione
         navigationHandler.initializeBackBlock($scope);
+
+        visibilityHandler.setDeadlineCallback();
 
         // cambia schermata (senza lasciare la pagina) evitando flickering durante le animazioni
         let changeScreen = function (newScreen) {

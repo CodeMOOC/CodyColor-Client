@@ -287,6 +287,12 @@ img.profile--image {
     position: relative;
 }
 
+#royale-match #match-in-progress.page--component {
+    height: 480px;
+    width: 100%;
+    position: relative;
+}
+
 #countdown.page--component {
     font-size: 60px;
     font-family: 'Baloo Chettan', cursive;
@@ -499,9 +505,9 @@ button.chat--hint:hover {
 
 .chat--bubble-player, .chat--bubble-enemy {
     display: inline-block;
-    max-width: 180px;
+    max-width: 100%;
     box-sizing: border-box;
-    margin: 0;
+    margin: 0 10px;
     border-radius: 8px;
     color: white;
     padding: 10px 20px;
@@ -754,6 +760,47 @@ button.modal--button-secondary:hover {
     border-color: White;
 }
 
+/*
+ * Modulo infoblock
+ */
+
+.infoblock--container {
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.infoblock {
+    width: 100%;
+    padding: 10px;
+    flex-direction: column;
+    margin: 10px 0;
+    box-sizing: border-box;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 8px;
+    border-color: White;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.11);
+    overflow: scroll;
+}
+
+@media only screen and (min-width: 716px) {
+    .infoblock {
+        width: 300px;
+        height: 110px;
+        margin: 10px;
+    }
+
+    .infoblock--container {
+        flex-direction: row;
+    }
+}
 
 /* -------------------------------------------------------------------------
  * Modulo copyable: implementa due contenitori contenenti un testo, che
@@ -826,6 +873,32 @@ button.modal--button-secondary:hover {
     vertical-align: middle;
 }
 
+/* two columns */
+
+.two-columns {
+    margin: 10px auto 30px auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.two-columns--column {
+    width: 50%;
+    text-align: center;
+}
+
+.two-columns--column-large {
+    width: 60%;
+    text-align: left;
+}
+
+
+.two-columns--column-small {
+    width: 40%;
+    text-align: right;
+}
+
 
 /* -------------------------------------------------------------------------
  * Modulo centered-columns: fornisce un contenitore che contiene due colonne
@@ -878,6 +951,21 @@ button.modal--button-secondary:hover {
 }
 
 .timer--stop, .timer--stop-no-margin {
+    color: red;
+}
+
+
+/* -------------------------------------------------------------------------
+ * Modulo clock: struttura di base dei nuovi timer di gioco
+ * ------------------------------------------------------------------------- */
+
+.clock {
+    font-size: 40px;
+    font-family: 'Baloo Chettan', cursive;
+    color: white;
+}
+
+.clock--end {
     color: red;
 }
 
@@ -1038,7 +1126,6 @@ button.modal--button-secondary:hover {
  */
 .playerlist-match {
     width: 100%;
-    height: 120px;
     box-sizing: border-box;
     border-style: solid;
     border-width: 1px;
@@ -1046,8 +1133,9 @@ button.modal--button-secondary:hover {
     border-color: White;
     text-align: center;
     display: inline-block;
+    padding: 8px;
+    overflow-x: scroll;
     background-color: rgba(255, 255, 255, 0.11);
-    overflow-y: scroll;
 }
 
 table.playerlist-match-table {
@@ -1314,6 +1402,34 @@ table.playerlist-match-table {
         opacity: 1;
     }
 }
+
+.clock-ending-animation {
+    animation: clock-flash 0.5s ease-in-out infinite;
+}
+
+@keyframes clock-flash {
+    0% {
+        color: white;
+    }
+    50% {
+        color: red;
+    }
+    100% {
+        color: white;
+    }
+}
+
+
+.bounce {
+    animation: bounce 0.5s ease-in;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-20px); }
+    60% { transform: translateY(-10px); }
+}
+
 
 
 /* -------------------------------------------------------------------------

@@ -90,6 +90,17 @@
     "JOIN": "Csatlakozz!",
     "MATCH_JOINED": "Üdv {{enemyNickname}} privát játékában! Az ellenfél beállítása alapján a meccsek időtartama {{totTime}}. Válassz becenevet és kattints a start gombra, ha készen állsz.",
     "WAIT_SKIP": "Várakozás az ellenfélre…",
+    "NUM_PLAYERS": "A mérkőzésen szereplő játékosok száma",
+    "PLAYERS_COMPOSITE": "Játékosok: {{numPlayers}}",
+    "POSITIONED_COMPOSITE": "Elhelyezni: {{numPositioned}}",
+    "TIME_OUT": "Időtúllépés! Nem tette Roby-t a határidő előtt!",
+    "TIME_PLAYER": "Robot időben elhelyezett {{time}}!",
+    "DRAW": "Döntetlen!",
+    "NUM_PLAYERS_AFTERMATCH": "{{numPlayers}} játékos már ebben a játékban",
+    "NUM_READY_AFTERMATCH": "{{numReady}} játékos szeretne egy másik mérkőzést játszani!",
+    "SHARE": "Ossza meg pontszámát!!",
+    
+    
     "NEW_CUSTOM_MATCH_DESC": "Válaszd ki a játékban használt beceneved és más opciókat. A CodyColor egy új privát játékot generál, amelybe meghívhatod az ellenfeled.",
     "CREATING_MATCH": "Játék előkészítése…",
     "ENEMY_INVITATION_DESC": "A játék elkészült. Meghívhatsz ellenfeleket az alábbi kód elküldésével, hogy belépjenek a(z) \"custom game\" játékba. Kattints a kódra a vágólapra másolás érdekében!",

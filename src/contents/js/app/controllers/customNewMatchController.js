@@ -3,10 +3,9 @@
  */
 angular.module('codyColor').controller('customNewMatchCtrl', ['$scope', 'rabbit', 'navigationHandler',
     'scopeService', '$translate', 'translationHandler', 'audioHandler', '$location', 'sessionHandler', 'gameData',
-    'authHandler',
+    'authHandler', 'visibilityHandler',
     function ($scope, rabbit, navigationHandler, scopeService, $translate, translationHandler,
-              audioHandler, $location, sessionHandler, gameData, authHandler) {
-        console.log("Empty controller ready.");
+              audioHandler, $location, sessionHandler, gameData, authHandler, visibilityHandler) {
 
         let quitGame = function () {
             rabbit.quitGame();
@@ -21,6 +20,14 @@ angular.module('codyColor').controller('customNewMatchCtrl', ['$scope', 'rabbit'
             return;
         }
 
+        visibilityHandler.setDeadlineCallback(function() {
+            quitGame();
+            scopeService.safeApply($scope, function () {
+                translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
+                $scope.forceExitModal = true;
+            });
+        });
+
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {
             $scope.userNickname = authHandler.getServerUserData().nickname;
@@ -28,7 +35,6 @@ angular.module('codyColor').controller('customNewMatchCtrl', ['$scope', 'rabbit'
         } else {
             translationHandler.setTranslation($scope, 'userNickname', 'NOT_LOGGED');
         }
-
 
         // timer set
         $translate(['15_SECONDS', '30_SECONDS', '1_MINUTE', '2_MINUTES']).then(function (translations) {
@@ -47,9 +53,8 @@ angular.module('codyColor').controller('customNewMatchCtrl', ['$scope', 'rabbit'
             else
                 $scope.currentTimerIndex = ($scope.currentTimerIndex > 0 ? $scope.currentTimerIndex - 1 : 0);
 
-            gameData.getGeneral().timerSetting = $scope.timerSettings[$scope.currentTimerIndex].value;
+            gameData.editGeneral({ timerSetting: $scope.timerSettings[$scope.currentTimerIndex].value });
         };
-
 
         rabbit.setPageCallbacks({
             onConnectionLost: function () {
@@ -61,11 +66,15 @@ angular.module('codyColor').controller('customNewMatchCtrl', ['$scope', 'rabbit'
             }
         });
 
+        $scope.creatingMatch = false;
         $scope.requestMMaking = function () {
             audioHandler.playSound('menu-click');
             $scope.creatingMatch = true;
-            gameData.getUserPlayer().nickname = $scope.nickname;
-            gameData.getUserPlayer().organizer = true;
+            gameData.editGeneral({ code: '0000' });
+            gameData.editUser({
+                nickname: $scope.nickname,
+                organizer: true,
+            });
             navigationHandler.goToPage($location, '/custom-mmaking');
         };
 

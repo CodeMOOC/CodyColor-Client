@@ -9,7 +9,8 @@
                         {{'AGA_MATCH_DESC' | translate}}
                     </li>
                     <li class="list--spaced-element">
-                        <button class="navigation--button flashing-animation" ng-click="goToCreateMatch()">
+                        <button class="navigation--button flashing-animation"
+                                ng-click="goToCreateMatch()" ng-disabled="mmakingRequested">
                             <span translate="NEW_AGA"></span>
                             <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
                         </button>
@@ -76,37 +77,33 @@
                 <ul class="list">
                     <li class="list--simple-element"><h2>{{'WELCOME' | translate}}</h2></li>
                     <li class="list--spaced-element">
-                        {{ 'BATTLE_WELCOME' | translate : { 'gameName': generalData.gameName, 'battleTime': battleTime, 'maxPlayers': generalData.maxPlayersSetting} }}
+                        {{ 'BATTLE_WELCOME' | translate : { 'gameName': general.gameName, 'battleTime': battleTime,
+                        'maxPlayers': general.maxPlayersSetting} }}
                     </li>
-                    <li class="list--simple-element"><h2> {{'WHEN_START' | translate }}</h2></li>
-                    <li class="list--spaced-element">
-                        <div ng-show="generalData.scheduledStart">
-                            {{ 'WHEN_TIMER' | translate }}<br>
-                            <h2>{{ countdownFormatter(startMatchTimerValue) }}</h2>
-                        </div>
-                        <div ng-hide="generalData.scheduledStart">
-                            {{ 'WHEN_INSTANT' | translate }}
+                    <li class="list--simple-element">
+                        <div class="infoblock--container">
+                            <div class="infoblock">
+                                <div ng-show="general.scheduledStart">
+                                    {{ 'WHEN_TIMER' | translate }}<br>
+                                    <h2>{{ countdownFormatter(startMatchTimerValue) }}</h2>
+                                </div>
+                                <div ng-hide="general.scheduledStart">
+                                    {{ 'WHEN_INSTANT' | translate }}
+                                </div>
+                            </div>
+                            <div class="infoblock">
+                                {{ 'NUM_PLAYERS' | translate }}<br>
+                                <h2>{{ aggregated.connectedPlayers }}</h2>
+                            </div>
                         </div>
                     </li>
                     <li class="list--spaced-element"
-                        ng-show="!generalData.scheduledStart && userPlayer.organizer && readyClicked !== true">
-                        <button class="navigation--button flashing-animation"
-                                ng-click="playerReady()">
+                        ng-show="!general.scheduledStart && user.organizer">
+                        <button class="navigation--button flashing-animation" ng-click="playerReady()"
+                                ng-disabled="readyClicked || aggregated.connectedPlayers === 1">
                             {{ 'START' | translate }}
                             <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
                         </button>
-                    </li>
-                    <li class="list--spaced-element">
-                        <div class="playerlist">
-                            <div class="playerlist--header">
-                                {{ 'CONNECTED_PLAYERS' | translate }}
-                            </div>
-                            <div class="playerlist--sub-container" ng-repeat="enemy in connectedEnemies">
-                                <div class="playerlist--line">
-                                    {{enemy.nickname}}
-                                </div>
-                            </div>
-                        </div>
                     </li>
                     <li class="list--simple-element"><h2>{{ 'INVITE_YOUR_FRIENDS' | translate }}</h2></li>
                     <li class="list--spaced-element">
@@ -116,14 +113,14 @@
                     <li class="list--spaced-element">
                         <div class="copyable--container">
                             <div class="copyable" ng-click="copyCode()">
-                                <div class="copyable--big-text">{{generalData.code}}</div>
+                                <div class="copyable--big-text">{{general.code}}</div>
                                 <div class="copyable--copy-text" ng-show="codeCopied">
                                     <i class="far fa-copy copyable--copy-icon"></i> {{ 'COPIED' | translate }}
                                 </div>
                             </div>
 
                             <div class="copyable" ng-click="copyLink()">
-                                <div class="copyable--small-text">{{baseUrl}}/#!?royale={{generalData.code}}
+                                <div class="copyable--small-text">{{ matchUrl }}
                                 </div>
                                 <div class="copyable--copy-text" ng-show="linkCopied">
                                     <i class="far fa-copy copyable--copy-icon"></i> {{ 'COPIED' | translate }}

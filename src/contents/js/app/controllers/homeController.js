@@ -2,10 +2,9 @@
  * Controller Home, il menù principale, dal quale è possibile accedere alle varie sezioni del gioco
  */
 angular.module('codyColor').controller('homeCtrl', ['$scope', 'rabbit', 'navigationHandler', 'audioHandler',
-    '$location', 'sessionHandler', 'scopeService', '$translate', 'authHandler', 'translationHandler',
+    '$location', 'sessionHandler', 'scopeService', '$translate', 'authHandler', 'translationHandler', 'visibilityHandler',
     function ($scope, rabbit, navigationHandler, audioHandler, $location, sessionHandler,
-              scopeService, $translate, authHandler, translationHandler) {
-        console.log("Controller home ready.");
+              scopeService, $translate, authHandler, translationHandler, visibilityHandler) {
 
         // inizializzazione sessione
         navigationHandler.initializeBackBlock($scope);
@@ -13,6 +12,8 @@ angular.module('codyColor').controller('homeCtrl', ['$scope', 'rabbit', 'navigat
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback();
 
         $scope.totalMatches = 0;
         $scope.connectedPlayers = 0;

@@ -58,7 +58,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "css/app.min.css",
-    "revision": "5a1bd525164a8e5a1d02bd3928e0e538"
+    "revision": "d487bcf18e80269ddfc31250cc8bbe2b"
   },
   {
     "url": "favicon.ico",
@@ -210,11 +210,15 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "img/roby-dragging-trasp.png",
-    "revision": "3f37e37ce19fb4075e79513b07b66fd0"
+    "revision": "16370511cfa7bbe94c60cc31b4d096dd"
   },
   {
     "url": "img/roby-idle.png",
     "revision": "b66ae37776e3e5db922f5ee533277892"
+  },
+  {
+    "url": "img/roby-over.png",
+    "revision": "3f37e37ce19fb4075e79513b07b66fd0"
   },
   {
     "url": "img/roby-positioned.png",
@@ -238,19 +242,19 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "js/app/app.min.js",
-    "revision": "9e0be34465a39ae772dee68e09d92099"
+    "revision": "4d802626f29285fa14962e9e817c4ab3"
   },
   {
     "url": "locales/locale-en.json",
-    "revision": "59be2def61ea50edb6fe09b8983fe653"
+    "revision": "f27c727a4692449f50e3cebb82ec55e9"
   },
   {
     "url": "locales/locale-hu.json",
-    "revision": "8694a83c7c1b5ba4293b2dd6831e2d1d"
+    "revision": "9b471f9b498f81e800cb7af09729c100"
   },
   {
     "url": "locales/locale-it.json",
-    "revision": "f458fbef14eef3d48e3f2340208bf60a"
+    "revision": "2402c9d54680e7ba431b9715b349415d"
   },
   {
     "url": "manifest.json",
@@ -262,31 +266,31 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/arcade-aftermatch.html",
-    "revision": "bc34e138e35faa6e4f871e109ca5a1c7"
+    "revision": "d19e1f8ed7d15f3f69ca8e3457ff89e2"
   },
   {
     "url": "pages/arcade-match.html",
-    "revision": "7d134ca09fac348d1d330e6130d1932f"
+    "revision": "496c99cb1af26cb40cf23409759c6719"
   },
   {
     "url": "pages/bootmp-aftermatch.html",
-    "revision": "4e1a713fe11c90454a417f0b9dbab8de"
+    "revision": "644028d9e27d18daec3f346ff7838a66"
   },
   {
     "url": "pages/bootmp-match.html",
-    "revision": "3b4dee10c011600e1e62de92055db268"
+    "revision": "ad463235c39c3e81b1d05fba0c51fdf0"
   },
   {
     "url": "pages/bootmp-mmaking.html",
-    "revision": "6f6a5645c8f566acf500bd10a841cd79"
+    "revision": "fb9b3dce7a0996cb733c5dcf6ba1169d"
   },
   {
     "url": "pages/custom-mmaking.html",
-    "revision": "a0fff58bc35279271b8454cf43e3a7f4"
+    "revision": "ccd5546e1670bee657365eae3b77cf55"
   },
   {
     "url": "pages/custom-new-match.html",
-    "revision": "e463c12d4ba32909d4dc3b058e95ac3c"
+    "revision": "30301350aa49f93f963a69053dca02e2"
   },
   {
     "url": "pages/home.html",
@@ -302,7 +306,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/random-mmaking.html",
-    "revision": "479d9491bc207d053f887912fab91b40"
+    "revision": "148716f0587d22c6204d99089de5e0e4"
   },
   {
     "url": "pages/rankings.html",
@@ -310,15 +314,15 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/royale-aftermatch.html",
-    "revision": "fc769813b333d9bc8b64d776fea48705"
+    "revision": "668b4647cc9202b28a2f559234ed3556"
   },
   {
     "url": "pages/royale-match.html",
-    "revision": "065850a265c663b4e32c02559ee1e9e0"
+    "revision": "0da5e3b48107d94bbee550c6659f72bc"
   },
   {
     "url": "pages/royale-mmaking.html",
-    "revision": "eea61c603d5608ac6f8b9b6893664e81"
+    "revision": "8490e06a2a73837a41ea49b074250c51"
   },
   {
     "url": "pages/royale-new-match.html",

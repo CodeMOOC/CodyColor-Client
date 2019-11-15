@@ -16,64 +16,99 @@ angular.module('codyColor').factory('gameData', function () {
     };
 
 
-    let generateEmptyPlayerMatch = function() {
+    let generateEmptyGameData = function() {
         return {
-            time:          -1,
-            points:        0,
-            pathLength:    0,
-            animationEnded: false,
-            positioned:    false,
-            timerValue:    0,
-            startPosition: {
-                side:     -1,
-                distance: -1
-            },
-            endPosition: {
-                side:     -1,
-                distance: -1
-            },
-        };
-    };
-
-
-    let generateEmptyPlayer = function() {
-        return {
-            nickname:  "Anonymous",
-            points:     0,
-            wonMatches: 0,
-            playerId:  -1,
-            ready:      false,
-            validated:  false,
-            organizer:  false,
-            userPlayer: false,
-            match:      generateEmptyPlayerMatch()
+            general: generateEmptyGeneral(),                // Configurazione iniziale dal server
+            user: generateEmptyUser(),                      // Dati identita' utente, util. per validazione e matchmaking
+            enemy: generateEmptyUser(),                     // avversario 1vs1, se necessario
+            aggregated: generateEmptyAggregated(),          // Dati aggregati in agg. continuo dal server
+            match: generateEmptyMatch(),                    // Dati di lavoro per il match
+            matchRanking: [],                               // podio match - passato dal server a fine part.
+            globalRanking: [],                              // podio global - passato dal server a fine part.
+            userMatchResult: generatePlayerMatchResult(),   // risultati utente: calcolato in locale a fine partita
+            userGlobalResult: generatePlayerGlobalResult(), // risultati utente: calcolato in locale a fine partita
+            enemyMatchResult: generatePlayerMatchResult(),  // risultati avversario: calcolato in locale a fine partita
+            enemyGlobalResult: generatePlayerGlobalResult() // risultati avversario: calcolato in locale a fine partita
         }
     };
 
 
     let generateEmptyGeneral = function() {
         return {
+            // dati generali: settati a inizio partita
             gameName:          undefined,
             startDate:         undefined,
             scheduledStart:    false,
             gameRoomId:       -1,
-            matchCount:        0,
             timerSetting:      30000,
-            bootEnemySetting: -1,
             maxPlayersSetting: 20,
             code:             '0000',
-            tiles:             undefined,
-            gameType:          undefined
+            gameType:         undefined,
+            botSetting:      -1
         }
     };
 
 
-    let generateEmptyGameData = function() {
+    let generateEmptyUser = function() {
         return {
-            general: generateEmptyGeneral(),
-            players: [generateEmptyPlayer()]
+            nickname:  "Anonymous",
+            validated:  false,
+            organizer:  false,
+            playerId:  -1
         }
     };
+
+
+    let generateEmptyAggregated = function() {
+        return {
+            connectedPlayers: 0,
+            positionedPlayers: 0,
+            readyPlayers: 0,
+            matchCount: 0
+        }
+    };
+
+
+    let generateEmptyMatch = function() {
+        return {
+            tiles:      undefined,
+            enemyTime: -1,
+            enemyPositioned: false,
+            time:      -1,
+            positioned: false,
+            winnerId:  -1,
+            startPosition: {
+                side:     -1,
+                distance: -1
+            }
+        };
+    };
+
+
+    let generatePlayerMatchResult = function() {
+        return {
+            nickname: "Anonymous",
+            playerId: -1,
+            time: -1,
+            points: 0,
+            pathLength: 0,
+            startPosition: {
+                side: -1,
+                distance: -1
+            }
+        };
+    };
+
+
+    let generatePlayerGlobalResult = function() {
+        return {
+            nickname: "Anonymous",
+            playerId: -1,
+            wonMatches: 0,
+            points: 0
+        };
+    };
+
 
     /* -------------------------------------------------------------------- *
      * Initializators: metodi per 'pulire' la struttura dati, nel momento
@@ -82,19 +117,14 @@ angular.module('codyColor').factory('gameData', function () {
 
     // pone i dati di gioco al loro valore di default
     gameData.initializeMatchData = function () {
-        if(data.general !== undefined && data.players !== undefined) {
-            data.general.tiles = undefined;
-
-            for (let i = 0; i < data.players.length; i++) {
-                data.players[i].match = generateEmptyPlayerMatch();
-            }
-        }
+        data.match = generateEmptyMatch();
+        data.matchRanking = [];
+        data.globalRanking = [];
     };
 
+
     gameData.initializeGameData = function () {
-        gameData.initializeMatchData();
         data = generateEmptyGameData();
-        data.players[0].userPlayer = true;
     };
 
     gameData.initializeGameData();
@@ -103,113 +133,120 @@ angular.module('codyColor').factory('gameData', function () {
      * Getter-setter:funzioni ausiliarie per accedere ai dati
      * -------------------------------------------------------------------- */
 
-    gameData.addEnemy = function (playerId) {
-        data.players.push(generateEmptyPlayer());
-        data.players[data.players.length - 1].playerId = playerId;
+    gameData.edit = function(modifiedProperties) {
+        $.extend(true, data, modifiedProperties);
     };
 
-
-    gameData.removeEnemy = function(playerId) {
-        let index = getPlayerIndexById(playerId);
-        if(index !== undefined && !data.players[index].userPlayer) {
-            if (data.players[index].match.timer !== undefined)
-                clearInterval(data.players[index].match.timer);
-            data.players.splice(getPlayerIndexById(playerId), 1);
-        }
+    gameData.getData = function () {
+        return data;
     };
 
-
-    gameData.editEnemy1vs1 = function(modifiedProperties) {
-        let enemyIndex = getEnemy1vs1Index();
-        if (enemyIndex !== undefined && data.players[enemyIndex] !== undefined)
-            $.extend(true, data.players[enemyIndex], modifiedProperties);
+    gameData.getUser = function () {
+        return data.user;
     };
 
-
-    gameData.editPlayer = function(modifiedProperties, playerId) {
-        if (playerId !== undefined) {
-            $.extend(true, data.players[getPlayerIndexById(playerId)], modifiedProperties);
-        } else {
-            $.extend(true, data.players[getUserPlayerIndex()], modifiedProperties);
-        }
+    gameData.editUser = function(modifiedProperties) {
+        $.extend(true, data.user, modifiedProperties);
     };
 
-
-    gameData.syncGameData = function(newData) {
-        if (newData.general.tiles !== undefined) {
-            newData.general.tiles = gameData.formatMatchTiles(newData.general.tiles);
-        }
-        $.extend(true, data.general, newData.general);
-
-        for (let i = 0; i < data.players.length; i++) {
-            let localToRemove = true;
-            for (let j = 0; j < newData.players.length; j++) {
-                if (newData.players[j].playerId === data.players[i].playerId) {
-                    $.extend(true, data.players[i], newData.players[j]);
-                    localToRemove = false;
-                    newData.players[j].presentYet = true;
-                }
-            }
-            data.players[i].toRemove = localToRemove;
-        }
-
-        for (let i = 0; i < data.players.length; i++) {
-            if (data.players[i].toRemove !== false) {
-                gameData.removeEnemy(data.players[i].playerId);
-            }
-        }
-
-        for (let i = 0; i < newData.players.length; i++) {
-            if (newData.players[i].presentYet !== true) {
-                gameData.addEnemy(i);
-                $.extend(true, data.players[data.players.length - 1], newData.players[i]);
-            }
-        }
-
-        data.players.sort(function (a, b) {
-            return b.points - a.points;
-        });
+    gameData.getEnemy = function () {
+        return data.enemy;
     };
 
+    gameData.editEnemy = function(modifiedProperties) {
+        $.extend(true, data.enemy, modifiedProperties);
+    };
+
+    gameData.getGeneral = function () {
+        return data.general;
+    };
 
     gameData.editGeneral = function(modifiedProperties) {
         $.extend(true, data.general, modifiedProperties);
     };
 
+    gameData.getAggregated = function () {
+        return data.aggregated;
+    };
 
-    gameData.getEnemies = function () {
-        let enemies = JSON.parse(JSON.stringify(data.players));
-        enemies.splice(getUserPlayerIndex(), 1);
-        return enemies;
+    gameData.editAggregated = function(modifiedProperties) {
+        $.extend(true, data.aggregated, modifiedProperties);
+    };
+
+    gameData.getMatch = function () {
+        return data.match;
+    };
+
+    gameData.editMatch = function(modifiedProperties) {
+        $.extend(true, data.match, modifiedProperties);
+    };
+
+    gameData.getGlobalRanking = function () {
+        return data.globalRanking;
+    };
+
+    gameData.editGlobalRanking = function(modifiedProperties) {
+        $.extend(true, data.globalRanking, modifiedProperties);
+
+        // nei match 1vs1 online, imposta anche le strutture userMatchResult e enemyMatchResult specularmente
+        if (data.general.gameType === gameTypes.random || data.general.gameType === gameTypes.custom) {
+            let userGlobalIndex = data.globalRanking[0].playerId === data.user.playerId ? 0 : 1;
+            let enemyGlobalIndex = userGlobalIndex === 0 ? 1 : 0;
+            $.extend(true, data.userGlobalResult, data.globalRanking[userGlobalIndex]);
+            $.extend(true, data.enemyGlobalResult, data.globalRanking[enemyGlobalIndex]);
+        }
+    };
+
+    gameData.getMatchRanking = function () {
+        return data.matchRanking;
+    };
+
+    gameData.editMatchRanking = function(modifiedProperties) {
+        $.extend(true, data.matchRanking, modifiedProperties);
+
+        // nei match 1vs1 online, imposta anche le strutture userMatchGlobal e enemyMatchGlobal specularmente
+        if (data.general.gameType === gameTypes.random || data.general.gameType === gameTypes.custom) {
+            let userMatchIndex = data.matchRanking[0].playerId === data.user.playerId ? 0 : 1;
+            let enemyMatchIndex = userMatchIndex === 0 ? 1 : 0;
+            $.extend(true, data.userMatchResult, data.matchRanking[userMatchIndex]);
+            $.extend(true, data.enemyMatchResult, data.matchRanking[enemyMatchIndex]);
+        }
     };
 
 
-    gameData.getPlayerById = function(playerId) {
-        return data.players[getPlayerIndexById(playerId)];
+    gameData.getUserGlobalResult = function () {
+        return data.userGlobalResult;
+    };
+
+    gameData.editUserGlobalResult = function(modifiedProperties) {
+        $.extend(true, data.userGlobalResult, modifiedProperties);
     };
 
 
-    gameData.getUserPlayer = function () {
-        return data.players[getUserPlayerIndex()];
+    gameData.getUserMatchResult = function () {
+        return data.userMatchResult;
     };
 
-    gameData.getEnemy1vs1 = function () {
-        if(getEnemy1vs1Index() !== undefined)
-            return data.players[getEnemy1vs1Index()];
-    };
-
-
-    gameData.getAllPlayers = function () {
-        return data.players;
-    };
-
-    gameData.duplicateAllPlayers = function () {
-        return JSON.parse(JSON.stringify(data.players));
+    gameData.editUserMatchResult = function(modifiedProperties) {
+        $.extend(true, data.userMatchResult, modifiedProperties);
     };
 
 
-    gameData.getGeneral = function () {
-        return data.general;
+    gameData.getEnemyGlobalResult = function () {
+        return data.enemyGlobalResult;
+    };
+
+    gameData.editEnemyGlobalResult = function(modifiedProperties) {
+        $.extend(true, data.enemyGlobalResult, modifiedProperties);
+    };
+
+
+    gameData.getEnemyMatchResult = function () {
+        return data.enemyMatchResult;
+    };
+
+    gameData.editEnemyMatchResult = function(modifiedProperties) {
+        $.extend(true, data.enemyMatchResult, modifiedProperties);
     };
 
 
@@ -218,34 +255,23 @@ angular.module('codyColor').factory('gameData', function () {
      * di determinate proprieta'
      * -------------------------------------------------------------------- */
 
-    let getPlayerIndexById = function(playerId) {
-        for (let i = 0; i < data.players.length; i++) {
-            if (data.players[i].playerId === playerId) {
-                return i;
-            }
-        }
-    };
+    gameData.calculateMatchPoints = function(pathLength) {
+        let points = 0;
 
-    let getEnemy1vs1Index = function() {
-        for (let i = 0; i < data.players.length; i++) {
-            if (data.players[i].userPlayer !== true) {
-                return i;
-            }
-        }
-    };
+        // ogni passo vale 2 punti
+        points += pathLength * 2;
 
-    let getUserPlayerIndex = function() {
-        for (let i = 0; i < data.players.length; i++)
-            if (data.players[i].userPlayer === true)
-                return i;
+        return points;
     };
 
 
-    gameData.getGameTypes = function() {
-        return gameTypes;
+    gameData.calculateWinnerBonusPoints = function(time) {
+        // il tempo viene scalato su un massimo di 15 punti
+        return Math.floor(15 * time / data.general.timerSetting);
     };
 
 
+    // funzione per la generazione locale di nuove tiles; utilizzata nel boot camp
     gameData.generateNewMatchTiles = function() {
         let bootTiles = '';
         for (let i = 0; i < 25; i++) {
@@ -281,6 +307,7 @@ angular.module('codyColor').factory('gameData', function () {
         return tiles;
     };
 
+
     // ottiene la notazione 'secondi' : 'centesimi'
     gameData.formatTimeDecimals = function(timerValue) {
         let decimals = Math.floor((timerValue / 10) % 100).toString();
@@ -296,8 +323,23 @@ angular.module('codyColor').factory('gameData', function () {
         }
     };
 
+    // formattazione utilizzata durante il match
+    gameData.formatTimeMatchClock = function(timerValue) {
+        let decimals = Math.floor((timerValue / 100) % 10).toString();
+        let seconds = Math.floor((timerValue / 1000) % 60).toString();
+        let minutes = Math.floor((timerValue / (1000 * 60)) % 60).toString();
 
-    // ottiene la notazione 'minuti' : 'secondi'
+        seconds = (seconds.length < 2) ? "0" + seconds : seconds;
+
+        if (minutes !== '0') {
+            return minutes + '\' ' + seconds + '';
+        } else {
+            return seconds + ':' + decimals;
+        }
+    };
+
+
+    // ottiene la notazione 'minuti' : 'secondi'; utilizzata in mmaking
     gameData.formatTimeSeconds = function(timerValue) {
         let seconds = Math.floor((timerValue % (1000 * 60)) / 1000).toString();
         let minutes = Math.floor((timerValue % (1000 * 60 * 60)) / (1000 * 60)).toString();
@@ -334,56 +376,36 @@ angular.module('codyColor').factory('gameData', function () {
     };
 
 
-    // assegna il punteggio al vincitore
-    gameData.calculateArcadeMatchPoints = function () {
-        let winner = gameData.getMatchWinner();
-
-        if (winner !== undefined) {
-
-            // ogni passo vale 2 punti
-            winner.match.points += winner.match.pathLength * 2;
-
-            // il tempo viene scalato su un massimo di 15 punti
-            let totalTime = gameData.getGeneral().timerSetting;
-            winner.match.points += Math.floor(15 * winner.match.time / totalTime);
-        }
-    };
-
-    gameData.calculateRoyaleMatchPoints = function() {
-        for(let i = 0; i < data.players.length; i++) {
-            // ogni passo vale 2 punti
-            data.players[i].match.points += data.players[i].match.pathLength * 2;
-
-            // il tempo viene scalato su un massimo di 15 punti
-            let totalTime = gameData.getGeneral().timerSetting;
-            data.players[i].match.points += Math.floor(15 * data.players[i].match.time / totalTime);
-        }
-    };
-
-
-    gameData.getPlayersOrderedByMatchResult = function() {
-        let players = gameData.duplicateAllPlayers();
-        players.sort(function (a, b) {
-            if (b.match.pathLength - a.match.pathLength !== 0) {
-                return b.match.pathLength - a.match.pathLength;
-            } else {
-                return b.match.time - a.match.time;
-            }
-        });
-        return players;
-    };
-
-
     // restituisce il vincitore della partita corrente in base
     // nell'ordine a: passi effettuati e tempo impiegato
     gameData.getMatchWinner = function () {
-        let winnerPlayerUnWired = gameData.getPlayersOrderedByMatchResult()[0];
+        if (data.general.gameType === gameTypes.royale) {
+            return data.matchRanking[0];
 
-        for (let i = 0; i < data.players.length; i++) {
-            if(winnerPlayerUnWired.playerId === data.players[i].playerId)
-                return data.players[i];
+        } else if (data.general.botSetting === 0) {
+            return data.userMatchResult;
+
+        } else if (data.userMatchResult.pathLength > data.enemyMatchResult.pathLength) {
+            return data.userMatchResult;
+
+        } else if (data.userMatchResult.pathLength < data.enemyMatchResult.pathLength) {
+            return data.enemyMatchResult;
+
+        } else if (data.userMatchResult.time > data.enemyMatchResult.time) {
+            return data.userMatchResult;
+
+        } else if (data.userMatchResult.time < data.enemyMatchResult.time) {
+            return data.enemyMatchResult;
+
+        } else {
+            return { playerId: -1, nickname: 'Draw!' };
         }
     };
+
+    gameData.getGameTypes = function() {
+        return gameTypes;
+    };
+
 
     return gameData;
 });

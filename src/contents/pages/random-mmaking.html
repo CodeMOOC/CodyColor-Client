@@ -49,7 +49,7 @@
                         <div class="flashing-animation">
                             {{ 'WAITING_NEW_PLAYERS' | translate }}
                             <br>
-                            {{ mmakingTimerText }}
+                            {{ mmakingTimerFormatter(mmakingTimerValue) }}
                         </div>
                     </li>
                     <li class="list--spaced-element">
@@ -62,7 +62,7 @@
             <div id="enemy-found" ng-show="mmakingState === screens.enemyFound" class="page--component">
                 <ul class="list">
                     <li class="list--spaced-element">
-                        {{ 'NEW_ENEMY' | translate : { 'enemyNickname': enemyNickname } }}
+                        {{ 'NEW_ENEMY' | translate : { 'enemyNickname': enemy.nickname } }}
                     </li>
                     <li class="list--simple-element">
                         <button class="navigation--button flashing-animation"

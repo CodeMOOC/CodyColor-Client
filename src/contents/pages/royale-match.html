@@ -8,29 +8,19 @@
 
             <!-- match component -->
             <div id="match-in-progress" ng-show="!countdownInProgress" class="page--component">
-                <!-- Top centered columns with player-enemy data-->
-                <div class="centered-columns">
-                    <div class="centered-columns--pair">
-                        <div class="centered-columns--column-big">
-                           <div class="playerlist-match">
-                               <table class="playerlist-match-table">
-                                   <tr ng-repeat="player in players">
-                                       <td>{{$index + 1}}.</td>
-                                       <td ng-class="player.match.positioned ? 'timer--stop' : 'timer--normal'">
-                                           <i class="far fa-clock"></i>
-                                           {{timerFormatter(player.match.timerValue)}}
-                                       </td>
-                                       <td class="text-align-left">{{player.nickname}}</td>
-                                   </tr>
-                                </table>
-                           </div>
-                        </div>
+                <div class="two-columns">
+                    <div class="two-columns--column-large clock ellipsize" ng-class="clockAnimation">
+                        <i class="far fa-clock"></i> {{ timerFormatter(gameTimerValue) }}
+                    </div>
 
-                        <div class="centered-columns--column-small">
-                            <div class="big-text ellipsize">{{userPlayer.points}}</div>
-                            <div class="ellipsize">{{userPlayer.nickname}}</div>
-                            <div class="ellipsize" ng-class="{'timer--stop-no-margin' : userPlayer.match.positioned}">
-                                {{timerFormatter(userPlayer.match.timerValue)}}</div>
+                    <div class="two-columns--column-small">
+                        <div class="ellipsize">
+                            <i class="fas fa-robot"></i>
+                            {{ 'PLAYERS_COMPOSITE' | translate : { 'numPlayers': aggregated.connectedPlayers} }}
+                        </div>
+                        <div class="ellipsize">
+                            <i class="fas fa-stopwatch"></i>
+                            {{ 'POSITIONED_COMPOSITE' | translate : { 'numPositioned': aggregated.positionedPlayers} }}
                         </div>
                     </div>
                 </div>
@@ -346,64 +336,74 @@
                         </tr>
                     </table>
 
-                    <img id="enemy-roby-00" src="img/{{enemiesRoby[0][0].image}}.png" alt="Roby enemy 00"
+                    <img id="enemy-roby-00" ng-src="img/{{enemiesRoby[0][0].image}}.png" alt="Roby enemy 00"
                          class="roby-automove" ng-show="enemiesRoby[0][0].show"/>
-                    <img id="enemy-roby-01" src="img/{{enemiesRoby[0][1].image}}.png" alt="Roby enemy 01"
+                    <img id="enemy-roby-01" ng-src="img/{{enemiesRoby[0][1].image}}.png" alt="Roby enemy 01"
                          class="roby-automove" ng-show="enemiesRoby[0][1].show"/>
-                    <img id="enemy-roby-02" src="img/{{enemiesRoby[0][2].image}}.png" alt="Roby enemy 02"
+                    <img id="enemy-roby-02" ng-src="img/{{enemiesRoby[0][2].image}}.png" alt="Roby enemy 02"
                          class="roby-automove" ng-show="enemiesRoby[0][2].show"/>
-                    <img id="enemy-roby-03" src="img/{{enemiesRoby[0][3].image}}.png" alt="Roby enemy 03"
+                    <img id="enemy-roby-03" ng-src="img/{{enemiesRoby[0][3].image}}.png" alt="Roby enemy 03"
                          class="roby-automove" ng-show="enemiesRoby[0][3].show"/>
-                    <img id="enemy-roby-04" src="img/{{enemiesRoby[0][4].image}}.png" alt="Roby enemy 04"
+                    <img id="enemy-roby-04" ng-src="img/{{enemiesRoby[0][4].image}}.png" alt="Roby enemy 04"
                          class="roby-automove" ng-show="enemiesRoby[0][4].show"/>
 
-                    <img id="enemy-roby-10" src="img/{{enemiesRoby[1][0].image}}.png" alt="Roby enemy 10"
+                    <img id="enemy-roby-10" ng-src="img/{{enemiesRoby[1][0].image}}.png" alt="Roby enemy 10"
                          class="roby-automove" ng-show="enemiesRoby[1][0].show"/>
-                    <img id="enemy-roby-11" src="img/{{enemiesRoby[1][1].image}}.png" alt="Roby enemy 11"
+                    <img id="enemy-roby-11" ng-src="img/{{enemiesRoby[1][1].image}}.png" alt="Roby enemy 11"
                          class="roby-automove" ng-show="enemiesRoby[1][1].show"/>
-                    <img id="enemy-roby-12" src="img/{{enemiesRoby[1][2].image}}.png" alt="Roby enemy 12"
+                    <img id="enemy-roby-12" ng-src="img/{{enemiesRoby[1][2].image}}.png" alt="Roby enemy 12"
                          class="roby-automove" ng-show="enemiesRoby[1][2].show"/>
-                    <img id="enemy-roby-13" src="img/{{enemiesRoby[1][3].image}}.png" alt="Roby enemy 13"
+                    <img id="enemy-roby-13" ng-src="img/{{enemiesRoby[1][3].image}}.png" alt="Roby enemy 13"
                          class="roby-automove" ng-show="enemiesRoby[1][3].show"/>
-                    <img id="enemy-roby-14" src="img/{{enemiesRoby[1][4].image}}.png" alt="Roby enemy 14"
+                    <img id="enemy-roby-14" ng-src="img/{{enemiesRoby[1][4].image}}.png" alt="Roby enemy 14"
                          class="roby-automove" ng-show="enemiesRoby[1][4].show"/>
 
-                    <img id="enemy-roby-20" src="img/{{enemiesRoby[2][0].image}}.png" alt="Roby enemy 20"
+                    <img id="enemy-roby-20" ng-src="img/{{enemiesRoby[2][0].image}}.png" alt="Roby enemy 20"
                          class="roby-automove" ng-show="enemiesRoby[2][0].show"/>
-                    <img id="enemy-roby-21" src="img/{{enemiesRoby[2][1].image}}.png" alt="Roby enemy 21"
+                    <img id="enemy-roby-21" ng-src="img/{{enemiesRoby[2][1].image}}.png" alt="Roby enemy 21"
                          class="roby-automove" ng-show="enemiesRoby[2][1].show"/>
-                    <img id="enemy-roby-22" src="img/{{enemiesRoby[2][2].image}}.png" alt="Roby enemy 22"
+                    <img id="enemy-roby-22" ng-src="img/{{enemiesRoby[2][2].image}}.png" alt="Roby enemy 22"
                          class="roby-automove" ng-show="enemiesRoby[2][2].show"/>
-                    <img id="enemy-roby-23" src="img/{{enemiesRoby[2][3].image}}.png" alt="Roby enemy 23"
+                    <img id="enemy-roby-23" ng-src="img/{{enemiesRoby[2][3].image}}.png" alt="Roby enemy 23"
                          class="roby-automove" ng-show="enemiesRoby[2][3].show"/>
-                    <img id="enemy-roby-24" src="img/{{enemiesRoby[2][4].image}}.png" alt="Roby enemy 24"
+                    <img id="enemy-roby-24" ng-src="img/{{enemiesRoby[2][4].image}}.png" alt="Roby enemy 24"
                          class="roby-automove" ng-show="enemiesRoby[2][4].show"/>
 
-                    <img id="enemy-roby-30" src="img/{{enemiesRoby[3][0].image}}.png" alt="Roby enemy 30"
+                    <img id="enemy-roby-30" ng-src="img/{{enemiesRoby[3][0].image}}.png" alt="Roby enemy 30"
                          class="roby-automove" ng-show="enemiesRoby[3][0].show"/>
-                    <img id="enemy-roby-31" src="img/{{enemiesRoby[3][1].image}}.png" alt="Roby enemy 31"
+                    <img id="enemy-roby-31" ng-src="img/{{enemiesRoby[3][1].image}}.png" alt="Roby enemy 31"
                          class="roby-automove" ng-show="enemiesRoby[3][1].show"/>
-                    <img id="enemy-roby-32" src="img/{{enemiesRoby[3][2].image}}.png" alt="Roby enemy 32"
+                    <img id="enemy-roby-32" ng-src="img/{{enemiesRoby[3][2].image}}.png" alt="Roby enemy 32"
                          class="roby-automove" ng-show="enemiesRoby[3][2].show"/>
-                    <img id="enemy-roby-33" src="img/{{enemiesRoby[3][3].image}}.png" alt="Roby enemy 33"
+                    <img id="enemy-roby-33" ng-src="img/{{enemiesRoby[3][3].image}}.png" alt="Roby enemy 33"
                          class="roby-automove" ng-show="enemiesRoby[3][3].show"/>
-                    <img id="enemy-roby-34" src="img/{{enemiesRoby[3][4].image}}.png" alt="Roby enemy 34"
+                    <img id="enemy-roby-34" ng-src="img/{{enemiesRoby[3][4].image}}.png" alt="Roby enemy 34"
                          class="roby-automove" ng-show="enemiesRoby[3][4].show"/>
 
                     <!-- Player roby in automatic movement-->
-                    <img id="player-roby" src="img/{{playerRoby.image}}.png" alt="Roby"
+                    <img id="player-roby" ng-src="img/{{playerRoby.image}}.png" alt="Roby"
                          class="roby-automove" ng-show="playerRoby.show"/>
                 </div>
 
                 <!-- Draggable player roby image -->
-                <img src="img/{{draggableRobyImage}}.png" alt="Draggable roby" ng-show="showDraggableRoby"
+                <img ng-src="img/{{draggableRobyImage}}.png" alt="Draggable roby" ng-show="showDraggableRoby"
                      ng-class="showCompleteGrid ? 'roby-draggable' : 'roby-draggable floating-up-animation'"
                      data-drag="{{showDraggableRoby}}" data-jqyoui-options="{revert: 'invalid'}"
                      jqyoui-draggable="{ animate:true, onStart:'startDragging', onStop:'endDragging' }"/>
 
+                <div class="centered-container" ng-show="match.positioned && match.time > 0">
+                    <i class="fas fa-stopwatch"></i>
+                    {{ 'TIME_PLAYER' | translate : { 'time': finalTimeFormatter(match.time) } }}
+                </div>
+
+                <div class="centered-container" ng-show="match.positioned && match.time === 0">
+                    <i class="fas fa-stopwatch"></i>
+                    {{ 'TIME_OUT' | translate }}
+                </div>
+
                 <!-- Skip button -->
                 <div class="centered-container" ng-show="startAnimation && !askedForSkip">
-                    <button class="navigation--button flashing-animation" ng-click="skip()">Skip
+                    <button class="navigation--button flashing-animation" ng-click="skip()">{{ 'SKIP' | translate }}
                         <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
                     </button>
                 </div>

@@ -3,10 +3,12 @@
  */
 angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit', 'navigationHandler',
     'scopeService', '$translate', 'translationHandler', 'audioHandler', '$location', 'sessionHandler', 'gameData',
-    'authHandler',
+    'authHandler', 'visibilityHandler',
     function ($scope, rabbit, navigationHandler, scopeService, $translate, translationHandler,
-              audioHandler, $location, sessionHandler, gameData, authHandler) {
-        console.log("New match royale controller ready.");
+              audioHandler, $location, sessionHandler, gameData, authHandler, visibilityHandler) {
+
+        gameData.getGeneral().gameType = gameData.getGameTypes().royale;
+
 
         let quitGame = function () {
             rabbit.quitGame();
@@ -21,6 +23,14 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
             return;
         }
 
+        visibilityHandler.setDeadlineCallback(function() {
+            quitGame();
+            scopeService.safeApply($scope, function () {
+                translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
+                $scope.forceExitModal = true;
+            });
+        });
+
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {
             $scope.userNickname = authHandler.getServerUserData().nickname;
@@ -28,6 +38,11 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
         } else {
             translationHandler.setTranslation($scope, 'userNickname', 'NOT_LOGGED');
         }
+
+        // inizializza data e ora
+        let now = new Date();
+        $scope.hours = now.getHours();
+        $scope.minutes = now.getMinutes();
 
         // timer setting selector
         $scope.currentTimerIndex = 1;
@@ -47,7 +62,7 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
             else
                 $scope.currentTimerIndex = ($scope.currentTimerIndex > 0 ? $scope.currentTimerIndex - 1 : 0);
 
-            gameData.getGeneral().timerSetting = $scope.timerSettings[$scope.currentTimerIndex].value;
+            gameData.editGeneral({ timerSetting: $scope.timerSettings[$scope.currentTimerIndex].value });
         };
 
         // maxPlayers setting selector
@@ -68,7 +83,7 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
             else
                 $scope.currentMaxPlayersIndex = ($scope.currentMaxPlayersIndex > 0 ? $scope.currentMaxPlayersIndex - 1 : 0);
 
-            gameData.getGeneral().maxPlayersSetting = $scope.maxPlayersSettings[$scope.currentMaxPlayersIndex].value;
+            gameData.editGeneral({ maxPlayersSetting: $scope.maxPlayersSettings[$scope.currentMaxPlayersIndex].value });
         };
 
         // start mode selector
@@ -110,9 +125,14 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
                     return;
                 }
             }
-            gameData.getGeneral().gameName = $scope.gameName;
-            gameData.getUserPlayer().nickname = $scope.nickname;
-            gameData.getUserPlayer().organizer = true;
+            gameData.editGeneral({
+                gameName: $scope.gameName,
+                code: '0000'
+            });
+            gameData.editUser({
+                nickname: $scope.nickname,
+                organizer: true
+            });
             navigationHandler.goToPage($location, '/royale-mmaking');
         };
 

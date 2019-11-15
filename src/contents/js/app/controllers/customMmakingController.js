@@ -3,12 +3,13 @@
  */
 angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit', 'navigationHandler', '$translate',
     'translationHandler', 'authHandler', 'audioHandler', '$location', 'sessionHandler', 'gameData', 'scopeService',
-    'chatHandler', 'settings',
+    'chatHandler', 'settings', 'visibilityHandler', 'shareHandler',
     function ($scope, rabbit, navigationHandler, $translate, translationHandler, authHandler,
               audioHandler, $location, sessionHandler, gameData, scopeService,
-              chatHandler, settings) {
-        console.log("New match custom controller ready.");
+              chatHandler, settings, visibilityHandler, shareHandler) {
+
         gameData.getGeneral().gameType = gameData.getGameTypes().custom;
+
 
         let quitGame = function() {
             rabbit.quitGame();
@@ -23,6 +24,15 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback(function() {
+            rabbit.sendPlayerQuitRequest();
+            quitGame();
+            scopeService.safeApply($scope, function () {
+                translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
+                $scope.forceExitModal = true;
+            });
+        });
 
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {
@@ -66,9 +76,12 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
 
         changeScreen(screens.joinMatch);
 
-        $scope.generalData = gameData.getGeneral();
-        $scope.userPlayer = gameData.getUserPlayer();
+        $scope.general = gameData.getGeneral();
+        $scope.user = gameData.getUser();
+        $scope.enemy = gameData.getEnemy();
         $scope.baseUrl = settings.webBaseUrl;
+        $scope.matchUrl = settings.webBaseUrl;
+        $scope.enemyReady = false;
 
         // tenta la connessione, se necessario
         $scope.connected = rabbit.getBrokerConnectionState();
@@ -78,7 +91,7 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
             requiredDelayedGameRequest = true;
         } else {
             // connessione già pronta: richiedi i dati della battle al server
-            if (gameData.getGeneral().code !== '0000' || gameData.getUserPlayer().organizer) {
+            if (gameData.getGeneral().code !== '0000' || gameData.getUser().organizer) {
                 rabbit.sendGameRequest();
                 translationHandler.setTranslation($scope, 'joinMessage', 'SEARCH_MATCH_INFO');
             }
@@ -86,86 +99,97 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
 
         rabbit.setPageCallbacks({
             onConnected: function () {
-                if (requiredDelayedGameRequest) {
-                    if (gameData.getGeneral().code !== '0000' || gameData.getUserPlayer().organizer) {
-                        rabbit.sendGameRequest();
-                        scopeService.safeApply($scope, function () {
+                scopeService.safeApply($scope, function () {
+                    if (requiredDelayedGameRequest) {
+                        if (gameData.getGeneral().code !== '0000' || gameData.getUser().organizer) {
+                            rabbit.sendGameRequest();
                             translationHandler.setTranslation($scope, 'joinMessage', 'SEARCH_MATCH_INFO');
-                        });
+                        }
+                        requiredDelayedGameRequest = false;
                     }
-                    requiredDelayedGameRequest = false;
-                }
+                });
 
-            }, onGeneralInfoMessage: function(message) {
-                if (!sessionHandler.isClientVersionValid()) {
-                    quitGame();
-                    scopeService.safeApply($scope, function () {
+            }, onGeneralInfoMessage: function() {
+                scopeService.safeApply($scope, function () {
+                    if (!sessionHandler.isClientVersionValid()) {
+                        quitGame();
                         translationHandler.setTranslation($scope, 'forceExitText', 'OUTDATED_VERSION_DESC');
                         $scope.forceExitModal = true;
-                    });
-                }
+                    }
+                });
 
             }, onGameRequestResponse: function (message) {
-                if (message.code.toString() === '0000') {
-                    scopeService.safeApply($scope, function () {
+                scopeService.safeApply($scope, function () {
+                    if (message.code.toString() === '0000') {
+                        $scope.mmakingRequested = false;
                         translationHandler.setTranslation($scope, 'joinMessage', 'CODE_NOT_VALID');
+                        gameData.editGeneral({code: '0000'});
 
-                    });
-                } else {
-                    gameData.getGeneral().gameRoomId = message.gameRoomId;
-                    gameData.getUserPlayer().playerId = message.playerId;
-                    gameData.syncGameData(message.gameData);
-                    rabbit.subscribeGameRoom();
+                    } else {
+                        gameData.editGeneral(message.general);
+                        gameData.editUser(message.user);
+                        gameData.editEnemy(message.enemy);
+                        $scope.matchUrl = settings.webBaseUrl + '/#!?custom=' + message.general.code;
 
-                    scopeService.safeApply($scope, function () {
-                        translationHandler.setTranslation($scope, 'totTime',
-                            gameData.formatTimeStatic(gameData.getGeneral().timerSetting));
-                    });
+                        rabbit.subscribeGameRoom();
 
-                    if (gameData.getUserPlayer().organizer)
-                        changeScreen(screens.waitingEnemy);
-                    else {
-                        changeScreen(screens.nicknameSelection);
-                        $scope.enemyPlayer = gameData.getEnemy1vs1();
+                        // testo che mostra la durata di ogni match
+                        let formattedTranslateCode = gameData.formatTimeStatic(gameData.getGeneral().timerSetting);
+                        translationHandler.setTranslation($scope, 'totTime', formattedTranslateCode);
+
+                        if (gameData.getUser().validated) {
+                            changeScreen(screens.waitingEnemy);
+                        } else {
+                            changeScreen(screens.nicknameSelection);
+                        }
                     }
-                }
-
+                });
 
             }, onPlayerAdded: function(message) {
-                audioHandler.playSound('enemy-found');
                 scopeService.safeApply($scope, function () {
-                    gameData.syncGameData(message.gameData);
-                    $scope.enemyPlayer = gameData.getEnemy1vs1();
+                    if (message.addedPlayerId === gameData.getUser().playerId) {
+                        if (gameData.getUser().validated === false) {
+                            changeScreen(screens.enemyFound);
+                        }
+
+                        gameData.editUser(message.addedPlayer);
+
+                    } else {
+                        audioHandler.playSound('enemy-found');
+                        gameData.editEnemy(message.addedPlayer);
+                        changeScreen(screens.enemyFound);
+                    }
                 });
-                changeScreen(screens.enemyFound);
 
             }, onReadyMessage: function () {
-                gameData.getEnemy1vs1().ready = true;
+                scopeService.safeApply($scope, function () {
+                    $scope.enemyReady = true;
+                })
 
             }, onStartMatch: function (message) {
-                gameData.syncGameData(message.gameData);
                 scopeService.safeApply($scope, function () {
+                    gameData.editMatch({ tiles: gameData.formatMatchTiles(message.tiles) });
                     navigationHandler.goToPage($location, '/arcade-match');
                 });
 
-            },onGameQuit: function () {
-                quitGame();
+            }, onGameQuit: function () {
                 scopeService.safeApply($scope, function () {
+                    quitGame();
                     translationHandler.setTranslation($scope,'forceExitText', 'ENEMY_LEFT');
                     $scope.forceExitModal = true;
                 });
 
             }, onConnectionLost: function () {
-                quitGame();
                 scopeService.safeApply($scope, function () {
+                    quitGame();
                     translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
                     $scope.forceExitModal = true;
                 });
 
             }, onChatMessage: function (message) {
-                audioHandler.playSound('roby-over');
-                chatHandler.enqueueChatMessage(message);
                 scopeService.safeApply($scope, function () {
+                    audioHandler.playSound('roby-over');
+                    chatHandler.enqueueChatMessage(message);
                     $scope.chatBubbles = chatHandler.getChatMessages();
                 });
             }
@@ -175,7 +199,7 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
         $scope.chatVisible = false;
         $scope.chatBubbles = chatHandler.getChatMessages();
         $scope.getBubbleStyle = function(chatMessage) {
-            if (chatMessage.playerId === gameData.getUserPlayer().playerId)
+            if (chatMessage.playerId === gameData.getUser().playerId)
                 return 'chat--bubble-player';
             else
                 return 'chat--bubble-enemy';
@@ -203,60 +227,42 @@ angular.module('codyColor').controller('customMmakingCtrl', ['$scope', 'rabbit',
             }, function (translationId) {
                 $scope.joinMessage = translationId;
             });
-            gameData.editGeneral({code: codeValue});
+            gameData.editGeneral({ code: codeValue });
             rabbit.sendGameRequest();
         };
 
         // click su 'iniziamo' dall'inserimento nickname
+        $scope.readyClicked = false;
         $scope.playerReady = function() {
             $scope.readyClicked = true;
-            gameData.getUserPlayer().ready = true;
-
-            if (gameData.getEnemy1vs1().ready === false)
-                changeScreen(screens.waitingReady);
-
             rabbit.sendReadyMessage();
-        };
 
+            if (!$scope.enemyReady)
+                changeScreen(screens.waitingReady);
+        };
 
         $scope.validPlayer = function() {
             $scope.playerValidated = true;
-            gameData.getUserPlayer().nickname = $scope.nickname;
-            changeScreen(screens.enemyFound);
+            gameData.editUser({ nickname: $scope.nickname });
             rabbit.sendValidationMessage();
             sessionHandler.enableNoSleep();
+            audioHandler.splashStartBase();
         };
 
         $scope.linkCopied = false;
         $scope.codeCopied = false;
         $scope.copyLink = function () {
             audioHandler.playSound('menu-click');
-            copyStringToClipboard(settings.webBaseUrl + '/#!?custom=' + gameData.getGeneral().code);
+            shareHandler.copyTextToClipboard($scope.matchUrl);
             $scope.linkCopied = true;
             $scope.codeCopied = false;
         };
+
         $scope.copyCode = function () {
             audioHandler.playSound('menu-click');
-            copyStringToClipboard(gameData.getGeneral().code);
+            shareHandler.copyTextToClipboard(gameData.getGeneral().code);
             $scope.linkCopied = false;
             $scope.codeCopied = true;
-        };
-
-        let copyStringToClipboard = function (text) {
-            // Create new element
-            let el = document.createElement('textarea');
-            // Set value (string to be copied)
-            el.value = text;
-            // Set non-editable to avoid focus and move outside of view
-            el.setAttribute('readonly', '');
-            el.style = { position: 'absolute', left: '-9999px' };
-            document.body.appendChild(el);
-            // Select text inside element
-            el.select();
-            // Copy text to clipboard
-            document.execCommand('copy');
-            // Remove temporary element
-            document.body.removeChild(el);
         };
 
         // termina la partita alla pressione sul tasto corrispondente

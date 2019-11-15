@@ -3,10 +3,9 @@
  */
 angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', 'gameData', 'scopeService',
     'pathHandler', '$location', '$translate', 'chatHandler', 'navigationHandler', 'audioHandler', 'sessionHandler',
-    'translationHandler', 'authHandler',
+    'translationHandler', 'authHandler', 'visibilityHandler',
     function ($scope, rabbit, gameData, scopeService, pathHandler, $location, $translate, chatHandler,
-              navigationHandler, audioHandler, sessionHandler, translationHandler, authHandler) {
-        console.log("Controller match ready.");
+              navigationHandler, audioHandler, sessionHandler, translationHandler, authHandler, visibilityHandler) {
 
         let startCountdownTimer;
         let gameTimer;
@@ -38,6 +37,15 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
             return;
         }
 
+        visibilityHandler.setDeadlineCallback(function() {
+            rabbit.sendPlayerQuitRequest();
+            quitGame();
+            scopeService.safeApply($scope, function () {
+                translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
+                $scope.forceExitModal = true;
+            });
+        });
+
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {
             $scope.userNickname = authHandler.getServerUserData().nickname;
@@ -45,24 +53,22 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
             translationHandler.setTranslation($scope, 'userNickname', 'NOT_LOGGED');
         }
 
-        gameData.getAllPlayers().sort(function (a, b) {
-            return b.points - a.points;
-        });
 
         // inizializzazione componenti generali interfaccia
+        $scope.gameTimerValue = gameData.getGeneral().timerSetting;
+        let nextGameTimerValue = gameData.getGeneral().timerSetting;
+
         $scope.showDraggableRoby = true;
         pathHandler.initialize($scope);
-        $scope.players = gameData.getAllPlayers();
-        $scope.userPlayer = gameData.getUserPlayer();
-        $scope.timerFormatter = gameData.formatTimeDecimals;
+        $scope.general = gameData.getGeneral();
+        $scope.aggregated = gameData.getAggregated();
+        $scope.user = gameData.getUser();
+        $scope.match = gameData.getMatch();
+        $scope.timerFormatter = gameData.formatTimeMatchClock;
+        $scope.finalTimeFormatter = gameData.formatTimeDecimals;
         $scope.playerRoby = pathHandler.getPlayerRoby();
         $scope.enemiesRoby = pathHandler.getEnemiesRoby();
-
-        for (let i = 0; i < gameData.getAllPlayers().length; i++) {
-            gameData.editPlayer({
-                match: { timerValue: gameData.getGeneral().timerSetting  }
-            }, gameData.getAllPlayers()[i].playerId);
-        }
+        $scope.clockAnimation = "";
 
         // inizializzazione start positions
         let setArrowCss = function (side, distance, over) {
@@ -114,7 +120,7 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
         for (let x = 0; x < 5; x++) {
             $scope.tilesCss[x] = new Array(5);
             for (let y = 0; y < 5; y++) {
-                switch (gameData.getGeneral().tiles[x][y]) {
+                switch (gameData.getMatch().tiles[x][y]) {
                     case 'Y':
                         $scope.tilesCss[x][y] = 'playground--tile-yellow';
                         break;
@@ -133,88 +139,93 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
         $scope.startCountdownText = startCountdownValue.toString();
         $scope.countdownInProgress = true;
         startCountdownTimer = setInterval(function () {
-            startCountdownValue--;
-            if (startCountdownValue > 0) {
-                audioHandler.playSound('countdown');
-                scopeService.safeApply($scope, function () {
+            scopeService.safeApply($scope, function () {
+                startCountdownValue--;
+                if (startCountdownValue > 0) {
+                    audioHandler.playSound('countdown');
                     $scope.startCountdownText = startCountdownValue.toString();
-                });
 
-            } else if (startCountdownValue === 0) {
-                audioHandler.playSound('start');
-                scopeService.safeApply($scope, function () {
+                } else if (startCountdownValue === 0) {
+                    audioHandler.playSound('start');
                     $scope.startCountdownText = "Let's Cody!";
-                });
 
-            } else {
-                // interrompi countdown e mostra schermata di gioco
-                clearInterval(startCountdownTimer);
-                startCountdownTimer = undefined;
-
-                scopeService.safeApply($scope, function () {
+                } else {
+                    // interrompi countdown e mostra schermata di gioco
+                    clearInterval(startCountdownTimer);
+                    startCountdownTimer = undefined;
                     $scope.countdownInProgress = false;
-                });
-
-                startMatchTimers();
-            }
+                    startMatchTimer();
+                }
+            });
         }, 1000);
 
         // avvia i timer per visualizzare tempo rimanente di giocatore e avversario; questo timer non utilizza
         // direttamente la funzione setInterval(), ma implementa un procedimento per evitare l'interruzione del tempo
         // a tab inattivo
-        let startMatchTimers = function () {
-            let gameTimerValue = gameData.getGeneral().timerSetting;
+        let startMatchTimer = function () {
             let interval = 10; // ms
             let expected = Date.now() + interval;
             gameTimer = setTimeout(step, interval);
 
             function step() {
-                let drift = Date.now() - expected;
-                if (drift > interval) {
-                    console.log("Timer lagged!")
-                }
-
-                gameTimerValue -= (interval + drift);
-                let finish = gameTimerValue <= 0 || allPositioned();
-
                 scopeService.safeApply($scope, function () {
-                    for (let i = 0; i < gameData.getAllPlayers().length; i++) {
-                        let currentPlayer = gameData.getAllPlayers()[i];
-                        if (currentPlayer.match.time === -1) {
-                            currentPlayer.match.timerValue = gameTimerValue;
+                    let drift = Date.now() - expected;
+                    if (drift > interval) {
+                        console.log("Timer lagged!")
+                    }
+                    nextGameTimerValue -= (interval + drift);
 
-                            if (finish) {
-                                currentPlayer.match.positioned = true;
-                                currentPlayer.match.timerValue = 0;
-                                currentPlayer.match.time = 0;
+                    if (nextGameTimerValue > 0) {
+                        // condizione di decremento ordinario
 
-                                if (currentPlayer.userPlayer) {
-                                    $scope.showCompleteGrid = true;
-                                    $scope.showArrows = false;
-                                    $scope.showDraggableRoby = false;
-                                    calculateAllStartPositionCss(false);
-                                    rabbit.sendPlayerPositionedMessage();
-                                }
-                            }
+                        // animazione degli ultimi 10 secondi
+                        if (nextGameTimerValue < 10000)
+                            $scope.clockAnimation = "clock-ending-animation";
+
+                        // fai avanzare il timer
+                        $scope.gameTimerValue = nextGameTimerValue;
+
+                        // schedula nuovo decremento se necessario
+                        if (!$scope.startAnimation) {
+                            expected = Date.now() + interval;
+                            gameTimer = setTimeout(step, interval); // take into account drift
+                        } else {
+                            nextGameTimerValue = 0;
+                        }
+
+                    } else {
+                        // fine del tempo
+
+                        // invia un segnale di posizionato, se necessario
+                        if (!gameData.getMatch().positioned) {
+                            gameData.editMatch({
+                                positioned: true,
+                                time: 0,
+                                startPosition: {side: -1, distance: -1}
+                            });
+
+                            gameData.editUserMatchResult({
+                                nickname: gameData.getUser().nickname,
+                                playerId: gameData.getUser().playerId,
+                                time: 0,
+                                pathLength: 0,
+                                startPosition: {side: -1, distance: -1},
+                                points: 0
+                            });
+
+                            gameData.editAggregated({
+                                positionedPlayers: gameData.getAggregated().positionedPlayers + 1
+                            });
+
+                            $scope.showCompleteGrid = true;
+                            $scope.showArrows = false;
+                            $scope.showDraggableRoby = false;
+                            calculateAllStartPositionCss(false);
+                            rabbit.sendPlayerPositionedMessage();
                         }
                     }
                 });
-
-                if (!finish) {
-                    expected = Date.now() + interval;
-                    gameTimer = setTimeout(step, interval); // take into account drift
-                }
             }
-        };
-
-        let allPositioned = function () {
-            let allPositioned = true;
-            for (let i = 0; i < gameData.getAllPlayers().length; i++) {
-                if (gameData.getAllPlayers()[i].match.positioned !== true) {
-                    allPositioned = false;
-                }
-            }
-            return allPositioned;
         };
 
         // inizializzazione draggable roby
@@ -226,9 +237,8 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
         // quando roby viene trascinato, viene mostrata la griglia completa (con le posizioni di partenza), e
         // modificata l'immagine di roby
         $scope.startDragging = function () {
-            console.log("Start dragging");
-            audioHandler.playSound('roby-drag');
             scopeService.safeApply($scope, function () {
+                audioHandler.playSound('roby-drag');
                 $scope.showCompleteGrid = true;
                 $scope.draggableRobyImage = 'roby-dragging-trasp';
                 $scope.showArrows = true;
@@ -238,8 +248,9 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
 
         // invocato quando roby viene posizionato, ma non rilasciato, sopra una posizione di partenza valida
         $scope.robyOver = function (event, ui, side, distance) {
-            audioHandler.playSound('roby-over');
             scopeService.safeApply($scope, function () {
+                audioHandler.playSound('roby-over');
+                $scope.draggableRobyImage = 'roby-over';
                 setArrowCss(side, distance, true);
             });
         };
@@ -247,124 +258,140 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
         // invocato quando roby viene spostato da una posizione di partenza valida
         $scope.robyOut = function (event, ui, side, distance) {
             scopeService.safeApply($scope, function () {
+                $scope.draggableRobyImage = 'roby-dragging-trasp';
                 setArrowCss(side, distance, false);
             });
         };
 
         // quando roby viene rilasciato, ritorna nella posizione iniziale...
         $scope.endDragging = function () {
-            console.log("End dragging");
-            audioHandler.playSound('roby-drop');
-            if (!$scope.startAnimation) {
-                scopeService.safeApply($scope, function () {
+            scopeService.safeApply($scope, function () {
+                audioHandler.playSound('roby-drop');
+                if (!$scope.startAnimation) {
                     $scope.showArrows = false;
                     $scope.showCompleteGrid = false;
                     $scope.draggableRobyImage = 'roby-idle';
                     calculateAllStartPositionCss(false);
-                });
-            }
+                }
+            });
         };
 
         //...a meno che, non venga rilasciato in una posizione valida. In quel caso, viene utilizzata un secondo tag
         // img, per mostrare roby nella sua posizione di partenza. Viene inoltre fermato il timer, e notificato
         // l'avversario dell'avvenuta presa di posizione
         $scope.robyDropped = function (event, ui, sideValue, distanceValue) {
-            console.log("Roby dropped");
-            audioHandler.playSound('roby-positioned');
-            $scope.showCompleteGrid = true;
-            if (!$scope.startAnimation) {
-                scopeService.safeApply($scope, function () {
-                    gameData.editPlayer({
-                        match: {
-                            startPosition: {side: sideValue, distance: distanceValue},
-                            time: gameData.getUserPlayer().match.timerValue,
-                            positioned: true
-                        }
+            scopeService.safeApply($scope, function () {
+                audioHandler.playSound('roby-positioned');
+                $scope.showDraggableRoby = false;
+                $scope.showCompleteGrid = true;
+
+                if (!$scope.startAnimation) {
+                    // aggiorna i risultati match dell'utente
+                    gameData.editMatch({
+                        positioned: true,
+                        time: nextGameTimerValue,
+                        startPosition: {side: sideValue, distance: distanceValue},
                     });
-                    $scope.showDraggableRoby = false;
-                });
-                pathHandler.positionRoby(true, gameData.getUserPlayer().match.startPosition);
-                rabbit.sendPlayerPositionedMessage();
-            }
+
+                    let userPath = pathHandler.positionRoby(true, gameData.getMatch().startPosition);
+                    gameData.editUserMatchResult({
+                        nickname: gameData.getUser().nickname,
+                        playerId: gameData.getUser().playerId,
+                        time: gameData.getMatch().time,
+                        pathLength: userPath.pathLength,
+                        startPosition: gameData.getMatch().startPosition,
+                        points: gameData.calculateMatchPoints(userPath.pathLength, gameData.getMatch().time)
+                    });
+
+                    gameData.editAggregated({
+                        positionedPlayers: gameData.getAggregated().positionedPlayers + 1
+                    });
+
+                    rabbit.sendPlayerPositionedMessage();
+                }
+            });
         };
 
         // callback passati alla classe responsabile della comunicazione con il broker.
         // Invocati all'arrivo di nuovi messaggi
         rabbit.setPageCallbacks({
-            onEnemyPositioned: function (message) {
+            onEnemyPositioned: function () {
                 scopeService.safeApply($scope, function () {
-                    gameData.getPlayerById(message.playerId).match.timerValue = message.matchTime;
-                    gameData.getPlayerById(message.playerId).match.time = message.matchTime;
-                    gameData.getPlayerById(message.playerId).match.positioned = true;
+                    gameData.editAggregated({
+                        positionedPlayers: gameData.getAggregated().positionedPlayers + 1
+                    });
                 });
 
             }, onPlayerRemoved: function (message) {
-                if (message.removedPlayerId === gameData.getUserPlayer().playerId) {
-                    quitGame();
-                    scopeService.safeApply($scope, function () {
+                scopeService.safeApply($scope, function () {
+                    if (message.removedPlayerId === gameData.getUser().playerId) {
+                        quitGame();
                         translationHandler.setTranslation($scope, 'forceExitText', 'ENEMY_LEFT');
                         $scope.forceExitModal = true;
-                    });
 
-                } else {
-                    scopeService.safeApply($scope, function () {
-                        gameData.syncGameData(message.gameData);
-                    });
-                }
-
+                    } else {
+                        gameData.editAggregated(message.aggregated);
+                    }
+                });
             }, onGameQuit: function () {
-                quitGame();
                 scopeService.safeApply($scope, function () {
+                    quitGame();
                     translationHandler.setTranslation($scope,'forceExitText', 'ENEMY_LEFT');
                     $scope.forceExitModal = true;
                 });
 
             }, onConnectionLost: function () {
-                quitGame();
                 scopeService.safeApply($scope, function () {
+                    quitGame();
                     translationHandler.setTranslation($scope, 'forceExitText', 'FORCE_EXIT');
                     $scope.forceExitModal = true;
                 });
 
             }, onStartAnimation: function (message) {
-                gameData.syncGameData(message.gameData);
-                startAnimation();
-
-            }, onEndMatch: function (message) {
-                gameData.syncGameData(message.gameData);
-                pathHandler.quitGame();
-                if ($scope.forceExitModal !== true) {
-                    scopeService.safeApply($scope, function () {
-                        navigationHandler.goToPage($location, '/royale-aftermatch');
-                    });
-                }
-            }
-        });
-
-        // cosa fare una volta terminata senza intoppi la partita; mostra la schermata aftermatch
-        let startAnimation = function () {
-            if (!$scope.startAnimation) {
-                for (let i = 0; i < gameData.getEnemies().length; i++){
-                    pathHandler.positionRoby(false, gameData.getEnemies()[i].match.startPosition);
-                }
-
                 scopeService.safeApply($scope, function () {
                     $scope.startAnimation = true;
+                    $scope.clockAnimation = "clock--end";
+                    gameData.editAggregated(message.aggregated);
+
+                    // posiziona tutti gli enemy roby
+                    pathHandler.positionAllEnemies(message.startPositions);
+
+                    // avvia le animazioni; al termine, invia il messaggio di endAnimation
+                    pathHandler.animateActiveRobys(function () {
+                        if ($scope.askedForSkip !== true) {
+                            rabbit.sendEndAnimationMessage();
+                        }
+                    });
                 });
 
-                pathHandler.calculateAllPlayersPath();
-                gameData.calculateRoyaleMatchPoints();
+            }, onEndMatch: function (message) {
+                scopeService.safeApply($scope, function () {
+                    gameData.editAggregated(message.aggregated);
+                    gameData.editMatch({ winnerId: message.winnerId });
+                    gameData.editMatchRanking(message.matchRanking);
+                    gameData.editGlobalRanking(message.globalRanking);
 
-                pathHandler.animateActiveRobys(function () {
-                     if ($scope.askedForSkip !== true) {
-                         // ricalcola path (in caso di abbandono di avversari)
-                         pathHandler.calculateAllPlayersPath();
-                         gameData.calculateRoyaleMatchPoints();
-                         rabbit.sendEndAnimationMessage();
-                     }
+                    // aggiorna i risultati dell'utente
+                    if (gameData.getMatch().winnerId === gameData.getUser().playerId) {
+                        gameData.editUserMatchResult( {
+                            points: gameData.getUserMatchResult().points
+                                + gameData.calculateWinnerBonusPoints(gameData.getUserMatchResult().time)
+                        })
+                    }
+
+                    gameData.editUserGlobalResult({
+                        nickname: gameData.getUser().nickname,
+                        playerId: gameData.getUser().playerId,
+                        points: gameData.getUserGlobalResult().points + gameData.getUserMatchResult().points
+                    });
+
+                    pathHandler.quitGame();
+                    if ($scope.forceExitModal !== true) {
+                        navigationHandler.goToPage($location, '/royale-aftermatch');
+                    }
                 });
             }
-        };
+        });
 
         // termina la partita alla pressione sul tasto corrispondente
         $scope.exitGame = function () {
@@ -400,10 +427,12 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
             $scope.languageModal = true;
             audioHandler.playSound('menu-click');
         };
+
         $scope.closeLanguageModal = function () {
             $scope.languageModal = false;
             audioHandler.playSound('menu-click');
         };
+
         $scope.changeLanguage = function (langKey) {
             $translate.use(langKey);
             $scope.languageModal = false;

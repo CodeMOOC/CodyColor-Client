@@ -2,14 +2,14 @@
  * Controller Splash Screen, la schermata mostrata non appena si accede al sito
  */
 angular.module('codyColor').controller('splashCtrl', ['$scope', 'rabbit', 'navigationHandler', 'audioHandler',
-    '$location', 'sessionHandler', '$routeParams', 'gameData', 'authHandler',
+    '$location', 'sessionHandler', '$routeParams', 'gameData', 'authHandler', 'visibilityHandler',
     function ($scope, rabbit, navigationHandler, audioHandler,
-              $location, sessionHandler, $routeParams, gameData, authHandler) {
-        console.log("Controller splash ready.");
+              $location, sessionHandler, $routeParams, gameData, authHandler, visibilityHandler) {
 
         // validazione sessione
         navigationHandler.initializeBackBlock($scope);
         sessionHandler.validateSession();
+        visibilityHandler.setDeadlineCallback();
 
         // inizializza il flusso di autenticazione (automatico, se rilevati cookies)
         authHandler.initializeAuth();
@@ -22,14 +22,12 @@ angular.module('codyColor').controller('splashCtrl', ['$scope', 'rabbit', 'navig
         let customMatch = $routeParams.custom;
         if (customMatch !== undefined && customMatch.length > 0) {
             gameData.getGeneral().code = customMatch.toString();
-            console.log("Custom match!");
             navigationHandler.goToPage($location, '/custom-mmaking');
         }
 
-        let agaMatch = $routeParams.royale;
-        if (agaMatch !== undefined && agaMatch.length > 0) {
-            gameData.getGeneral().code = agaMatch.toString();
-            console.log("Royale match!");
+        let royaleMatch = $routeParams.royale;
+        if (royaleMatch !== undefined && royaleMatch.length > 0) {
+            gameData.getGeneral().code = royaleMatch.toString();
             navigationHandler.goToPage($location, '/royale-mmaking');
         }
 

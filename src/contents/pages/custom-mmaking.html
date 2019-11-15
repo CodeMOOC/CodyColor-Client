@@ -9,7 +9,8 @@
                             {{'CUSTOM_MATCH_DESC' | translate}}
                         </li>
                         <li class="list--spaced-element">
-                            <button class="navigation--button flashing-animation" ng-click="goToCreateMatch()">
+                            <button class="navigation--button flashing-animation"
+                                    ng-click="goToCreateMatch()" ng-disabled="mmakingRequested">
                                 <span translate="NEW_CUSTOM_MATCH"></span>
                                 <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
                             </button>
@@ -39,7 +40,7 @@
                         </li>
                         <li class="list--spaced-element"  ng-show="joinMessage !== undefined"
                             ng-class="joinMessage !== undefined ? 'flashing-component' : ''">
-                            {{joinMessage}}
+                            {{ joinMessage }}
                         </li>
                     </ul>
                 </form>
@@ -50,7 +51,7 @@
                 <form name="landingMatchForm">
                     <ul class="list">
                         <li class="list--spaced-element">
-                            {{ 'MATCH_JOINED' | translate : { 'enemyNickname': enemyPlayer.nickname, 'totTime': totTime } }}
+                            {{ 'MATCH_JOINED' | translate : { 'enemyNickname': enemy.nickname, 'totTime': totTime } }}
                         </li>
                         <li class="list--simple-element">
                             <label for="nickname">{{ 'NICKNAME' | translate}}</label>
@@ -81,7 +82,7 @@
 
                     <li class="list--spaced-element">
                         <div class="copyable" ng-click="copyCode()">
-                            <div class="copyable--big-text">{{generalData.code}}</div>
+                            <div class="copyable--big-text">{{general.code}}</div>
                             <div class="copyable--copy-text" ng-show="codeCopied">
                                 <i class="far fa-copy copyable--copy-icon"></i> {{ 'COPIED' | translate }}
                             </div>
@@ -94,7 +95,7 @@
 
                     <li class="list--spaced-element">
                         <div class="copyable" ng-click="copyLink()">
-                            <div class="copyable--small-text">{{baseUrl}}/#!?custom={{generalData.code}}</div>
+                            <div class="copyable--small-text">{{ matchUrl }}</div>
                             <div class="copyable--copy-text" ng-show="linkCopied">
                                 <i class="far fa-copy copyable--copy-icon"></i> {{ 'COPIED' | translate }}
                             </div>
@@ -111,7 +112,7 @@
             <div id="enemy-found" ng-show="mmakingState === screens.enemyFound" class="page--component">
                 <ul class="list">
                     <li class="list--spaced-element">
-                        {{ 'NEW_ENEMY' | translate : { 'enemyNickname': enemyPlayer.nickname } }}
+                        {{ 'NEW_ENEMY' | translate : { 'enemyNickname': enemy.nickname } }}
                     </li>
                     <li class="list--simple-element">
                         <button class="navigation--button flashing-animation"

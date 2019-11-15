@@ -4,8 +4,11 @@
             <ul class="list">
                 <!-- Match winner -->
                 <li class="list--spaced-element">
-                    <h2 class="capitalize">
-                        {{'WINNER' | translate : { 'winner': winner, 'matchCount': matchCount } }}
+                    <h2 class="capitalize" ng-hide="draw">
+                        {{'WINNER' | translate : { 'winner': winner, 'matchCount': aggregated.matchCount } }}
+                    </h2>
+                    <h2 ng-show="draw">
+                        {{'DRAW' | translate }}
                     </h2>
                 </li>
 
@@ -22,12 +25,23 @@
                                 <th>{{ 'STATS_POINTS_R' | translate }}</th>
                                 <th>{{ 'STATS_WINS_R' | translate }}</th>
                             </tr>
-                            <tr ng-repeat="player in players">
+                            <tr ng-repeat="player in globalRanking">
                                 <td>{{$index + 1}}.</td>
                                 <td>{{player.nickname}}</td>
                                 <td>{{player.points}}</td>
                                 <td>{{player.wonMatches}}</td>
-                                <!-- Match vinti -->
+                            </tr>
+                            <tr ng-hide="userInGlobalPodium() && aggregated.connectedPlayers <= 3">
+                                <td></td>
+                                <td>...</td>
+                                <td>...</td>
+                                <td>...</td>
+                            </tr>
+                            <tr ng-hide="userInGlobalPodium()">
+                                <td></td>
+                                <td>{{userGlobalResult.nickname}}</td>
+                                <td>{{userGlobalResult.points}}</td>
+                                <td>{{userGlobalResult.wonMatches}}</td>
                             </tr>
                         </table>
                     </div>
@@ -47,16 +61,49 @@
                                 <th>{{ 'STATS_MOVES_R' | translate }}</th>
                                 <th>{{ 'STATS_TIME_R' | translate }}</th>
                             </tr>
-                            <tr ng-repeat="player in matchPlayers">
+                            <tr ng-repeat="player in matchRanking">
                                 <td>{{$index + 1}}.</td>
                                 <td>{{player.nickname}}</td>
-                                <td>{{player.match.points}}</td>
-                                <td>{{player.match.pathLength}}</td>
-                                <td>{{timeFormatter(player.match.time)}}</td>
+                                <td>{{player.points}}</td>
+                                <td>{{player.pathLength}}</td>
+                                <td>{{timeFormatter(player.time)}}</td>
+                            </tr>
+                            <tr ng-hide="userInMatchPodium() && aggregated.connectedPlayers <= 3">
+                                <td></td>
+                                <td>...</td>
+                                <td>...</td>
+                                <td>...</td>
+                                <td>...</td>
+                            </tr>
+                            <tr ng-hide="userInMatchPodium()">
+                                <td></td>
+                                <td>{{userMatchResult.nickname}}</td>
+                                <td>{{userMatchResult.points}}</td>
+                                <td>{{userMatchResult.pathLength}}</td>
+                                <td>{{timeFormatter(userMatchResult.time)}}</td>
                             </tr>
                         </table>
                     </div>
                 </li>
+
+                <li class="list--simple-element">
+                    <i class="fas fa-robot"></i>
+                    {{ 'NUM_PLAYERS_AFTERMATCH' | translate : { 'numPlayers': aggregated.connectedPlayers } }}<br>
+                    <i class="far fa-play-circle"></i>
+                    {{ 'NUM_READY_AFTERMATCH' | translate : { 'numReady': aggregated.readyPlayers } }}
+                </li>
+
+                <!-- Share button -->
+                <li class="list--simple-element">
+                    <button class="navigation--button flashing-animation" ng-click="share()">
+                        {{ 'SHARE' | translate }}
+                        <i class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"></i>
+                    </button>
+                    <div class="copyable--copy-text" ng-show="sharedLegacy">
+                        <i class="far fa-copy copyable--copy-icon"></i> {{ 'COPIED' | translate }}
+                    </div>
+                </li>
+
 
                 <!-- New match options -->
                 <li id="aftermatch-options" class="list--spaced-element">
@@ -70,7 +117,7 @@
                         {{'MAT_START_COUNTDOWN' | translate : { 'countdown': timeFormatterCountdown(newMatchTimerValue) } }}
                     </div>
                     <div ng-show="newMatchClicked">
-                        <div class="flashing-animation">{{ 'ENEMY_WAIT' | translate }}</div>
+                        <div class="flashing-animation">{{ 'ENEMY_WAIT' | translate }}  </div>
                     </div>
                 </li>
 

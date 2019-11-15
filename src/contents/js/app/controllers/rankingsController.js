@@ -3,10 +3,9 @@
  */
 angular.module('codyColor').controller('rankingsCtrl', ['$scope', 'rabbit', 'navigationHandler', '$translate',
     'authHandler', 'gameData', 'rankingsHandler', 'audioHandler', '$location', 'sessionHandler', 'translationHandler',
-    'scopeService',
+    'scopeService', 'visibilityHandler',
     function ($scope, rabbit, navigationHandler, $translate, authHandler, gameData, rankingsHandler,
-              audioHandler, $location, sessionHandler, translationHandler, scopeService) {
-        console.log("Rankings controller ready.");
+              audioHandler, $location, sessionHandler, translationHandler, scopeService, visibilityHandler) {
 
         // inizializzazione sessione
         navigationHandler.initializeBackBlock($scope);
@@ -14,6 +13,8 @@ angular.module('codyColor').controller('rankingsCtrl', ['$scope', 'rabbit', 'nav
             navigationHandler.goToPage($location, '/');
             return;
         }
+
+        visibilityHandler.setDeadlineCallback();
 
         $scope.userLogged = authHandler.loginCompleted();
         if (authHandler.loginCompleted()) {

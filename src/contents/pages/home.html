@@ -8,7 +8,8 @@
         <div class="page--body">
             <ul class="list">
                 <li class="list--simple-element">
-                    <button class="navigation--button" ng-click="goToRules()">{{ 'HOW_TO_PLAY' | translate }}</button>
+                    <menu-button button-text-id='HOW_TO_PLAY' go-to-page="/rules"
+                                 offline-check="false" version-check="false"></menu-button>
                 </li>
                 <li class="list--simple-element">
                     <button class="navigation--button" ng-click="goToRMMaking()">{{ 'RANDOM_MATCH' | translate }}</button>

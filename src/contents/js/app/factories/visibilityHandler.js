@@ -2,12 +2,14 @@
  * VisibilityHandler: gestisce il comportamento del programma nel momento in cui il giocatore abbandoni la partita
  * chiudendo il tab, lasciandola quindi attiva in background
  */
-angular.module('codyColor').factory("visibilityHandler", ['$pageVisibility', 'audioHandler',
-    function($pageVisibility, audioHandler) {
+angular.module('codyColor').factory("visibilityHandler", ['$pageVisibility', 'audioHandler', 'settings',
+    function($pageVisibility, audioHandler, settings) {
     let visibilityHandler = {};
 
     let backgroundTimer = undefined;
     let deadlineCallback = undefined;
+
+    const debug = settings.rabbitSocketUrl !== "wss://codycolor.codemooc.net/api/ws";
 
     visibilityHandler.setDeadlineCallback = function(deadlineCallbackValue) {
         deadlineCallback = deadlineCallbackValue;
@@ -32,7 +34,7 @@ angular.module('codyColor').factory("visibilityHandler", ['$pageVisibility', 'au
         audioHandler.stopAudioBackground();
         backgroundTimer = setTimeout(function () {
             // non si è ritornati nella pagina entro la scadenza: agisci di conseguenza
-            if(deadlineCallback !== undefined) {
+            if(deadlineCallback !== undefined && !debug) {
                 deadlineCallback();
             }
         }, 15000);

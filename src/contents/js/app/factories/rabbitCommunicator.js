@@ -127,6 +127,7 @@ angular.module('codyColor').factory("rabbit", [ 'gameData', 'sessionHandler', 's
             msgType:           messageTypes.c_gameRequest,
             user:              gameData.getUser(),
             general:           gameData.getGeneral(),
+            gameType:          gameData.getGeneral().gameType,
             userId:            authHandler.getFirebaseUserData().uid,
             correlationId:     sessionHandler.getSessionId(),
             clientVersion:     sessionHandler.getClientVersion()

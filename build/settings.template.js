@@ -8,7 +8,16 @@ angular.module('codyColor').factory("settings", function() {
         rabbitPassword:   "",
         rabbitVHost:      "",
         rabbitSocketUrl:  "wss://",
-        webBaseUrl:       "https://"
+        webBaseUrl:       "https://",
+        firebaseConfig: {
+            apiKey: "",
+            authDomain: "",
+            databaseURL: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
+        }
     };
 
     return settings;

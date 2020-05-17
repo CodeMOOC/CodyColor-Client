@@ -2,19 +2,8 @@
  * AuthHandler: factory per la gestione del flusso di autenticazione legato alle librerie firebase Auth, firebase UI
  * e ai vari provider oAuth
  */
-angular.module('codyColor').factory("authHandler", ['$cookies', function($cookies) {
+angular.module('codyColor').factory("authHandler", ['$cookies', 'settings', function($cookies, settings) {
     let authHandler = {};
-
-    // oggetto di configurazione Firebse SDK
-    const firebaseConfig = {
-        apiKey: "AIzaSyCJoAvdMagPFHTG--zurc3RjBekWLJzvxo",
-        authDomain: "codycolor-f2519.firebaseapp.com",
-        databaseURL: "https://codycolor-f2519.firebaseio.com",
-        projectId: "codycolor-f2519",
-        storageBucket: "codycolor-f2519.appspot.com",
-        messagingSenderId: "839718298178",
-        appId: "1:839718298178:web:6e3b0cf34856eb12"
-    };
 
     // oggetto di configurazione dell'istanza firebaseUI
     const uiConfig = {
@@ -122,7 +111,7 @@ angular.module('codyColor').factory("authHandler", ['$cookies', function($cookie
     // nulla; tenta l'autenticazione tramite cookies nel caso in cui sia stata abilitata con le funzioni di cui sopra
     authHandler.initializeAuth = function () {
         if (!initialized) {
-            firebase.initializeApp(firebaseConfig);
+            firebase.initializeApp(settings.firebaseConfig);
             firebase.auth().onAuthStateChanged(function (user) {
                 if (user) {
                     if (startCookieSignIn !== undefined)

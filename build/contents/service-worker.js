@@ -242,11 +242,11 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "js/app/app.min.js",
-    "revision": "c52fa8442dae0f0024e9502632e54a9f"
+    "revision": "f9deac62300032bfad8f4c53fcd6d892"
   },
   {
     "url": "locales/locale-en.json",
-    "revision": "f27c727a4692449f50e3cebb82ec55e9"
+    "revision": "b2fcb253e945c5a53e1df142df7269e8"
   },
   {
     "url": "locales/locale-hu.json",
@@ -254,7 +254,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "locales/locale-it.json",
-    "revision": "2402c9d54680e7ba431b9715b349415d"
+    "revision": "5eaa20e5eab747805911e345dea0f81d"
   },
   {
     "url": "manifest.json",
@@ -334,7 +334,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/splash.html",
-    "revision": "6f16429f7d131b5c56b3cfcdf76ce5f3"
+    "revision": "42ea8f522222873d6979aa07043642e3"
   },
   {
     "url": "pages/terms.html",

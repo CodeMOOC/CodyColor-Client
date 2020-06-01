@@ -74,7 +74,7 @@
     "NEW_CUSTOM_EXT": "New custom match",
     "JOIN_BATTLE": "Join Battle",
     "AGA_FOUND": "Battle found! Choose a nickname to join.",
-    "BATTLE_WELCOME": "Welcome to the Battle \"{{ gameName }}\"! Every match will last {{ battleTime }}; it can host a maximum of {{ maxPlayers }} players.",
+    "BATTLE_WELCOME": "Welcome to the Battle \"{{ gameName }}\"! Every match will last {{ battleTime }}; it can host a maximum of {{ maxPlayers }} players. Remember: in INSTANT games, the organizer cannot leave the game during the matchmaking phase. Otherwise, the game will be canceled.",
     "WHEN_START": "When will the match start?",
     "WHEN_TIMER": "All users connected at the end of the countdown will fight:",
     "WHEN_INSTANT": "The match will start when the organiser will click the start button.",

@@ -75,7 +75,7 @@
     "AGA_MATCH_DESC": "La modalità Battle Royale consente di creare dei veri e propri tornei, dando la possibilità agli utenti di sfidarsi in partite con un massimo di 100 giocatori in contemporanea nello stesso campo!",
     "NEW_AGA": "Nuova Battle<br>Royale",
     "AGA_FOUND": "Battle trovata! Inserisci un nickname per collegarti.",
-    "BATTLE_WELCOME": "Benvenuto nella Battle \"{{gameName}}\"! Ogni match avrà la durata di {{ battleTime }}, potranno partecipare un massimo di {{maxPlayers}} giocatori.",
+    "BATTLE_WELCOME": "Benvenuto nella Battle \"{{gameName}}\"! Ogni match avrà la durata di {{ battleTime }}, potranno partecipare un massimo di {{maxPlayers}} giocatori. Ricorda: nelle partite ISTANTANEE, l'organizzatore non può lasciare la partita durante la fase di matchmaking. In caso contrario, la partita verrà annullata.",
     "WHEN_START": "Quando inizierà la partita?",
     "WHEN_TIMER": "Tutti gli utenti collegati allo scadere del countdown potranno partecipare:",
     "WHEN_INSTANT": "La partita inizierà non appena l'organizzatore deciderà di avviarla.",

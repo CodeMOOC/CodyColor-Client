@@ -6,7 +6,7 @@ angular.module('codyColor').factory("sessionHandler", function() {
     let sessionHandler = {};
     let isSessionValid;
 
-    const clientVersion = '3.3.0';
+    const clientVersion = '3.3.1';
 
     // informazioni sul sistema, aggiornate automaticamente dal server non appena connessi
     let generalInfo = {

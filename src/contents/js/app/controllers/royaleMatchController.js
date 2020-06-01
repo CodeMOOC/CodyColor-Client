@@ -190,11 +190,13 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
                             expected = Date.now() + interval;
                             gameTimer = setTimeout(step, interval); // take into account drift
                         } else {
-                            nextGameTimerValue = 0;
+                            $scope.clockAnimation = "clock--end";
                         }
 
                     } else {
-                        // fine del tempo
+                        // si è arrivati al tempo 0
+                        $scope.clockAnimation = "clock--end";
+                        $scope.gameTimerValue = 0;
 
                         // invia un segnale di posizionato, se necessario
                         if (!gameData.getMatch().positioned) {
@@ -351,6 +353,7 @@ angular.module('codyColor').controller('royaleMatchCtrl', ['$scope', 'rabbit', '
                 scopeService.safeApply($scope, function () {
                     $scope.startAnimation = true;
                     $scope.clockAnimation = "clock--end";
+                    $scope.gameTimerValue = message.matchTime;
                     gameData.editAggregated(message.aggregated);
 
                     // posiziona tutti gli enemy roby

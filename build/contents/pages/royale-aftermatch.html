@@ -12,41 +12,6 @@
                     </h2>
                 </li>
 
-                <!-- Player-Enemy total ranking -->
-                <li class="list--spaced-element">
-                    <div class="playerlist-match">
-                        <div class="playerlist--header">
-                            {{'GEN_RANKING' | translate }}
-                        </div>
-                        <table class="playerlist-match-table">
-                            <tr>
-                                <th></th>
-                                <th>{{ 'NICKNAME' | translate }}</th>
-                                <th>{{ 'STATS_POINTS_R' | translate }}</th>
-                                <th>{{ 'STATS_WINS_R' | translate }}</th>
-                            </tr>
-                            <tr ng-repeat="player in globalRanking">
-                                <td>{{$index + 1}}.</td>
-                                <td>{{player.nickname}}</td>
-                                <td>{{player.points}}</td>
-                                <td>{{player.wonMatches}}</td>
-                            </tr>
-                            <tr ng-hide="userInGlobalPodium() && aggregated.connectedPlayers <= 3">
-                                <td></td>
-                                <td>...</td>
-                                <td>...</td>
-                                <td>...</td>
-                            </tr>
-                            <tr ng-hide="userInGlobalPodium()">
-                                <td></td>
-                                <td>{{userGlobalResult.nickname}}</td>
-                                <td>{{userGlobalResult.points}}</td>
-                                <td>{{userGlobalResult.wonMatches}}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </li>
-
                 <!-- Player-Enemy match ranking -->
                 <li class="list--spaced-element">
                     <div class="playerlist-match">
@@ -81,6 +46,41 @@
                                 <td>{{userMatchResult.points}}</td>
                                 <td>{{userMatchResult.pathLength}}</td>
                                 <td>{{timeFormatter(userMatchResult.time)}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </li>
+
+                <!-- Player-Enemy total ranking -->
+                <li class="list--spaced-element">
+                    <div class="playerlist-match">
+                        <div class="playerlist--header">
+                            {{'GEN_RANKING' | translate }}
+                        </div>
+                        <table class="playerlist-match-table">
+                            <tr>
+                                <th></th>
+                                <th>{{ 'NICKNAME' | translate }}</th>
+                                <th>{{ 'STATS_POINTS_R' | translate }}</th>
+                                <th>{{ 'STATS_WINS_R' | translate }}</th>
+                            </tr>
+                            <tr ng-repeat="player in globalRanking">
+                                <td>{{$index + 1}}.</td>
+                                <td>{{player.nickname}}</td>
+                                <td>{{player.points}}</td>
+                                <td>{{player.wonMatches}}</td>
+                            </tr>
+                            <tr ng-hide="userInGlobalPodium() && aggregated.connectedPlayers <= 3">
+                                <td></td>
+                                <td>...</td>
+                                <td>...</td>
+                                <td>...</td>
+                            </tr>
+                            <tr ng-hide="userInGlobalPodium()">
+                                <td></td>
+                                <td>{{userGlobalResult.nickname}}</td>
+                                <td>{{userGlobalResult.points}}</td>
+                                <td>{{userGlobalResult.wonMatches}}</td>
                             </tr>
                         </table>
                     </div>

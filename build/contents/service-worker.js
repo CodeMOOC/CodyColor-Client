@@ -242,7 +242,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "js/app/app.min.js",
-    "revision": "8af08909a91b5980005219152cbbd1fe"
+    "revision": "cc5e71c4a2f5a24d93e86a5f39c80fa7"
   },
   {
     "url": "locales/locale-en.json",
@@ -314,7 +314,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/royale-aftermatch.html",
-    "revision": "668b4647cc9202b28a2f559234ed3556"
+    "revision": "8f9945e7f016337c395574909242d3a1"
   },
   {
     "url": "pages/royale-match.html",

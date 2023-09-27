@@ -11,3 +11,6 @@ services:
     - web
     expose:
     - "80"
+    logging:
+      driver: "none"
+    restart: unless-stopped

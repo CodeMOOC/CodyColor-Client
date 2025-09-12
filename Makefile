@@ -16,11 +16,18 @@ up:
 	@echo 'CodyColor client service is now up'
 	@echo
 
-.PHONY: rebuild
-rebuild:
-	${DC} rm -sf server
-	${DC} build server
+# .PHONY: rebuild
+# rebuild:
+# 	${DC} rm -sf server
+# 	${DC} build server
+# 	${DC} up -d --force-recreate
+.PHONY: rebuild-full
+rebuild-full:
+	${DC} down -v         # stop and remove containers & volumes
+	docker image prune -f  # optional: remove dangling images
+	${DC} build --no-cache
 	${DC} up -d
+	${DC} ps
 
 .PHONY: ps
 ps:

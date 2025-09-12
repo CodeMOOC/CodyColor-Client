@@ -1,0 +1,88 @@
+<div id="bootmp-mmaking" class="page">
+  <div class="page--wrapper">
+    <div class="page--body" *ngIf="pageReady">
+      <form #customMatchForm="ngForm" (ngSubmit)="createBootcamp()">
+        <ul class="list">
+          <li class="list--simple-element">
+            <h2>{{ "BOOT_CAMP" | translate }}</h2>
+          </li>
+          <li class="list--spaced-element">
+            {{ "BOOTCAMPMAKING_DESC" | translate }}
+          </li>
+
+          <li class="list--simple-element">
+            <label for="nickname">{{ "NICKNAME" | translate }}</label>
+          </li>
+          <li class="list--spaced-element">
+            <input
+              type="text"
+              name="nickname"
+              maxlength="22"
+              [(ngModel)]="nickname"
+              id="nickname"
+              [placeholder]="'NICKNAME_EXAMPLE' | translate"
+              class="standard-input"
+              [disabled]="userLogged"
+              required
+              autofocus
+              #nicknameModel="ngModel"
+            />
+          </li>
+
+          <li class="list--simple-element">{{ "ENEMY" | translate }}</li>
+          <li class="list--spaced-element">
+            <div class="selector">
+              <div class="selector--button" (click)="editBotSetting(false)">
+                <span class="material-symbols-outlined">{{
+                  "keyboard_arrow_left"
+                }}</span>
+              </div>
+              <div class="selector--text">
+                {{ botSettings[currentBotSettingIndex].text }}
+              </div>
+              <div class="selector--button" (click)="editBotSetting(true)">
+                <span class="material-symbols-outlined">{{
+                  "keyboard_arrow_right"
+                }}</span>
+              </div>
+            </div>
+          </li>
+
+          <li class="list--simple-element">{{ "MATCH_TIME" | translate }}</li>
+          <li class="list--spaced-element">
+            <div class="selector">
+              <div class="selector--button" (click)="editTimer(false)">
+                <span class="material-symbols-outlined">{{
+                  "keyboard_arrow_left"
+                }}</span>
+              </div>
+              <div class="selector--text">
+                {{ timerSettings[currentTimerIndex].text }}
+              </div>
+              <div class="selector--button" (click)="editTimer(true)">
+                <span class="material-symbols-outlined">{{
+                  "keyboard_arrow_right"
+                }}</span>
+              </div>
+            </div>
+          </li>
+
+          <li class="list--spaced-element">
+            <button
+              class="navigation--button flashing-animation"
+              type="submit"
+              [disabled]="nicknameModel.invalid"
+            >
+              {{ "CREATE_MATCH" | translate }}
+              <span
+                class="material-symbols-outlined inline-block animate-slide-left"
+                >{{ "keyboard_double_arrow_right" }}</span
+              >
+            </button>
+          </li>
+        </ul>
+      </form>
+    </div>
+    <div class="page--push"></div>
+  </div>
+</div>

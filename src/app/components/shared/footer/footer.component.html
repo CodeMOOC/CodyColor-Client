@@ -1,0 +1,38 @@
+<!-- Footer -->
+<div class="page--footer flex justify-between">
+  <div class="page--footer-column-left ellipsize flex items-center">
+    <button
+      *ngIf="showExitButton"
+      class="page--footer-button material-symbols-outlined"
+      (click)="openExitGameDialog()"
+    >
+      close
+    </button>
+
+    <button class="page--footer-button" (click)="toggleBase()">
+      <span class="page--footer-icons material-symbols-outlined">
+        {{ basePlaying ? "volume_off" : "volume_up" }}
+      </span>
+    </button>
+    <button
+      class="page--footer-button material-symbols-outlined"
+      (click)="openLanguageModal()"
+    >
+      <span class="page--footer-icons fas">
+        {{ language === "it" ? "🇮🇹" : language === "hu" ? "🇭🇺" : "🇬🇧" }}
+      </span>
+    </button>
+  </div>
+
+  <div class="page--footer-column-right ellipsize">
+    <button class="page--footer-button">
+      <span class="ellipsize">
+        <i
+          class="page--footer-icons"
+          [ngClass]="userLogged ? 'fas fa-user-circle' : 'far fa-user-circle'"
+        ></i>
+        {{ userNickname }}
+      </span>
+    </button>
+  </div>
+</div>

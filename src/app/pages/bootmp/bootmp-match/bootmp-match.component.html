@@ -1,0 +1,275 @@
+<div class="mt-10 relative">
+  <app-roby-animation #player image="roby-positioned"></app-roby-animation>
+
+  <button (click)="movePlayer()">Muovi Player</button>
+</div>
+<div id="bootmp-match" class="page">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <!-- countdown component -->
+      <!-- <div id="countdown" *ngIf="countdownInProgress" class="page--component">
+        {{ startCountdownText }}
+      </div> -->
+
+      <!-- match component -->
+      <div
+        id="match-in-progress"
+        *ngIf="!countdownInProgress"
+        class="page--component"
+      >
+        <div>
+          <!-- Top centered columns with player-enemy data -->
+          <div class="centered-columns" *ngIf="general.botSetting !== 0">
+            <div class="centered-columns--pair">
+              <div class="centered-columns--column">
+                <div class="big-text ellipsize">{{ userPoints }}</div>
+              </div>
+              <div class="centered-columns--column">
+                <div class="big-text ellipsize">{{ enemyPoints }}</div>
+              </div>
+            </div>
+
+            <div class="centered-columns--pair">
+              <div class="centered-columns--column ellipsize">
+                {{ user.nickname }}
+              </div>
+              <div class="centered-columns--column ellipsize">
+                {{ enemy.nickname }}
+              </div>
+            </div>
+
+            <div class="centered-columns--pair">
+              <div
+                class="centered-columns--column ellipsize"
+                [ngClass]="userTimerAnimation"
+              >
+                <span class="material-symbols-outlined">schedule</span>
+                {{ timerFormatter(userTimerValue) }}
+              </div>
+              <div
+                class="centered-columns--column ellipsize"
+                [ngClass]="enemyTimerAnimation"
+              >
+                <span class="material-symbols-outlined">schedule</span>
+                {{ timerFormatter(enemyTimerValue) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Top player-only data -->
+          <div class="two-columns" *ngIf="general.botSetting === 0">
+            <div
+              class="two-columns--column clock ellipsize"
+              [ngClass]="userTimerAnimation"
+            >
+              <span class="material-symbols-outlined">schedule</span>
+              {{ timerFormatter(userTimerValue) }}
+            </div>
+            <div class="two-columns--column">
+              <div class="big-text ellipsize">{{ userPoints }}</div>
+              <div class="ellipsize">{{ user.nickname }}</div>
+            </div>
+          </div>
+
+          <!-- Playground module -->
+          <div *ngIf="!showCompleteGrid" class="playground">
+            <!-- match.component.html -->
+            <!-- Big grid (reduced) -->
+            <table class="playground--table">
+              <tr *ngFor="let row of tilesCss; let rowIndex = index">
+                <td *ngFor="let tileClass of row; let colIndex = index">
+                  <div [ngClass]="tileClass"></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- <table
+  cdkDropList
+  [cdkDropListData]="smallGrid"
+  (cdkDropListDropped)="onTileDropped($event)"
+>
+  <tr *ngFor="let row of smallGrid; let rowIndex = index">
+    <td *ngFor="let cell of row; let colIndex = index" class="playground--cell">
+      <div *ngIf="cell.placeholder"></div>
+      <span *ngIf="cell.start" [ngClass]="startPositionsCss[rowIndex][colIndex]">
+        keyboard_arrow_right
+      </span>
+      <div *ngIf="cell.tile" [ngClass]="tilesCss[cell.tile.row][cell.tile.col]"></div>
+    </td>
+  </tr>
+</table> -->
+          <!-- Small grid -->
+          <div class="w-full" cdkDropListGroup>
+            <div class="small-grid" [ngClass]="{ hidden: !showCompleteGrid }">
+              <!-- Top row -->
+              <div class="cell placeholder"></div>
+              @for (col of grid[0]; let colIndex = $index; track colIndex) {
+              <div
+                class="cell"
+                cdkDropList
+                [id]="'drop-top-' + colIndex"
+                [cdkDropListConnectedTo]="connectedIds"
+                #arrowList="cdkDropList"
+                [cdkDropListData]="{ side: 'top', index: colIndex }"
+                (cdkDropListDropped)="onTileDropped($event, Side.Top, colIndex)"
+                (cdkDropListEntered)="logEvent('entered', $event)"
+                (cdkDropListExited)="logEvent('exited', $event)"
+              >
+                <span class="material-symbols-outlined">
+                  {{ getArrowIcon(Side.Top) }}
+                </span>
+              </div>
+              }
+              <div class="cell placeholder"></div>
+
+              <!-- Playable rows -->
+              @for (row of grid; let rowIndex = $index; track rowIndex) {
+              <!-- Left arrow -->
+              <div
+                class="cell"
+                cdkDropList
+                [id]="'drop-left-' + rowIndex"
+                [cdkDropListConnectedTo]="connectedIds"
+                #arrowList="cdkDropList"
+                [cdkDropListData]="{ side: 'left', index: rowIndex }"
+                (cdkDropListDropped)="
+                  onTileDropped($event, Side.Left, rowIndex)
+                "
+              >
+                <span class="material-symbols-outlined">
+                  {{ getArrowIcon(Side.Left) }}
+                </span>
+              </div>
+
+              <!-- Tiles -->
+              @for (cell of row; track cell) {
+              <div class="cell" [ngClass]="tilesCss[cell.row][cell.col]"></div>
+              }
+
+              <!-- Right arrow -->
+              <div
+                class="cell"
+                cdkDropList
+                [id]="'drop-right-' + rowIndex"
+                #arrowList="cdkDropList"
+                [cdkDropListConnectedTo]="connectedIds"
+                [cdkDropListData]="{ side: 'right', index: rowIndex }"
+                (cdkDropListDropped)="
+                  onTileDropped($event, Side.Right, rowIndex)
+                "
+              >
+                <span class="material-symbols-outlined">
+                  {{ getArrowIcon(Side.Right) }}
+                </span>
+              </div>
+              }
+
+              <!-- Bottom row -->
+
+              <!-- Bottom row -->
+              <div class="cell placeholder"></div>
+              @for (col of grid[0]; let colIndex = $index; track colIndex) {
+              <div
+                class="cell"
+                cdkDropList
+                [cdkDropListConnectedTo]="connectedIds"
+                [id]="'drop-bottom-' + colIndex"
+                #arrowList="cdkDropList"
+                [cdkDropListData]="{ side: 'bottom', index: colIndex }"
+                (cdkDropListDropped)="
+                  onTileDropped($event, Side.Bottom, colIndex)
+                "
+                (cdkDropListEntered)="logEvent('entered', $event)"
+                (cdkDropListExited)="logEvent('exited', $event)"
+              >
+                <span class="material-symbols-outlined">
+                  {{ getArrowIcon(Side.Bottom) }}
+                </span>
+              </div>
+              }
+              <div class="cell placeholder"></div>
+            </div>
+            <div cdkDropList [cdkDropListConnectedTo]="connectedIds">
+              <div
+                cdkDrag
+                [cdkDragData]="{ type: 'robot' }"
+                (cdkDragStarted)="onDragStarted($event)"
+                class="draggable-wrapper"
+              >
+                <!-- Normal image (when not dragging) -->
+                <img
+                  [src]="'assets/img/roby-idle.png'"
+                  alt="idle Roby"
+                  [ngClass]="
+                    showCompleteGrid
+                      ? 'roby-draggable'
+                      : 'roby-draggable floating-up-animation'
+                  "
+                />
+
+                <!-- Preview that follows the cursor -->
+                <img
+                  [src]="'assets/img/roby-dragging-trasp.png'"
+                  *cdkDragPreview
+                  alt="dragging Roby"
+                  [ngClass]="
+                    showCompleteGrid
+                      ? 'roby-draggable'
+                      : 'roby-draggable floating-up-animation'
+                  "
+                />
+
+                <!-- Placeholder that replaces the original while dragging -->
+                <ng-template
+                  class="example-custom-placeholder"
+                  cdkDragPlaceholder
+                >
+                  <div></div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time display -->
+          <div
+            class="centered-container"
+            *ngIf="match.positioned && match.time > 0"
+          >
+            <span class="material-symbols-outlined">schedule</span>
+            {{
+              "TIME_PLAYER"
+                | translate : { time: finalTimeFormatter(match.time) }
+            }}
+          </div>
+          <div
+            class="centered-container"
+            *ngIf="match.positioned && match.time === 0"
+          >
+            <span class="material-symbols-outlined">schedule</span>
+            {{ "TIME_OUT" | translate }}
+          </div>
+
+          <!-- Skip button -->
+          <!-- <div class="centered-container" *ngIf="startAnimation && !askedForSkip"> -->
+          <div class="centered-container" *ngIf="startAnimation">
+            <button
+              class="navigation--button flashing-animation"
+              (click)="skip()"
+            >
+              {{ "SKIP" | translate }}
+              <!-- <i
+                class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"
+              ></i> -->
+              <span
+                class="material-symbols-outlined inline-block animate-slide-left"
+                >{{ "keyboard_double_arrow_right" }}</span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="page--push"></div>
+    </div>
+  </div>
+</div>

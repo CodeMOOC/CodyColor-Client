@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 networks:
   web:
@@ -6,11 +6,11 @@ networks:
 
 services:
   server:
-    build: ./build
+    build: .
     networks:
-    - web
+      - web
     expose:
-    - "80"
-    logging:
-      driver: "none"
+      - "80"
+    ports:
+      - "8080:80"
     restart: unless-stopped

@@ -1,0 +1,335 @@
+<div id="custom-mmaking" class="page">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <!-- Schermata iniziale, opzioni ins. code e newMatch -->
+      <div *ngIf="mmakingState === screens.joinMatch" class="page--component">
+        <ul class="list">
+          <li class="list--simple-element">
+            <h2>{{ "CUSTOM_MATCH" | translate }}</h2>
+          </li>
+          <li class="list--spaced-element">
+            {{ "CUSTOM_MATCH_DESC" | translate }}
+          </li>
+          <li class="list--spaced-element">
+            <button
+              class="navigation--button flashing-animation"
+              (click)="goToCreateMatch()"
+              [disabled]="mmakingRequested"
+            >
+              <span>{{ "NEW_CUSTOM_MATCH" | translate }}</span>
+              <i
+                class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"
+              ></i>
+            </button>
+          </li>
+        </ul>
+
+        <form #customMatchForm="ngForm">
+          <ul class="list">
+            <li class="list--simple-element">
+              <h2>{{ "JOIN_TITLE" | translate }}</h2>
+            </li>
+            <li class="list--spaced-element">{{ "JOIN_DESC" | translate }}</li>
+            <li class="list--simple-element">
+              <label for="code">{{ "CODE" | translate }}</label>
+            </li>
+            <li class="list--spaced-element">
+              <input
+                type="number"
+                name="codeValue"
+                id="code"
+                class="standard-input"
+                [(ngModel)]="codeValue"
+                #codeCtrl="ngModel"
+                max="9999"
+                min="1"
+                placeholder="{{ 'CODE_EXAMPLE' | translate }}"
+                required
+                autofocus
+              />
+            </li>
+            <li class="list--spaced-element">
+              <button
+                class="navigation--button flashing-animation"
+                (click)="joinGame(codeValue)"
+                [disabled]="codeCtrl.invalid || mmakingRequested"
+              >
+                {{ "JOIN" | translate }}
+                <i
+                  class="fas fa-angle-double-right navigation--icon-in-text floating-right-animation"
+                ></i>
+              </button>
+            </li>
+            <li
+              class="list--spaced-element"
+              *ngIf="joinMessage"
+              [ngClass]="{ 'flashing-component': joinMessage }"
+            >
+              {{ joinMessage }}
+            </li>
+          </ul>
+        </form>
+      </div>
+
+      <!-- Inserimento nickname -->
+      <div
+        *ngIf="mmakingState === screens.nicknameSelection"
+        class="page--component"
+      >
+        <form #landingMatchForm="ngForm">
+          <ul class="list">
+            <li class="list--spaced-element">
+              {{
+                "MATCH_JOINED"
+                  | translate
+                    : { enemyNickname: enemy.nickname, totTime: totTime }
+              }}
+            </li>
+            <li class="list--simple-element">
+              <label for="nickname">{{ "NICKNAME" | translate }}</label>
+            </li>
+            <li class="list--spaced-element">
+              <input
+                type="text"
+                id="nickname"
+                name="nickname"
+                class="standard-input"
+                [(ngModel)]="nickname"
+                #nicknameCtrl="ngModel"
+                maxlength="22"
+                placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+                [disabled]="userLogged"
+                required
+                autofocus
+              />
+            </li>
+            <li class="list--spaced-element">
+              <button
+                class="navigation--button flashing-animation"
+                (click)="validPlayer()"
+                [disabled]="nicknameCtrl.invalid || playerValidated"
+              >
+                {{ "START" | translate }}
+                <i
+                  class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"
+                ></i>
+              </button>
+            </li>
+          </ul>
+        </form>
+      </div>
+
+      <!-- Entrato nella gameRoom, mostra codici -->
+      <div
+        *ngIf="mmakingState === screens.waitingEnemy"
+        class="page--component"
+      >
+        <ul class="list">
+          <li class="list--spaced-element">
+            {{ "ENEMY_INVITATION_DESC" | translate }}
+          </li>
+          <li class="list--spaced-element">
+            <div class="copyable" (click)="copyCode()">
+              <div class="copyable--big-text">{{ general.code }}</div>
+              <div class="copyable--copy-text" *ngIf="codeCopied">
+                <i class="far fa-copy copyable--copy-icon"></i>
+                {{ "COPIED" | translate }}
+              </div>
+            </div>
+          </li>
+          <li class="list--spaced-element">
+            {{ "ENEMY_INVITATION_SUB_DESC" | translate }}
+          </li>
+          <li class="list--spaced-element">
+            <div class="copyable" (click)="copyLink()">
+              <div class="copyable--small-text">{{ matchUrl }}</div>
+              <div class="copyable--copy-text" *ngIf="linkCopied">
+                <i class="far fa-copy copyable--copy-icon"></i>
+                {{ "COPIED" | translate }}
+              </div>
+            </div>
+          </li>
+          <li class="list--spaced-element">
+            <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Players accoppiati, in attesa di ready -->
+      <div
+        *ngIf="mmakingState === screens.enemyFound"
+        id="enemy-found"
+        class="page--component"
+      >
+        <ul class="list">
+          <li class="list--spaced-element">
+            {{ "NEW_ENEMY" | translate : { enemyNickname: enemy.nickname } }}
+          </li>
+          <li class="list--simple-element">
+            <button
+              class="navigation--button flashing-animation"
+              (click)="playerReady()"
+              [disabled]="readyClicked"
+            >
+              {{ "START" | translate }}
+              <i
+                class="fas fa-angle-double-right navigation--icon-in-text floating-right-animation"
+              ></i>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Ready clicked, aspettando il segnale di ready dell'avversario -->
+      <div
+        *ngIf="mmakingState === screens.waitingReady"
+        id="waiting-confirm"
+        class="page--component"
+      >
+        <ul class="list">
+          <li class="list--spaced-element">
+            <div class="loading-spinner">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </li>
+          <li class="list--spaced-element">
+            <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Chat module -->
+      <div
+        class="chat"
+        *ngIf="
+          mmakingState === screens.enemyFound ||
+          mmakingState === screens.waitingReady
+        "
+      >
+        <div class="chat--bubbles-container">
+          {{ "CHAT_TITLE" | translate }}
+          <div
+            class="chat--bubbles-sub-container"
+            *ngFor="let bubble of chatBubbles"
+          >
+            <div class="chat--bubble-row">
+              <div [ngClass]="getBubbleStyle(bubble)">
+                <div class="chat--bubble-sender">{{ bubble.sender }}</div>
+                {{ bubble.body | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chat--hints-container">
+          {{ "CHAT_SEND" | translate }}
+          <div class="chat--hints-sub-container" *ngFor="let hint of chatHints">
+            <button class="chat--hint" (click)="sendChatMessage(hint)">
+              {{ hint | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page--push"></div>
+  </div>
+
+  <!-- Footer module -->
+  <div class="page--footer">
+    <div class="page--footer-column-left ellipsize">
+      <button class="page--footer-button" (click)="exitGame()">
+        <i class="fa fa-times page--footer-icons"></i>
+      </button>
+      <button class="page--footer-button" (click)="toggleBase()">
+        <i
+          class="page--footer-icons"
+          [ngClass]="basePlaying ? 'fas fa-volume-up' : 'fas fa-volume-mute'"
+        ></i>
+      </button>
+      <button class="page--footer-button" (click)="openLanguageModal()">
+        <i
+          class="page--footer-icons fas"
+          [ngClass]="
+            ('LANGUAGE' | translate) === 'it'
+              ? 'fa-globe-europe'
+              : 'fa-globe-americas'
+          "
+        ></i>
+      </button>
+    </div>
+    <div class="page--footer-column-right ellipsize">
+      <button class="page--footer-button">
+        <span class="ellipsize">
+          <i
+            [ngClass]="userLogged ? 'fas fa-user-circle' : 'far fa-user-circle'"
+            class="page--footer-icons"
+          ></i>
+          {{ userNickname }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Exit game modal -->
+  <div class="modal" *ngIf="exitGameModal">
+    <div class="modal--content">
+      <p>{{ "MODAL_EXIT_DESC" | translate }}</p>
+      <div class="modal--buttons-container">
+        <button class="modal--button-secondary" (click)="stopExitGame()">
+          {{ "UNDO" | translate }}
+        </button>
+        <button class="modal--button-primary" (click)="continueExitGame()">
+          {{ "OK" | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Force exit modal -->
+  <div class="modal" *ngIf="forceExitModal">
+    <div class="modal--content">
+      <p>{{ forceExitText }}</p>
+      <div class="modal--buttons-container">
+        <button class="modal--button-primary" (click)="continueForceExit()">
+          {{ "OK" | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Language modal -->
+  <div class="modal" *ngIf="languageModal">
+    <div class="modal--content">
+      <p>{{ "LANG_DESC" | translate }}</p>
+      <ul class="list">
+        <li class="list--simple-element">
+          <button class="modal--button-language" (click)="changeLanguage('it')">
+            {{ "LANG_ITALIAN" | translate }}
+          </button>
+        </li>
+        <li class="list--simple-element">
+          <button class="modal--button-language" (click)="changeLanguage('en')">
+            {{ "LANG_ENGLISH" | translate }}
+          </button>
+        </li>
+        <li class="list--simple-element">
+          <button class="modal--button-language" (click)="changeLanguage('hu')">
+            {{ "LANG_HUNGARIAN" | translate }}
+          </button>
+        </li>
+      </ul>
+      <div class="modal--buttons-container">
+        <button class="modal--button-primary" (click)="closeLanguageModal()">
+          {{ "OK" | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

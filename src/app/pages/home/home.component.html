@@ -1,0 +1,83 @@
+<div id="home" class="page">
+  <div class="page--wrapper">
+    <div class="page--header">
+      <h1 class="floating-up-animation ellipsize">
+        {{ "APP_NAME_SHORT" | translate }}
+      </h1>
+    </div>
+    <div class="page--body">
+      <ul class="list">
+        <li class="list--simple-element">
+          <button class="navigation--button" (click)="goToRules()">
+            {{ "HOW_TO_PLAY" | translate }}
+          </button>
+        </li>
+        <li class="list--simple-element">
+          <button class="navigation--button" (click)="goToRMMaking()">
+            {{ "RANDOM_MATCH" | translate }}
+          </button>
+        </li>
+        <li class="list--simple-element">
+          <button class="navigation--button" (click)="goToCMMaking()">
+            {{ "CUSTOM_MATCH" | translate }}
+          </button>
+        </li>
+        <li class="list--simple-element">
+          <button class="navigation--button" (click)="goToAMMaking()">
+            {{ "AGA_MATCH" | translate }}
+          </button>
+        </li>
+        <li class="list--simple-element">
+          <button class="navigation--button" (click)="goToBootcamp()">
+            {{ "BOOT_CAMP" | translate }}
+          </button>
+        </li>
+        <li class="list--simple-element">
+          <button class="navigation--button" (click)="goToRankings()">
+            {{ "RANKINGS" | translate }}
+          </button>
+        </li>
+        <li class="list--simple-element">
+          <button class="navigation--button" (click)="goToLoginProfile()">
+            {{ loginOrProfile }}
+          </button>
+        </li>
+
+        <li class="list--simple-element" *ngIf="connected">
+          <div [ngClass]="connected ? 'flashing-animation' : ''">
+            {{
+              "NOTIF_GENERAL"
+                | translate
+                  : {
+                      totalMatches: totalMatches,
+                      connectedPlayers: connectedPlayers
+                    }
+            }}
+          </div>
+        </li>
+        <li class="list--simple-element" *ngIf="!connected">
+          <div [ngClass]="!connected ? 'flashing-animation' : ''">
+            {{ "NOTIF_OFFLINE" | translate }}
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="page--push"></div>
+  </div>
+
+  <!-- No connection modal -->
+  <div class="modal" *ngIf="noOnlineModal">
+    <div class="modal--content">
+      <p>{{ noOnlineModalText }}</p>
+      <div class="modal--buttons-container">
+        <button
+          class="modal--button-primary"
+          (click)="closeNoConnectionModal()"
+        >
+          {{ "OK" | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,128 @@
+<div id="bootmp-aftermatch" class="page">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <ul class="list">
+        <!-- Header -->
+        <li class="list--spaced-element">
+          <!-- Two columns header with user and bot data -->
+          <div class="centered-columns" *ngIf="general?.botSetting !== 0">
+            <div class="centered-columns--pair">
+              <div class="centered-columns--column">
+                <div class="big-text ellipsize">{{ userGlobal?.points }}</div>
+              </div>
+              <div class="centered-columns--column">
+                <div class="big-text ellipsize">{{ enemyGlobal?.points }}</div>
+              </div>
+            </div>
+
+            <div class="centered-columns--pair">
+              <div class="centered-columns--column ellipsize">
+                {{ user?.nickname }}
+              </div>
+              <div class="centered-columns--column ellipsize">
+                {{ enemy?.nickname }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Single column header user-only data-->
+          <div class="centered-columns" *ngIf="general?.botSetting === 0">
+            <div class="big-text ellipsize">{{ userGlobal?.points }}</div>
+            <div class="ellipsize">{{ user?.nickname }}</div>
+          </div>
+        </li>
+
+        <!-- Match winner -->
+        <li class="list--spaced-element" *ngIf="general?.botSetting !== 0">
+          <h2 class="capitalize" *ngIf="!draw">
+            {{
+              "WINNER" | translate : { winner: winner, matchCount: matchCount }
+            }}
+          </h2>
+          <h2 *ngIf="draw">{{ "DRAW" | translate }}</h2>
+        </li>
+
+        <!-- Stats module -->
+        <li class="list--spaced-element">
+          <div class="stats">
+            <span class="stats--header">{{ "STATS_TITLE" | translate }}</span>
+
+            <p class="stats--line">
+              <span class="material-symbols-outlined">{{ "footprint" }}</span>
+              {{ "STATS_MOVES" | translate }}
+              <span class="stats--player-text">{{
+                userMatch?.pathLength
+              }}</span>
+              <span *ngIf="general?.botSetting !== 0">-</span>
+              <span
+                class="stats--enemy-text"
+                *ngIf="general?.botSetting !== 0"
+                >{{ enemyMatch?.pathLength }}</span
+              >
+            </p>
+
+            <p class="stats--line">
+              <span class="material-symbols-outlined">{{ "schedule" }}</span>
+              {{ "STATS_TIME" | translate }}
+              <span class="stats--player-text">{{
+                timeFormatter(userMatch?.time)
+              }}</span>
+              <span *ngIf="general?.botSetting !== 0">-</span>
+              <span
+                class="stats--enemy-text"
+                *ngIf="general?.botSetting !== 0"
+                >{{ timeFormatter(enemyMatch?.time) }}</span
+              >
+            </p>
+
+            <p class="stats--line">
+              <span class="material-symbols-outlined">{{ "smart_toy" }}</span>
+              {{ "STATS_POINTS" | translate }}
+              <span class="stats--player-text">{{ userMatch?.points }}</span>
+              <span *ngIf="general?.botSetting !== 0">-</span>
+              <span
+                class="stats--enemy-text"
+                *ngIf="general?.botSetting !== 0"
+                >{{ enemyMatch?.points }}</span
+              >
+            </p>
+          </div>
+        </li>
+
+        <!-- Share button -->
+        <li class="list--simple-element">
+          <button
+            class="navigation--button flashing-animation"
+            (click)="shareText()"
+          >
+            {{ "SHARE" | translate }}
+            <span
+              class="material-symbols-outlined inline-block animate-slide-left"
+              >{{ "keyboard_double_arrow_right" }}</span
+            >
+          </button>
+          <div class="copyable--copy-text" *ngIf="sharedLegacy">
+            <i class="far fa-copy copyable--copy-icon"></i>
+            {{ "COPIED" | translate }}
+          </div>
+        </li>
+
+        <!-- New match options -->
+        <li class="list--spaced-element">
+          <button
+            class="navigation--button flashing-animation"
+            (click)="newMatch()"
+          >
+            {{ "PLAY_AGAIN" | translate }}
+            <span
+              class="material-symbols-outlined inline-block animate-slide-left"
+              >{{ "keyboard_double_arrow_right" }}</span
+            >
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="page--push"></div>
+  </div>
+</div>

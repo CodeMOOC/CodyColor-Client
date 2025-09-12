@@ -1,0 +1,30 @@
+<div id="splash" class="page">
+  <div class="page--wrapper" (click)="goToHome()">
+    <div class="page--body">
+      <img
+        class="big-image floating-up-animation"
+        src="assets/img/logo.png"
+        alt="game-logo"
+      />
+      <h1 class="ellipsize">{{ "APP_NAME_SHORT" | translate }}</h1>
+      <div class="ellipsize">{{ "APP_SUBTITLE" | translate }}</div>
+      <div
+        class="press-to-continue flashing-animation ellipsize cursor-pointer"
+      >
+        {{ "PRESS_TO_CONTINUE" | translate }}
+      </div>
+    </div>
+    <div class="page--push"></div>
+  </div>
+
+  <div class="page--footer">
+    <div class="page--footer-single-column ellipsize">
+      v.{{ clientVersion }}
+      -
+      <a href="https://www.riccardomaldini.it/blog/codycolor-changelog"
+        >Changelog</a
+      ><br />
+      <div [innerHTML]="'SPLASH_FOOTER' | translate"></div>
+    </div>
+  </div>
+</div>

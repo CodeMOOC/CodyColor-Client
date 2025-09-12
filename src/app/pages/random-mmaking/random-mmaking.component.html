@@ -1,0 +1,171 @@
+<div id="random-mmaking" class="page">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <!-- Inserimento nickname -->
+      <div
+        *ngIf="mmakingState === screens.nicknameSelection"
+        class="page--component"
+      >
+        <form #nickForm="ngForm">
+          <ul class="list">
+            <li class="list--simple-element">
+              <h2>{{ "RANDOM_MATCH" | translate }}</h2>
+            </li>
+            <li class="list--spaced-element">
+              {{ "RANDOM_MMAKING_DESC" | translate }}
+            </li>
+            <li class="list--simple-element">
+              <label for="nickname">{{ "NICKNAME" | translate }}</label>
+            </li>
+            <li class="list--spaced-element">
+              <input
+                type="text"
+                name="nickname"
+                id="nickname"
+                [(ngModel)]="nickname"
+                maxlength="22"
+                [placeholder]="'NICKNAME_EXAMPLE' | translate"
+                class="standard-input"
+                [disabled]="userLogged"
+                required
+                autofocus
+                #nicknameModel="ngModel"
+              />
+            </li>
+            <li class="list--spaced-element flex justify-center">
+              <button
+                class="navigation--button flashing-animation flex items-end gap-4"
+                (click)="requestMMaking()"
+                [disabled]="!nickForm.valid || mmakingRequested"
+              >
+                <span [innerHTML]="'FIND_ENEMY' | translate"></span>
+
+                <span
+                  class="material-symbols-outlined inline-block animate-slide-left"
+                  >{{ "keyboard_double_arrow_right" }}</span
+                >
+              </button>
+            </li>
+            <li class="list--spaced-element">
+              <p class="flashing-animation">
+                {{ "ENEMIES_WAITING" | translate : { randomWaitingPlayers } }}
+              </p>
+            </li>
+          </ul>
+        </form>
+      </div>
+
+      <!-- Entrato nella gameRoom, aspetta un avversario -->
+      <div
+        *ngIf="mmakingState === screens.waitingEnemy"
+        class="page--component"
+      >
+        <ul class="list">
+          <li class="list--spaced-element">
+            <div class="loading-spinner">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </li>
+          <li class="list--spaced-element">
+            <div class="flashing-animation">
+              {{ "WAITING_NEW_PLAYERS" | translate }}<br />
+              {{ mmakingTimerFormatter(mmakingTimerValue) }}
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Players accoppiati, in attesa di ready -->
+      <div
+        id="enemy-found"
+        *ngIf="mmakingState === screens.enemyFound"
+        class="page--component"
+      >
+        <ul class="list">
+          <li class="list--spaced-element">
+            {{ "NEW_ENEMY" | translate : { enemyNickname: enemy.nickname } }}
+          </li>
+          <li class="list--simple-element">
+            <button
+              class="navigation--button flashing-animation"
+              (click)="playerReady()"
+              [disabled]="readyClicked"
+            >
+              {{ "START" | translate }}
+              <i
+                class="fas fa-angle-double-right navigation--icon-in-text floating-right-animation"
+              ></i>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Ready clicked, aspettando il segnale di ready dell'avversario -->
+      <div
+        id="waiting-confirm"
+        *ngIf="mmakingState === screens.waitingReady"
+        class="page--component"
+      >
+        <ul class="list">
+          <li class="list--spaced-element">
+            <div class="loading-spinner">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </li>
+          <li class="list--spaced-element">
+            <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Chat module -->
+      <div
+        class="chat"
+        *ngIf="
+          mmakingState === screens.waitingReady ||
+          mmakingState === screens.enemyFound
+        "
+      >
+        <div class="chat--bubbles-container">
+          {{ "CHAT_TITLE" | translate }}
+          <div
+            class="chat--bubbles-sub-container"
+            *ngFor="let bubble of chatBubbles"
+          >
+            <div class="chat--bubble-row">
+              <div [ngClass]="getBubbleStyle(bubble)">
+                <div class="chat--bubble-sender">{{ bubble.sender }}</div>
+                {{ bubble.body | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chat--hints-container">
+          {{ "CHAT_SEND" | translate }}
+          <div class="chat--hints-sub-container" *ngFor="let hint of chatHints">
+            <button class="chat--hint" (click)="sendChatMessage(hint)">
+              {{ hint | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page--push"></div>
+  </div>
+</div>

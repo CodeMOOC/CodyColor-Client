@@ -1,8 +1,3 @@
-<div class="mt-10 relative">
-  <app-roby-animation #player image="roby-positioned"></app-roby-animation>
-
-  <button (click)="movePlayer()">Muovi Player</button>
-</div>
 <div id="bootmp-match" class="page">
   <div class="page--wrapper">
     <div class="page--body">
@@ -101,6 +96,14 @@
           <!-- Small grid -->
           <div class="w-full" cdkDropListGroup>
             <div class="small-grid" [ngClass]="{ hidden: !showCompleteGrid }">
+              <app-roby-animation
+                *ngIf="executeAnimation && playerPath"
+                #player
+                [path]="playerPath"
+                (finished)="executeEndSequence()"
+                image="roby-positioned"
+                class="roby-wrapper"
+              />
               <!-- Top row -->
               <div class="cell placeholder"></div>
               @for (col of grid[0]; let colIndex = $index; track colIndex) {
@@ -112,8 +115,6 @@
                 #arrowList="cdkDropList"
                 [cdkDropListData]="{ side: 'top', index: colIndex }"
                 (cdkDropListDropped)="onTileDropped($event, Side.Top, colIndex)"
-                (cdkDropListEntered)="logEvent('entered', $event)"
-                (cdkDropListExited)="logEvent('exited', $event)"
               >
                 <span class="material-symbols-outlined">
                   {{ getArrowIcon(Side.Top) }}
@@ -121,7 +122,6 @@
               </div>
               }
               <div class="cell placeholder"></div>
-
               <!-- Playable rows -->
               @for (row of grid; let rowIndex = $index; track rowIndex) {
               <!-- Left arrow -->
@@ -179,8 +179,6 @@
                 (cdkDropListDropped)="
                   onTileDropped($event, Side.Bottom, colIndex)
                 "
-                (cdkDropListEntered)="logEvent('entered', $event)"
-                (cdkDropListExited)="logEvent('exited', $event)"
               >
                 <span class="material-symbols-outlined">
                   {{ getArrowIcon(Side.Bottom) }}
@@ -189,6 +187,7 @@
               }
               <div class="cell placeholder"></div>
             </div>
+
             <div cdkDropList [cdkDropListConnectedTo]="connectedIds">
               <div
                 cdkDrag
@@ -237,8 +236,7 @@
           >
             <span class="material-symbols-outlined">schedule</span>
             {{
-              "TIME_PLAYER"
-                | translate : { time: finalTimeFormatter(match.time) }
+              "TIME_PLAYER" | translate : { time: timerFormatter(match.time) }
             }}
           </div>
           <div
@@ -251,7 +249,7 @@
 
           <!-- Skip button -->
           <!-- <div class="centered-container" *ngIf="startAnimation && !askedForSkip"> -->
-          <div class="centered-container" *ngIf="startAnimation">
+          <div class="centered-container" *ngIf="isAnimationReady">
             <button
               class="navigation--button flashing-animation"
               (click)="skip()"

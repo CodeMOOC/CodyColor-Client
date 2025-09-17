@@ -144,11 +144,16 @@ export class GameDataService {
   /* ------------------ Helper Methods ------------------ */
 
   startTimer(initial: number) {
+    console.log('Starting timer with', initial);
     this.userTimer$.next(initial);
+    // this.userTimer$.next(3000);
     this.enemyTimer$.next(initial);
     this.intervalId = setInterval(() => {
-      this.userTimer$.next(this.userTimer$.value - 10);
-      this.enemyTimer$.next(this.enemyTimer$.value - 10);
+      const nextUser = this.userTimer$.value - 10;
+      const nextEnemy = this.enemyTimer$.value - 10;
+
+      this.userTimer$.next(nextUser);
+      this.enemyTimer$.next(nextEnemy);
     }, 10);
   }
 
@@ -182,9 +187,9 @@ export class GameDataService {
 
   // converte la stringa 'GRY' in una matrice 5x5
   formatMatchTiles(tileStr: string): string[][] {
-    const grid = [];
+    const grid: string[][] = [];
     for (let i = 0; i < 5; i++) {
-      const row = [];
+      const row: string[] = [];
       for (let j = 0; j < 5; j++) {
         row.push(tileStr[i * 5 + j]);
       }

@@ -13,12 +13,14 @@ import { LanguageService } from '../../../services/language.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { ShareService } from '../../../services/share.service';
 import { CommonModule } from '@angular/common';
+import { PathService } from '../../../services/path.service';
 
 @Component({
   selector: 'app-bootmp-aftermatch',
   imports: [CommonModule, TranslateModule],
   templateUrl: './bootmp-aftermatch.component.html',
   styleUrl: './bootmp-aftermatch.component.scss',
+  standalone: true,
 })
 export class BootmpAftermatchComponent implements OnInit {
   private gameData = inject(GameDataService);
@@ -51,6 +53,7 @@ export class BootmpAftermatchComponent implements OnInit {
     private session: SessionService,
     private translate: TranslateService,
     private auth: AuthService,
+    private path: PathService,
     private language: LanguageService,
     private shareService: ShareService,
     private visibility: VisibilityService,
@@ -117,6 +120,7 @@ export class BootmpAftermatchComponent implements OnInit {
     this.audio.playSound('menu-click');
     // reset match
     this.gameData.initializeMatchData();
+    this.path.reset();
 
     this.gameData.setNewMatchTiles();
     this.router.navigate(['/bootmp-match']);

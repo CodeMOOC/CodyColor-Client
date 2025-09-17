@@ -1,4 +1,5 @@
 .small-grid {
+  position: relative;
   display: grid;
   justify-items: center;
   grid-template-columns: 1fr repeat(5, 50px) 1fr;
@@ -22,4 +23,18 @@
 
 .placeholder {
   background: transparent;
+}
+
+.roby-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* make sure the robot sits above the tiles */
+  pointer-events: none;
+  z-index: 10;
+}
+
+.roby img {
+  width: 30px;
+  height: 30px;
 }

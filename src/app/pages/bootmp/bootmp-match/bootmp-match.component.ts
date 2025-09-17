@@ -41,8 +41,9 @@ import { sideToString } from '../../../utils/side.utils';
 import { GeneralSettings } from '../../../models/game-data.model';
 import { MatDialog } from '@angular/material/dialog';
 import { ExitGameModalComponent } from '../../../components/exit-game-modal/exit-game-modal.component';
-import { Subscription } from 'rxjs';
+import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 import { RobyAnimationComponent } from '../../../components/roby-animation/roby-animation.component';
+import { Path } from '../../../models/path.modal';
 
 @Component({
   selector: 'app-match',
@@ -60,6 +61,7 @@ import { RobyAnimationComponent } from '../../../components/roby-animation/roby-
 })
 export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChildren(CdkDropList) dropLists!: QueryList<CdkDropList>;
+  @ViewChild('player') player?: RobyAnimationComponent;
 
   connectedIds: any;
 
@@ -76,6 +78,8 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   enemy!: Player;
   general!: GeneralSettings;
   match!: Match;
+  playerPath?: Path;
+  enemyPath?: Path;
 
   //punti attuali
   userPoints = 0;
@@ -86,6 +90,10 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   userTimerAnimation = '';
   enemyTimerAnimation = '';
 
+  botSetting!: number;
+
+  executeAnimation = false;
+
   // stili dinamici per griglia e frecce
   tilesCss: string[][] = [];
   startPositionsCss: string[][] = [];
@@ -93,7 +101,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   // flag per logica UI
   showCompleteGrid = false;
   showArrows = false;
-  startAnimation = false;
+  isAnimationReady = false;
 
   draggableRobyImage = 'roby-idle';
   exitGameModal = false;
@@ -112,13 +120,9 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   grid: Tile[][] = [];
   entryPoints: EntryPoint[] = [];
 
-  userTimeLeft: any;
-  enemyTimeLeft: any;
-
   subs = new Subscription();
 
   timerFormatter!: (time: number) => string;
-  finalTimeFormatter!: (time: number) => string;
 
   draggable = {
     data: 'myDragData',
@@ -130,8 +134,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   // create a calculator for side and distance
   listStartPosition = [{ side: 0, distance: 0 }];
 
-  todo = ['Get to work', 'Pick up groceries', 'Go home', 'Fall asleep'];
-  done = ['Get up', 'Brush teeth', 'Take a shower', 'Check e-mail', 'Walk dog'];
+  private destroy$ = new Subject<void>();
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -140,41 +143,49 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     private navigation: NavigationService,
     private audio: AudioService,
     private session: SessionService,
-    private auth: AuthService,
-    private dialog: MatDialog,
     private translate: TranslateService,
     private translation: LanguageService,
     private visibility: VisibilityService,
-    private router: Router,
-    private ngZone: NgZone
-  ) {
-    this.userTimeLeft = this.gameData.getUserTimer();
-    this.enemyTimeLeft = this.gameData.getEnemyTimer();
-  }
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    console.log('Match component initialized');
-    // Recupera timer e dati dal servizio
-    this.subs.add(
-      this.gameData.getUserTimer().subscribe((ms) => {
-        this.userTimerValue = ms;
-      })
-    );
-
-    this.subs.add(
-      this.gameData.gameData$.subscribe((data) => {
-        this.user = data.user;
-        this.enemy = data.enemy;
-        this.general = data.general;
-        this.match = data.match;
-      })
-    );
-
     // Costruisce griglia statica
     this.buildGrid();
     // Celle con frecce
     this.buildEntryPoints();
     this.buildSmallGrid();
+
+    this.executeAnimation = false;
+
+    console.log('Player path  ', this.playerPath);
+
+    this.subs.add(
+      this.gameData.gameData$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((data) => {
+          this.user = data.user;
+          this.enemy = data.enemy;
+          this.general = data.general;
+          this.match = data.match;
+          this.userPoints = data.userGlobalResult.points;
+          this.enemyPoints = data.enemyGlobalResult.points;
+        })
+    );
+
+    this.path.path$.subscribe((p) => {
+      this.playerPath = p;
+
+      if (this.playerPath.startPosition.side !== Side.None) {
+        this.executeAnimation = true;
+      }
+    });
+
+    const botSetting = this.gameData.value.general.botSetting;
+    this.timerFormatter =
+      botSetting !== 0
+        ? this.gameData.formatTimeDecimals
+        : this.gameData.formatTimeMatchClock;
 
     if (this.session.isSessionInvalid()) {
       this.quitGame();
@@ -182,32 +193,24 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    this.user = this.gameData.value.user;
-    this.enemy = this.gameData.value.enemy;
-    this.general = this.gameData.value.general;
-    this.match = this.gameData.value.match;
-
-    console.log('Match data:', this.match);
-    this.userPoints = this.gameData.value.userGlobalResult.points;
-    this.enemyPoints = this.gameData.value.enemyGlobalResult.points;
+    console.log('Match data chehchhe:', this.match);
 
     this.initializeTilesCss();
 
     // TO UNCOMMENT AFTER TESTING
     // this.startCountdown();
     this.countdownInProgress = false; // TO REMOVE AFTER TESTING
-    this.startMatchTimers(); // TO REMOVE AFTER TESTING
+    // Recupera timer e dati dal servizio
+    this.startMatchTimers();
 
     this.setupEnemyTrigger();
+  }
 
-    const botSetting = this.gameData.value.general.botSetting;
-
-    this.timerFormatter =
-      botSetting !== 0
-        ? this.gameData.formatTimeDecimals
-        : this.gameData.formatTimeMatchClock;
-
-    this.finalTimeFormatter = this.gameData.formatTimeDecimals;
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.gameData.stopTimer();
   }
 
   ngAfterViewInit() {
@@ -227,43 +230,9 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  ngOnDestroy(): void {
-    this.gameData.stopTimer();
-  }
-
-  private refreshDropConnections() {
-    const dropListIds = this.dropLists.map((dl) => dl.id);
-    this.dropLists.forEach((dl) => {
-      dl.connectedTo = dropListIds;
-    });
-    this.arrowDropLists = dropListIds;
-  }
-
-  drop(event: CdkDragDrop<string[]>) {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-    } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-    }
-  }
-
-  @ViewChild('player') player!: any;
-
-  movePlayer() {
-    // esempio: muove il robottino da (0,0) a (3,2)
-    const newX = 3 * 5;
-    const newY = 2 * 5;
-    const newAngle = 90;
-    this.player.moveTo(newX, newY, newAngle);
+  private quitGame(): void {
+    // this.path.quitGame();
+    this.gameData.reset();
   }
 
   private buildGrid() {
@@ -353,11 +322,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private quitGame(): void {
-    this.path.quitGame();
-    this.gameData.reset();
-  }
-
   //...a meno che, non venga rilasciato in una posizione valida. In quel caso, viene utilizzata un secondo tag
   // img, per mostrare roby nella sua posizione di partenza. Viene inoltre fermato il timer, e notificato
   // l'avversario dell'avvenuta presa di posizione
@@ -370,7 +334,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.audio.playSound('roby-positioned');
     this.showCompleteGrid = true;
 
-    if (!this.startAnimation) {
+    if (!this.isAnimationReady) {
       const finalUserTime = this.gameData.getUserFinalTime();
       // aggiorna i dati della partita
       this.gameData.update('match', {
@@ -387,23 +351,15 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
       this.userTimerValue = this.gameData.value.match.time;
 
       // calcolo risultato giocatore
-      const playerResult = this.path.positionRoby(
-        true,
-        this.gameData.value.match.startPosition
-      );
+      this.path.computePath(this.gameData.value.match.startPosition);
 
       this.gameData.update('userMatchResult', {
         nickname: this.gameData.value.user.nickname,
         playerId: this.gameData.value.user.playerId,
-        pathLength: playerResult.pathLength,
+        pathLength: this.path.value.pathLength,
         time: this.gameData.value.match.time,
         startPosition: this.gameData.value.match.startPosition,
       });
-
-      console.log(
-        'Final position set to:',
-        this.gameData.value.userMatchResult
-      );
 
       // posizionamento avversario (bot)
       if (
@@ -413,6 +369,8 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
         const botPath = this.path.calculateBotPath(
           this.gameData.value.general.botSetting
         );
+        console.log('Positioning BOT ', botPath);
+
         this.gameData.update('match', {
           enemyPositioned: true,
           enemyTime: this.positionEnemyTrigger,
@@ -422,9 +380,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
         this.enemyTimerValue = this.gameData.value.match.enemyTime;
         this.enemyTimerAnimation = 'clock--end';
       }
-
-      // DA RIMETTERE
-      // this.startAnimationSequence();
     }
   }
 
@@ -458,11 +413,11 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  // il tempo di gioco dell'avversario, che viene fissato a seconda della difficoltà (botSetting)
+  // tempo di gioco del bot basato sulla difficoltà selezionata
   private setupEnemyTrigger(): void {
     const tm = this.general.timerSetting;
-    this.positionEnemyTrigger =
-      (tm / (this.general.botSetting || 2)) * (this.general.botSetting / 1);
+    const bot = this.general.botSetting;
+    this.positionEnemyTrigger = tm * (bot / (bot + 1));
   }
 
   // avvia i timer per visualizzare tempo rimanente di giocatore e avversario; questo timer non utilizza
@@ -475,7 +430,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     // React to the user countdown
     this.subs.add(
       this.gameData.getUserTimer().subscribe((ms) => {
-        if (this.startAnimation) return; // stop updates once the end sequence starts
+        if (this.isAnimationReady) return; // stop updates once the end sequence starts
         if (!this.match.positioned) {
           // se sotto i dieci secondi animazione di allarme
           if (ms < 10000) this.userTimerAnimation = 'clock-ending-animation';
@@ -490,7 +445,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.general.botSetting !== 0) {
       this.subs.add(
         this.gameData.getEnemyTimer().subscribe((ms) => {
-          if (this.startAnimation) return;
+          if (this.isAnimationReady) return;
           if (!this.match.enemyPositioned) {
             if (ms < 10000) this.enemyTimerAnimation = 'clock-ending-animation';
 
@@ -516,6 +471,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // giocatore non piazza il suo personaggio in tempo
   private handleUserTimeout(): void {
+    console.log('USER TIMEOUT');
     if (!this.match.positioned) {
       this.gameData.update('match', {
         positioned: true,
@@ -537,24 +493,27 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   // cosa fare una volta terminata senza intoppi la partita; mostra la schermata aftermatch
-  private executeEndSequence(): void {
-    // prevent double execution
-    if (this.startAnimation) return;
-    this.startAnimation = true;
+  executeEndSequence(): void {
+    console.log('Executing animation ');
 
+    // prevent double execution
+    if (this.isAnimationReady) return;
+    this.isAnimationReady = true;
+
+    // 2. trigger the child’s animation
+    this.player?.play();
     const current = this.gameData.value; // safe for reading only
 
     // Handle enemy result if a bot is active
     if (current.general.botSetting !== 0) {
-      const enemyResult = this.path.positionRoby(
-        false,
-        current.match.enemyStartPosition
-      );
-
+      // const enemyResult = this.path.positionRoby(
+      //   false,
+      //   current.match.enemyStartPosition
+      // );
       this.gameData.update('enemyMatchResult', {
         nickname: current.enemy.nickname,
         playerId: current.enemy.playerId,
-        pathLength: enemyResult.pathLength,
+        pathLength: this.path.value.pathLength,
         time: current.match.enemyTime,
         startPosition: current.match.enemyStartPosition,
       });
@@ -600,10 +559,8 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
       });
     }
 
-    // Animate and navigate
-    this.path.animateActiveRobys(() => {
-      this.router.navigate(['/bootmp-aftermatch']);
-    });
+    // navigate to aftermatch screen
+    this.router.navigate(['/bootmp-aftermatch']);
   }
 
   onDragStarted(event: any) {
@@ -628,47 +585,48 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   //   }
   // }
 
-  onDragEnded(event: any) {
-    console.log('Drag ended', event);
-    console.log(this.startAnimation);
-    this.isDragging = false;
-    this.draggableRobyImage = 'roby-idle';
-    this.audio.playSound('roby-positioned');
-    this.showCompleteGrid = true;
+  // onDragEnded(event: any) {
+  //   console.log('Drag ended', event);
+  //   console.log(this.isAnimationReady);
+  //   this.isDragging = false;
+  //   this.draggableRobyImage = 'roby-idle';
+  //   this.audio.playSound('roby-positioned');
+  //   this.showCompleteGrid = true;
 
-    if (!this.startAnimation) {
-      // this.gameData.editMatch({
-      //   positioned: true,
-      //   time: this.nextGameTimerValue,
-      //   startPosition: { side, distance },
-      // });
-      this.showDraggableRoby = false;
-      this.userTimerAnimation = 'clock--end';
-      this.userTimerValue = this.match.time;
+  //   if (!this.isAnimationReady) {
+  //     // this.gameData.editMatch({
+  //     //   positioned: true,
+  //     //   time: this.nextGameTimerValue,
+  //     //   startPosition: { side, distance },
+  //     // });
+  //     this.showDraggableRoby = false;
+  //     this.userTimerAnimation = 'clock--end';
+  //     this.userTimerValue = this.match.time;
 
-      console.log('Final position set to:', this.match);
-      const result = this.path.positionRoby(true, this.match.startPosition);
-      this.gameData.update('userMatchResult', {
-        nickname: this.user.nickname,
-        playerId: this.user.playerId,
-        pathLength: result.pathLength,
-        time: this.match.time,
-        startPosition: this.match.startPosition,
-      });
-      if (!this.match.enemyPositioned && this.general.botSetting !== 0) {
-        const botPath = this.path.calculateBotPath(this.general.botSetting);
-        this.gameData.update('match', {
-          enemyPositioned: true,
-          enemyTime: this.positionEnemyTrigger,
-          enemyStartPosition: botPath.startPosition,
-        });
+  //     console.log('Final position set to:', this.match);
+  //     // const result = this.path.positionRoby(true, this.match.startPosition);
+  //     // TO CHANGEGEGEGGEGEGEGEGGE
+  //     this.gameData.update('userMatchResult', {
+  //       nickname: this.user.nickname,
+  //       playerId: this.user.playerId,
+  //       pathLength: 5,
+  //       time: this.match.time,
+  //       startPosition: this.match.startPosition,
+  //     });
+  //     if (!this.match.enemyPositioned && this.general.botSetting !== 0) {
+  //       const botPath = this.path.calculateBotPath(this.general.botSetting);
+  //       this.gameData.update('match', {
+  //         enemyPositioned: true,
+  //         enemyTime: this.positionEnemyTrigger,
+  //         enemyStartPosition: botPath.startPosition,
+  //       });
 
-        this.enemyTimerValue = this.match.enemyTime;
-        this.enemyTimerAnimation = 'clock--end';
-      }
-      this.executeEndSequence();
-    }
-  }
+  //       this.enemyTimerValue = this.match.enemyTime;
+  //       this.enemyTimerAnimation = 'clock--end';
+  //     }
+  //     this.executeEndSequence();
+  //   }
+  // }
 
   // onTileDropped(event: CdkDragDrop<any>) {
   //   const { row, col } = event.container.data;
@@ -681,10 +639,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     // Only allow dropping robot on "start" arrow cells
     return drop.data.start === true;
   };
-
-  logEvent(name: string, event: any) {
-    console.log('DropList event:', name, event);
-  }
 
   // onTileDropped(event: CdkDragDrop<any>, side: string, distance: number) {
   //   const nativeEvent = event.event as MouseEvent | TouchEvent;
@@ -743,41 +697,44 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.draggableRobyImage = 'roby-dragging-trasp';
   }
 
-  onRobyDropped(side: number, distance: number): void {
-    this.audio.playSound('roby-positioned');
-    this.showCompleteGrid = true;
-    if (!this.startAnimation) {
-      const finalUserTime = this.gameData.getUserFinalTime();
-      this.gameData.update('match', {
-        positioned: true,
-        time: finalUserTime,
-        startPosition: { side, distance },
-      });
-      this.showDraggableRoby = false;
-      this.userTimerAnimation = 'clock--end';
-      this.userTimerValue = this.match.time;
+  // onRobyDropped(side: number, distance: number): void {
+  //   this.audio.playSound('roby-positioned');
+  //   this.showCompleteGrid = true;
+  //   if (!this.isAnimationReady) {
+  //     const finalUserTime = this.gameData.getUserFinalTime();
+  //     this.gameData.update('match', {
+  //       positioned: true,
+  //       time: finalUserTime,
+  //       startPosition: { side, distance },
+  //     });
+  //     this.showDraggableRoby = false;
+  //     this.userTimerAnimation = 'clock--end';
+  //     this.userTimerValue = this.match.time;
 
-      const result = this.path.positionRoby(true, this.match.startPosition);
-      this.gameData.update('userMatchResult', {
-        nickname: this.user.nickname,
-        playerId: this.user.playerId,
-        pathLength: result.pathLength,
-        time: this.match.time,
-        startPosition: this.match.startPosition,
-      });
-      if (!this.match.enemyPositioned && this.general.botSetting !== 0) {
-        const botPath = this.path.calculateBotPath(this.general.botSetting);
-        this.gameData.update('match', {
-          enemyPositioned: true,
-          enemyTime: this.positionEnemyTrigger,
-          enemyStartPosition: botPath.startPosition,
-        });
-        this.enemyTimerValue = this.match.enemyTime;
-        this.enemyTimerAnimation = 'clock--end';
-      }
-      this.executeEndSequence();
-    }
-  }
+  //     const result = this.path.computePath(this.match.startPosition);
+  //     console.log('result', result);
+  //     // TO CHANGEGEGEGGEGEGEGEGGE
+  //     this.gameData.update('userMatchResult', {
+  //       nickname: this.user.nickname,
+  //       playerId: this.user.playerId,
+  //       // pathLength: result.pathLength,
+  //       pathLength: 5,
+  //       time: this.match.time,
+  //       startPosition: this.match.startPosition,
+  //     });
+  //     if (!this.match.enemyPositioned && this.general.botSetting !== 0) {
+  //       const botPath = this.path.calculateBotPath(this.general.botSetting);
+  //       this.gameData.update('match', {
+  //         enemyPositioned: true,
+  //         enemyTime: this.positionEnemyTrigger,
+  //         enemyStartPosition: botPath.startPosition,
+  //       });
+  //       this.enemyTimerValue = this.match.enemyTime;
+  //       this.enemyTimerAnimation = 'clock--end';
+  //     }
+  //     this.executeEndSequence();
+  //   }
+  // }
 
   skip(): void {
     this.audio.playSound('menu-click');

@@ -1,186 +1,49 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { GameDataService } from './game-data.service';
-import { EntryPoint, Side } from '../models/cell.model';
-
-interface CellCoord {
-  side: any;
-  distance: number;
-}
-
-interface TileCoord {
-  x: number;
-  y: number;
-}
-
-interface RobotState {
-  show: boolean;
-  animationFinished: boolean;
-  startPosition: CellCoord;
-  endPosition: CellCoord;
-  tilesCoords: CellCoord[];
-  direction: number[];
-  pathLength: number;
-  walkingTimer?: any;
-  image: string;
-  positionedImage: string;
-  walkingImages: string[];
-  brokenImage: string;
-  changeImage: (img: string) => void;
-}
+import { EntryPoint, Side, Tile } from '../models/cell.model';
+import { Path } from '../models/path.model';
+import { BehaviorSubject } from 'rxjs';
 
 /*
  * RobyMoveHandler: servizio che permette di gestire i robot nella scacchiera, calcolando il percorso che
  * ogni robot robot deve compiere, animandoli a comando, e calcolandone il percorso
  */
 @Injectable({ providedIn: 'root' })
-export class PathService implements OnDestroy {
-  private playerRoby!: RobotState;
-  private enemiesRoby!: RobotState[][];
-  private startTiles!: HTMLElement[][];
-  private completeTiles!: HTMLElement[][];
+export class PathService {
+  private pathSubject = new BehaviorSubject<Path>(this.emptyPath());
+  public readonly path$ = this.pathSubject.asObservable();
 
   constructor(private gameData: GameDataService) {}
 
-  ngOnDestroy(): void {
-    this.quitGame();
+  /**
+   * Calculate a path starting from `start` and emit it so that
+   * any animation component can subscribe and animate.
+   */
+  public computePath(start: EntryPoint): void {
+    const path = this.calculatePath(start);
+    this.pathSubject.next(path);
   }
 
-  // permette di uscire dal gioco in modo sicuro, interrompendo tutti i timers e pulendo le variabili
-  quitGame(): void {
-    this.cleanupTimers(this.playerRoby);
-    this.enemiesRoby?.flat().forEach((enemy) => this.cleanupTimers(enemy));
-    this.playerRoby = {} as any;
-    this.enemiesRoby = [];
-  }
-
-  getPlayerRoby(): RobotState {
-    return this.playerRoby;
-  }
-  getEnemiesRoby(): RobotState[][] {
-    return this.enemiesRoby;
-  }
-
-  initialize(elementsProvider: {
-    startTiles: HTMLElement[][];
-    completeTiles: HTMLElement[][];
-  }): void {
-    this.startTiles = elementsProvider.startTiles;
-    this.completeTiles = elementsProvider.completeTiles;
-    this.initializePlayer();
-    this.initializeEnemies();
-  }
-
-  private initializePlayer() {
-    this.playerRoby = {
-      show: false,
-      animationFinished: false,
-      startPosition: { side: -1, distance: -1 },
-      endPosition: { side: -1, distance: -1 },
+  emptyPath(): Path {
+    return {
+      startPosition: { side: Side.None, distance: -1 },
+      endPosition: { side: Side.None, distance: -1 },
       tilesCoords: [],
       direction: [],
       pathLength: 0,
-      positionedImage: 'roby-positioned',
-      walkingImages: ['roby-walking-1', 'roby-walking-2'],
-      brokenImage: 'roby-broken',
-      image: 'roby-positioned',
-      changeImage: (img: string) => (this.playerRoby.image = img),
     };
   }
 
-  private initializeEnemies() {
-    this.enemiesRoby = Array.from({ length: 4 }, (_, side) =>
-      Array.from({ length: 5 }, (_, dist) => ({
-        show: false,
-        animationFinished: false,
-        startPosition: { side, distance: dist },
-        endPosition: { side: -1, distance: -1 },
-        tilesCoords: [],
-        direction: [],
-        pathLength: 0,
-        positionedImage: 'enemy-positioned',
-        walkingImages: ['enemy-walking-1', 'enemy-walking-2'],
-        brokenImage: 'enemy-broken',
-        image: 'enemy-positioned',
-        changeImage: (img: string) => {
-          this.enemiesRoby[side][dist].image = img;
-        },
-      }))
-    );
-  }
-
-  // funzione d'appoggio per posizionare tutti i roby passati dal server a fine match
-  positionAllEnemies(
-    startPositions: { position: CellCoord; playerCount: number }[]
-  ): void {
-    const userStart = this.gameData.value.match.startPosition;
-    startPositions.forEach((item) => {
-      if (
-        item.playerCount > 1 ||
-        item.position.side !== userStart.side ||
-        item.position.distance !== userStart.distance
-      ) {
-        this.positionRoby(false, item.position);
-      }
-    });
-  }
-
-  // pone un roby in posizione (senza animazione), sulla casella passata in ingresso dall'utente,
-  // quindi calcola e prepara il percorso; ritorna il path del robot
-  positionRoby(isPlayer: boolean, selectedStart: CellCoord): any {
-    const path = this.calculatePath(selectedStart);
-    if (selectedStart.side >= 0) {
-      const roby = isPlayer
-        ? this.playerRoby
-        : this.enemiesRoby[selectedStart.side][selectedStart.distance];
-
-      roby.show = true;
-      const tileEl =
-        this.startTiles[selectedStart.side][selectedStart.distance];
-      const coords = tileEl.getBoundingClientRect();
-      const angle = this.getAngle((selectedStart.side + 2) % 4);
-
-      roby.changeImage(roby.positionedImage);
-      // set style and path data...
-      Object.assign(roby, path);
-    }
-    return path;
-  }
-
-  animateActiveRobys(endCallback: () => void): void {
-    console.log('Animating active Robys');
-
-    this.animateRoby(this.playerRoby, endCallback, true);
-    this.enemiesRoby?.forEach((row) =>
-      row.forEach((enemy) => {
-        if (enemy.show) this.animateRoby(enemy, endCallback, false);
-      })
-    );
-  }
-
-  private animateRoby(
-    roby: RobotState,
-    endCallback: () => void,
-    isPlayer: boolean
-  ): void {
-    if (!roby || roby.startPosition.side < 0) {
-      roby.animationFinished = true;
-      endCallback();
-      return;
-    }
-
-    // animation logic using requestAnimationFrame or CSS transitions
-    // cycling walkingImages, moving DOM element positions from completeTiles path coords
-    // clearing walkingTimer at completion, marking animationFinished
-  }
-
-  mod(n: number, m: number): number {
-    return ((n % m) + m) % m;
+  /** current snapshot */
+  get value(): Path {
+    return this.pathSubject.value;
   }
 
   calculateBotPath(difficulty: number): any {
-    const all = [];
+    const all: Path[] = [];
     for (let side = 0; side < 4; side++) {
       for (let dist = 0; dist < 5; dist++) {
+        console.log(`Calculating path for side ${side} dist ${dist}`);
         all.push(this.calculatePath({ side, distance: dist }));
       }
     }
@@ -193,13 +56,13 @@ export class PathService implements OnDestroy {
 
   // algoritmo per il calcolo del percorso di uno dei roby, salvandone un oggetto che lo descrive
   // return: il path corrispondente
-  calculatePath(startPosition: EntryPoint) {
+  private calculatePath(startPosition: EntryPoint): Path {
     // oggetto da memorizzare nel roby per attuare il percorso
-    const path = {
+    const path: Path = {
       startPosition,
       endPosition: { side: Side.None, distance: -1 },
-      tilesCoords: [] as TileCoord[],
-      direction: [] as number[],
+      tilesCoords: [],
+      direction: [],
       pathLength: 0,
     };
 
@@ -211,33 +74,38 @@ export class PathService implements OnDestroy {
     // ottieni primo elemento
     switch (path.startPosition.side) {
       case 0:
-        path.tilesCoords.push({ x: 0, y: path.startPosition.distance });
+        console.log('top');
+        path.tilesCoords.push({ row: 0, col: path.startPosition.distance });
         break;
       case 1:
-        path.tilesCoords.push({ x: path.startPosition.distance, y: 4 });
+        console.log('right');
+        path.tilesCoords.push({ row: path.startPosition.distance, col: 4 });
         break;
       case 2:
-        path.tilesCoords.push({ x: 4, y: path.startPosition.distance });
+        console.log('Bottom');
+        path.tilesCoords.push({ row: 4, col: path.startPosition.distance });
         break;
       case 3:
-        path.tilesCoords.push({ x: path.startPosition.distance, y: 0 });
+        console.log('left');
+        path.tilesCoords.push({ row: path.startPosition.distance, col: 0 });
         break;
     }
-    path.direction.push(this.mod(path.startPosition.side + 2, 4));
 
+    // la prima direction è sempre opposta al lato di entrata
+    path.direction.push(this.mod(path.startPosition.side + 2, 4));
     path.pathLength++;
 
     // ottieni elementi successivi tramite while
-    let endOfThePath = false;
-    while (!endOfThePath) {
+    let endOfPath = false;
+    while (!endOfPath) {
       let lastTileCoords = path.tilesCoords[path.pathLength - 1];
       let lastTileDirection = path.direction[path.pathLength - 1];
-      let nextTileCoords = { x: -1, y: -1 };
+      let nextTileCoords: Tile = { row: -1, col: -1 };
       let nextTileDirection = -1;
 
       // 1. trova la prossima direction
       const tileValue =
-        this.gameData.value.match.tiles[lastTileCoords.x][lastTileCoords.y];
+        this.gameData.value.match.tiles[lastTileCoords.row][lastTileCoords.col];
 
       switch (tileValue) {
         case 'Y':
@@ -258,68 +126,64 @@ export class PathService implements OnDestroy {
       switch (nextTileDirection) {
         case 0:
           // verso l'alto
-          nextTileCoords.x = lastTileCoords.x - 1;
-          nextTileCoords.y = lastTileCoords.y;
+          nextTileCoords.row = lastTileCoords.row - 1;
+          nextTileCoords.col = lastTileCoords.col;
           break;
         case 1:
           // verso destra
-          nextTileCoords.x = lastTileCoords.x;
-          nextTileCoords.y = lastTileCoords.y + 1;
+          nextTileCoords.row = lastTileCoords.row;
+          nextTileCoords.col = lastTileCoords.col + 1;
           break;
         case 2:
           // verso il basso
-          nextTileCoords.x = lastTileCoords.x + 1;
-          nextTileCoords.y = lastTileCoords.y;
+          nextTileCoords.row = lastTileCoords.row + 1;
+          nextTileCoords.col = lastTileCoords.col;
           break;
         case 3:
           // verso sinistra
-          nextTileCoords.x = lastTileCoords.x;
-          nextTileCoords.y = lastTileCoords.y - 1;
+          nextTileCoords.row = lastTileCoords.row;
+          nextTileCoords.col = lastTileCoords.col - 1;
           break;
       }
 
       // exit checks
-      if (nextTileDirection === 0 && nextTileCoords.x < 0) {
+      if (nextTileDirection === 0 && nextTileCoords.row < 0) {
         // uscita dal lato in alto
         path.endPosition.side = 0;
-        path.endPosition.distance = nextTileCoords.y;
-        endOfThePath = true;
-      } else if (nextTileDirection === 1 && nextTileCoords.y > 4) {
+        path.endPosition.distance = nextTileCoords.col;
+        endOfPath = true;
+      } else if (nextTileDirection === 1 && nextTileCoords.col > 4) {
         // uscita dal lato destro
         path.endPosition.side = 1;
-        path.endPosition.distance = nextTileCoords.x;
-        endOfThePath = true;
-      } else if (nextTileDirection === 2 && nextTileCoords.x > 4) {
+        path.endPosition.distance = nextTileCoords.row;
+        endOfPath = true;
+      } else if (nextTileDirection === 2 && nextTileCoords.row > 4) {
         // uscita dal lato in basso
         path.endPosition.side = 2;
-        path.endPosition.distance = nextTileCoords.y;
-        endOfThePath = true;
-      } else if (nextTileDirection === 3 && nextTileCoords.y < 0) {
+        path.endPosition.distance = nextTileCoords.col;
+        endOfPath = true;
+      } else if (nextTileDirection === 3 && nextTileCoords.col < 0) {
         // uscita dal lato sinistro
         path.endPosition.side = 3;
-        path.endPosition.distance = nextTileCoords.x;
-        endOfThePath = true;
+        path.endPosition.distance = nextTileCoords.row;
+        endOfPath = true;
       }
 
       // la prossima tile è valida: aggiungila alla struttura dati
-      if (endOfThePath === false) {
+      if (endOfPath === false) {
         path.pathLength++;
         path.direction.push(nextTileDirection);
         path.tilesCoords.push(nextTileCoords);
       }
     }
-
     return path;
   }
 
-  private cleanupTimers(roby?: Partial<RobotState>) {
-    if (roby?.walkingTimer) {
-      clearInterval(roby.walkingTimer);
-      roby.walkingTimer = undefined;
-    }
+  public reset(): void {
+    this.pathSubject.next(this.emptyPath());
   }
 
-  private getAngle(direction: number): number {
-    return [0, 90, 180, 270][direction] ?? 0;
+  private mod(n: number, m: number): number {
+    return ((n % m) + m) % m;
   }
 }

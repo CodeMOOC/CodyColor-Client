@@ -2,7 +2,7 @@ export interface Cell {
   id?: string;
   placeholder?: boolean;
   start?: boolean;
-  tile?: { row: number; col: number };
+  tile?: Tile;
 }
 
 export interface Tile {
@@ -20,5 +20,5 @@ export enum Side {
 
 export interface EntryPoint {
   side: Side;
-  distance: number; // position along that side
+  distance: number;
 }

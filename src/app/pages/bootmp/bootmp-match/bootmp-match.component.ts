@@ -43,7 +43,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ExitGameModalComponent } from '../../../components/exit-game-modal/exit-game-modal.component';
 import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 import { RobyAnimationComponent } from '../../../components/roby-animation/roby-animation.component';
-import { Path } from '../../../models/path.modal';
+import { Path } from '../../../models/path.model';
 
 @Component({
   selector: 'app-match',
@@ -58,6 +58,7 @@ import { Path } from '../../../models/path.modal';
   ],
   templateUrl: './bootmp-match.component.html',
   styleUrls: ['./bootmp-match.component.scss'],
+  standalone: true,
 })
 export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChildren(CdkDropList) dropLists!: QueryList<CdkDropList>;

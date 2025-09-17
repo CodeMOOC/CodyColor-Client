@@ -14,6 +14,7 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   selector: 'app-footer',
   imports: [CommonModule, TranslateModule],
+  standalone: true,
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss',
 })
@@ -82,7 +83,7 @@ export class FooterComponent implements OnInit {
   }
 
   private quitGame(): void {
-    this.pathService.quitGame();
+    // this.pathService.quitGame();
     this.gameData.reset();
   }
   onExitGame(): void {

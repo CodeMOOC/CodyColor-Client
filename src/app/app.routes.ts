@@ -23,7 +23,6 @@ import { TermsComponent } from './pages/terms/terms.component';
 import { PrivacyComponent } from './pages/privacy/privacy.component';
 import { RankingsComponent } from './pages/rankings/rankings.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
-import { TestDragComponent } from './pages/test-drag/test-drag.component';
 
 export const routes: Routes = [
   { path: '', component: SplashComponent },
@@ -45,6 +44,5 @@ export const routes: Routes = [
   { path: 'terms', component: TermsComponent },
   { path: 'privacy', component: PrivacyComponent },
   { path: 'rankings', component: RankingsComponent },
-  { path: 'test', component: TestDragComponent },
   { path: '**', component: NotFoundComponent }, // fallback route (404)
 ];

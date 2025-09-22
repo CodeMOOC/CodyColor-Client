@@ -566,68 +566,68 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
       this.enemyAnimationDone = true;
     }
 
-    // prevent double execution
-    if (this.isAnimationReady) return;
-    this.isAnimationReady = true;
-
-    const current = this.gameData.value; // safe for reading only
-
-    // Handle enemy result if a bot is active
-    if (current.general.botSetting !== 0 && this.enemyPath) {
-      this.gameData.update('enemyMatchResult', {
-        nickname: current.enemy.nickname,
-        playerId: current.enemy.playerId,
-        pathLength: this.enemyPath.pathLength,
-        time: current.match.enemyTime,
-        startPosition: current.match.enemyStartPosition,
-      });
-    }
-
-    // Increment aggregated match counter
-    this.gameData.update('aggregated', {
-      matchCount: current.aggregated.matchCount + 1,
-    });
-
-    // Determine winner
-    const winner = this.gameData.getMatchWinner();
-    this.gameData.update('match', { winnerId: winner.playerId });
-
-    //Scoring
-    if (winner.playerId === current.user.playerId) {
-      const userPoints =
-        this.gameData.calculateMatchPoints(
-          this.gameData.value.userMatchResult.pathLength
-        ) +
-        this.gameData.calculateWinnerBonusPoints(
-          this.gameData.value.userMatchResult.time
-        );
-
-      this.gameData.update('userMatchResult', { points: userPoints });
-      this.gameData.update('userGlobalResult', {
-        points: current.userGlobalResult.points + userPoints,
-        wonMatches: current.userGlobalResult.wonMatches + 1,
-      });
-    } else if (winner.playerId === current.enemy.playerId) {
-      const enemyPoints =
-        this.gameData.calculateMatchPoints(
-          this.gameData.value.enemyMatchResult.pathLength
-        ) +
-        this.gameData.calculateWinnerBonusPoints(
-          this.gameData.value.enemyMatchResult.time
-        );
-
-      this.gameData.update('enemyMatchResult', { points: enemyPoints });
-      this.gameData.update('enemyGlobalResult', {
-        points: current.enemyGlobalResult.points + enemyPoints,
-        wonMatches: current.enemyGlobalResult.wonMatches + 1,
-      });
-    }
     // !playerType: è scaduto il tempo quindi si passa alla nuova schermata
     if (
       !playerType ||
       this.botSetting === 0 ||
       (this.playerAnimationDone && this.enemyAnimationDone)
     ) {
+      // prevent double execution
+      if (this.isAnimationReady) return;
+      this.isAnimationReady = true;
+
+      const current = this.gameData.value; // safe for reading only
+
+      // Handle enemy result if a bot is active
+      if (current.general.botSetting !== 0 && this.enemyPath) {
+        this.gameData.update('enemyMatchResult', {
+          nickname: current.enemy.nickname,
+          playerId: current.enemy.playerId,
+          pathLength: this.enemyPath.pathLength,
+          time: current.match.enemyTime,
+          startPosition: current.match.enemyStartPosition,
+        });
+      }
+
+      // Increment aggregated match counter
+      this.gameData.update('aggregated', {
+        matchCount: current.aggregated.matchCount + 1,
+      });
+
+      // Determine winner
+      const winner = this.gameData.getMatchWinner();
+      this.gameData.update('match', { winnerId: winner.playerId });
+      //Scoring
+      if (winner.playerId === current.user.playerId) {
+        const userPoints =
+          this.gameData.calculateMatchPoints(
+            this.gameData.value.userMatchResult.pathLength
+          ) +
+          this.gameData.calculateWinnerBonusPoints(
+            this.gameData.value.userMatchResult.time
+          );
+
+        this.gameData.update('userMatchResult', { points: userPoints });
+        this.gameData.update('userGlobalResult', {
+          points: current.userGlobalResult.points + userPoints,
+          wonMatches: current.userGlobalResult.wonMatches + 1,
+        });
+      } else if (winner.playerId === current.enemy.playerId) {
+        const enemyPoints =
+          this.gameData.calculateMatchPoints(
+            this.gameData.value.enemyMatchResult.pathLength
+          ) +
+          this.gameData.calculateWinnerBonusPoints(
+            this.gameData.value.enemyMatchResult.time
+          );
+
+        this.gameData.update('enemyMatchResult', { points: enemyPoints });
+        this.gameData.update('enemyGlobalResult', {
+          points: current.enemyGlobalResult.points + enemyPoints,
+          wonMatches: current.enemyGlobalResult.wonMatches + 1,
+        });
+      }
+
       // navigate to aftermatch screen
       this.router.navigate(['/bootmp-aftermatch']);
     }

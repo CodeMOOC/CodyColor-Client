@@ -27,11 +27,17 @@
 
 .roby-wrapper {
   position: absolute;
-  top: 0;
-  left: 0;
-  /* make sure the robot sits above the tiles */
+  inset: 0; /* fill the overlay box */
   pointer-events: none;
-  z-index: 10;
+}
+.robot-overlay {
+  position: absolute;
+  top: 16px;
+  left: -34px;
+  width: 270px;
+  height: 270px;
+  pointer-events: none;
+  z-index: 20;
 }
 
 .roby img {

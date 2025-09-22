@@ -43,7 +43,6 @@ export class PathService {
     const all: Path[] = [];
     for (let side = 0; side < 4; side++) {
       for (let dist = 0; dist < 5; dist++) {
-        console.log(`Calculating path for side ${side} dist ${dist}`);
         all.push(this.calculatePath({ side, distance: dist }));
       }
     }

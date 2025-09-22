@@ -1,5 +1,13 @@
+.board {
+  position: relative; /* IMPORTANT: makes .roby translate relative to the board */
+  width: 340px;
+  height: 340px;
+}
+
 .roby {
   position: absolute;
+  top: 0; /* anchor top-left so translate(x,y) starts from board origin */
+  left: 0;
   width: 45px;
   height: 45px;
   will-change: transform;
@@ -7,7 +15,7 @@
   transform-origin: 50% 50%;
 }
 
-.roby img {
+.roby-image {
   display: block;
   width: 100%;
   height: 100%;

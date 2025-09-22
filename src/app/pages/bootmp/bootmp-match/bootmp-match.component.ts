@@ -5,7 +5,6 @@ import {
   ViewChildren,
   QueryList,
   AfterViewInit,
-  NgZone,
   ViewChild,
   ChangeDetectorRef,
 } from '@angular/core';
@@ -17,33 +16,24 @@ import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../../services/navigation.service';
 import { AudioService } from '../../../services/audio.service';
 import { SessionService } from '../../../services/session.service';
-import { AuthService } from '../../../services/auth.service';
 import { LanguageService } from '../../../services/language.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { PathService } from '../../../services/path.service';
 import {
   CdkDrag,
   CdkDragDrop,
-  CdkDragEnd,
-  CdkDragEnter,
-  CdkDragExit,
   DragDropModule,
   CdkDropList,
-  moveItemInArray,
-  transferArrayItem,
   CdkDropListGroup,
 } from '@angular/cdk/drag-drop';
 import { Player } from '../../../models/player.model';
-import { GameSettings } from '../../../models/gameSettings.model';
 import { Match } from '../../../models/match.model';
 import { Cell, EntryPoint, Side, Tile } from '../../../models/cell.model';
-import { sideToString } from '../../../utils/side.utils';
 import { GeneralSettings } from '../../../models/game-data.model';
-import { MatDialog } from '@angular/material/dialog';
-import { ExitGameModalComponent } from '../../../components/exit-game-modal/exit-game-modal.component';
-import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { RobyAnimationComponent } from '../../../components/roby-animation/roby-animation.component';
 import { Path } from '../../../models/path.model';
+import { TestCompComponent } from '../../../components/test-comp/test-comp.component';
 
 @Component({
   selector: 'app-match',
@@ -52,6 +42,7 @@ import { Path } from '../../../models/path.model';
     CdkDrag,
     CdkDropList,
     TranslateModule,
+    TestCompComponent,
     CdkDropListGroup,
     DragDropModule,
     RobyAnimationComponent,
@@ -62,7 +53,8 @@ import { Path } from '../../../models/path.model';
 })
 export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChildren(CdkDropList) dropLists!: QueryList<CdkDropList>;
-  @ViewChild('player') player?: RobyAnimationComponent;
+  @ViewChild('player') playerAnim?: RobyAnimationComponent;
+  @ViewChild('enemy') enemyAnim?: RobyAnimationComponent;
 
   connectedIds: any;
 
@@ -123,6 +115,65 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
 
   subs = new Subscription();
 
+  fixedPath: Path = {
+    startPosition: {
+      side: 2,
+      distance: 1,
+    },
+    endPosition: {
+      side: 1,
+      distance: 1,
+    },
+    tilesCoords: [
+      {
+        row: 4,
+        col: 1,
+      },
+      {
+        row: 3,
+        col: 1,
+      },
+      {
+        row: 2,
+        col: 1,
+      },
+      {
+        row: 2,
+        col: 2,
+      },
+      // {
+      //   row: 2,
+      //   col: 3,
+      // },
+      // {
+      //   row: 3,
+      //   col: 3,
+      // },
+      // {
+      //   row: 3,
+      //   col: 4,
+      // },
+      // {
+      //   row: 2,
+      //   col: 4,
+      // },
+      // {
+      //   row: 2,
+      //   col: 3,
+      // },
+      // {
+      //   row: 1,
+      //   col: 3,
+      // },
+      // {
+      //   row: 1,
+      //   col: 4,
+      // },
+    ],
+    direction: [0, 0, 0, 1, 1, 2, 1, 0, 3, 0, 1],
+    pathLength: 11,
+  };
+
   timerFormatter!: (time: number) => string;
 
   draggable = {
@@ -149,6 +200,10 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     private visibility: VisibilityService,
     private router: Router
   ) {}
+  fixedPerform = false;
+  performFixed() {
+    this.fixedPerform = !this.fixedPerform;
+  }
 
   ngOnInit(): void {
     // Costruisce griglia statica
@@ -182,9 +237,9 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
 
-    const botSetting = this.gameData.value.general.botSetting;
+    this.botSetting = this.gameData.value.general.botSetting;
     this.timerFormatter =
-      botSetting !== 0
+      this.botSetting !== 0
         ? this.gameData.formatTimeDecimals
         : this.gameData.formatTimeMatchClock;
 
@@ -204,7 +259,10 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     // Recupera timer e dati dal servizio
     this.startMatchTimers();
 
-    this.setupEnemyTrigger();
+    if (this.botSetting !== 0) {
+      this.enemyPath = this.path.calculateBotPath(this.botSetting);
+      this.setupEnemyTrigger();
+    }
   }
 
   ngOnDestroy(): void {
@@ -493,28 +551,33 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.executeEndSequence();
   }
 
+  private playerAnimationDone = false;
+  private enemyAnimationDone = false;
+
   // cosa fare una volta terminata senza intoppi la partita; mostra la schermata aftermatch
-  executeEndSequence(): void {
-    console.log('Executing animation ');
+  executeEndSequence(playerType?: string): void {
+    // 2. trigger the child’s animation
+    if (playerType === 'player') {
+      this.playerAnim?.play();
+      this.playerAnimationDone = true;
+    }
+    if (playerType === 'enemy') {
+      this.enemyAnim?.play();
+      this.enemyAnimationDone = true;
+    }
 
     // prevent double execution
     if (this.isAnimationReady) return;
     this.isAnimationReady = true;
 
-    // 2. trigger the child’s animation
-    this.player?.play();
     const current = this.gameData.value; // safe for reading only
 
     // Handle enemy result if a bot is active
-    if (current.general.botSetting !== 0) {
-      // const enemyResult = this.path.positionRoby(
-      //   false,
-      //   current.match.enemyStartPosition
-      // );
+    if (current.general.botSetting !== 0 && this.enemyPath) {
       this.gameData.update('enemyMatchResult', {
         nickname: current.enemy.nickname,
         playerId: current.enemy.playerId,
-        pathLength: this.path.value.pathLength,
+        pathLength: this.enemyPath.pathLength,
         time: current.match.enemyTime,
         startPosition: current.match.enemyStartPosition,
       });
@@ -559,9 +622,15 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
         wonMatches: current.enemyGlobalResult.wonMatches + 1,
       });
     }
-
-    // navigate to aftermatch screen
-    this.router.navigate(['/bootmp-aftermatch']);
+    // !playerType: è scaduto il tempo quindi si passa alla nuova schermata
+    if (
+      !playerType ||
+      this.botSetting === 0 ||
+      (this.playerAnimationDone && this.enemyAnimationDone)
+    ) {
+      // navigate to aftermatch screen
+      this.router.navigate(['/bootmp-aftermatch']);
+    }
   }
 
   onDragStarted(event: any) {
@@ -574,168 +643,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     // after grid is shown, update connections again
     setTimeout(() => this.updateConnectedIds());
   }
-
-  // endDragging(): void {
-  //   this.audioHandler.playSound('roby-drop');
-
-  //   if (!this.startAnimation) {
-  //     this.showArrows = false;
-  //     this.showCompleteGrid = false;
-  //     this.draggableRobyImage = 'roby-idle';
-  //     this.startPositionsCss(false);
-  //   }
-  // }
-
-  // onDragEnded(event: any) {
-  //   console.log('Drag ended', event);
-  //   console.log(this.isAnimationReady);
-  //   this.isDragging = false;
-  //   this.draggableRobyImage = 'roby-idle';
-  //   this.audio.playSound('roby-positioned');
-  //   this.showCompleteGrid = true;
-
-  //   if (!this.isAnimationReady) {
-  //     // this.gameData.editMatch({
-  //     //   positioned: true,
-  //     //   time: this.nextGameTimerValue,
-  //     //   startPosition: { side, distance },
-  //     // });
-  //     this.showDraggableRoby = false;
-  //     this.userTimerAnimation = 'clock--end';
-  //     this.userTimerValue = this.match.time;
-
-  //     console.log('Final position set to:', this.match);
-  //     // const result = this.path.positionRoby(true, this.match.startPosition);
-  //     // TO CHANGEGEGEGGEGEGEGEGGE
-  //     this.gameData.update('userMatchResult', {
-  //       nickname: this.user.nickname,
-  //       playerId: this.user.playerId,
-  //       pathLength: 5,
-  //       time: this.match.time,
-  //       startPosition: this.match.startPosition,
-  //     });
-  //     if (!this.match.enemyPositioned && this.general.botSetting !== 0) {
-  //       const botPath = this.path.calculateBotPath(this.general.botSetting);
-  //       this.gameData.update('match', {
-  //         enemyPositioned: true,
-  //         enemyTime: this.positionEnemyTrigger,
-  //         enemyStartPosition: botPath.startPosition,
-  //       });
-
-  //       this.enemyTimerValue = this.match.enemyTime;
-  //       this.enemyTimerAnimation = 'clock--end';
-  //     }
-  //     this.executeEndSequence();
-  //   }
-  // }
-
-  // onTileDropped(event: CdkDragDrop<any>) {
-  //   const { row, col } = event.container.data;
-  //   console.log('Dropped on', row, col);
-  //   // do your placement logic
-  // }
-
-  canDropRobot = (drag: any, drop: any) => {
-    console.log(drag);
-    // Only allow dropping robot on "start" arrow cells
-    return drop.data.start === true;
-  };
-
-  // onTileDropped(event: CdkDragDrop<any>, side: string, distance: number) {
-  //   const nativeEvent = event.event as MouseEvent | TouchEvent;
-  //   console.log('Drop event', side, distance);
-
-  //   // get pointer coordinates
-  //   const x = (nativeEvent as MouseEvent).clientX || 0;
-  //   const y = (nativeEvent as MouseEvent).clientY || 0;
-
-  //   const tableElement = event.container.element.nativeElement as HTMLElement;
-  //   const cells = Array.from(tableElement.querySelectorAll('td'));
-
-  //   const droppedCell = cells.find((cell) => {
-  //     const rect = cell.getBoundingClientRect();
-  //     return (
-  //       x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
-  //     );
-  //   });
-
-  //   if (droppedCell) {
-  //     console.log('Dropped on cell id', droppedCell.id);
-  //     // Do placement logic here
-  //   }
-  // }
-
-  onTileOver(event: CdkDragEnter<any>) {
-    const { row, col } = event.container.data;
-    console.log('Roby over', row, col);
-    this.draggableRobyImage = 'roby-over';
-  }
-
-  onTileOut(event: CdkDragExit<any>) {
-    const { row, col } = event.container.data;
-    console.log('Roby out', row, col);
-    this.draggableRobyImage = 'roby-dragging-trasp';
-  }
-
-  // onTileDropped(rowIndex: number, colIndex: number): void {
-  //   this.robyDropped(rowIndex, colIndex);
-  // }
-
-  // onTileOver(rowIndex: number, colIndex: number): void {
-  //   this.robyOver(rowIndex, colIndex);
-  // }
-
-  // onTileOut(rowIndex: number, colIndex: number): void {
-  //   this.robyOut(rowIndex, colIndex);
-  // }
-
-  onRobyOver(side: number, distance: number): void {
-    this.audio.playSound('roby-over');
-    this.draggableRobyImage = 'roby-over';
-  }
-
-  onRobyOut(): void {
-    this.draggableRobyImage = 'roby-dragging-trasp';
-  }
-
-  // onRobyDropped(side: number, distance: number): void {
-  //   this.audio.playSound('roby-positioned');
-  //   this.showCompleteGrid = true;
-  //   if (!this.isAnimationReady) {
-  //     const finalUserTime = this.gameData.getUserFinalTime();
-  //     this.gameData.update('match', {
-  //       positioned: true,
-  //       time: finalUserTime,
-  //       startPosition: { side, distance },
-  //     });
-  //     this.showDraggableRoby = false;
-  //     this.userTimerAnimation = 'clock--end';
-  //     this.userTimerValue = this.match.time;
-
-  //     const result = this.path.computePath(this.match.startPosition);
-  //     console.log('result', result);
-  //     // TO CHANGEGEGEGGEGEGEGEGGE
-  //     this.gameData.update('userMatchResult', {
-  //       nickname: this.user.nickname,
-  //       playerId: this.user.playerId,
-  //       // pathLength: result.pathLength,
-  //       pathLength: 5,
-  //       time: this.match.time,
-  //       startPosition: this.match.startPosition,
-  //     });
-  //     if (!this.match.enemyPositioned && this.general.botSetting !== 0) {
-  //       const botPath = this.path.calculateBotPath(this.general.botSetting);
-  //       this.gameData.update('match', {
-  //         enemyPositioned: true,
-  //         enemyTime: this.positionEnemyTrigger,
-  //         enemyStartPosition: botPath.startPosition,
-  //       });
-  //       this.enemyTimerValue = this.match.enemyTime;
-  //       this.enemyTimerAnimation = 'clock--end';
-  //     }
-  //     this.executeEndSequence();
-  //   }
-  // }
 
   skip(): void {
     this.audio.playSound('menu-click');

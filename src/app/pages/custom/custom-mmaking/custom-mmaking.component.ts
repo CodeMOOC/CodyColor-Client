@@ -25,6 +25,7 @@ interface TimerSetting {
 @Component({
   selector: 'app-custom-mmaking',
   imports: [CommonModule, FormsModule, TranslateModule],
+  standalone: true,
   templateUrl: './custom-mmaking.component.html',
   styleUrl: './custom-mmaking.component.scss',
 })
@@ -116,10 +117,10 @@ export class CustomMmakingComponent {
           this.rabbit.subscribeGameRoom();
         }
       },
-      onConnectionLost: () => this.handleForceExit(),
+      onConnectionLost: () => this.quitGame(),
     });
 
-    this.visibilityHandler.setDeadlineCallback(() => this.handleForceExit());
+    this.visibilityHandler.setDeadlineCallback(() => this.quitGame());
     let formattedTranslateCode = this.gameData.formatTimeStatic(
       this.gameData.value.general.timerSetting
     );
@@ -246,65 +247,5 @@ export class CustomMmakingComponent {
     this.gameData.update('general', { code: '0000' });
     this.gameData.update('user', { nickname: this.nickname, organizer: true });
     this.router.navigate(['/custom-mmaking']);
-  }
-
-  exitGame() {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = true;
-  }
-
-  continueExitGame() {
-    this.audio.playSound('menu-click');
-    this.rabbit.sendPlayerQuitRequest();
-    this.quitGame();
-    this.router.navigate(['/home']);
-  }
-
-  stopExitGame() {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = false;
-  }
-
-  handleForceExit() {
-    this.quitGame();
-
-    //force exit text
-    this.forceExitModal = true;
-  }
-
-  continueForceExit() {
-    this.audio.playSound('menu-click');
-    this.router.navigate(['/home']);
-  }
-
-  openLanguageModal() {
-    this.languageModal = true;
-    this.audio.playSound('menu-click');
-  }
-
-  closeLanguageModal() {
-    this.languageModal = false;
-    this.audio.playSound('menu-click');
-  }
-
-  changeLanguage(langKey: string) {
-    this.translate.use(langKey);
-    this.languageModal = false;
-    this.loadTimerSettings();
-
-    if (!this.authHandler.loginCompleted()) {
-      this.languageService
-        .setTranslation('userNickname', 'NOT_LOGGED')
-        .then((t) => {
-          this.userNickname = t;
-        });
-    }
-
-    this.audio.playSound('menu-click');
-  }
-
-  toggleBase() {
-    this.audio.toggleBase();
-    this.basePlaying = this.audio.isEnabled();
   }
 }

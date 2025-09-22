@@ -88,6 +88,7 @@ export class BootmpAftermatchComponent implements OnInit {
     });
 
     this.gameData.gameData$.subscribe((data) => {
+      console.log('Game data updated:', data);
       this.enemy = data.enemy;
       this.general = data.general;
       this.draw = data.match.winnerId === -1;

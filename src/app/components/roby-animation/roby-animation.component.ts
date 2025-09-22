@@ -74,23 +74,26 @@ type Step = {
 
       // moving <=> moving2 toggle (keeps alternating for consecutive moves)
       transition('moving <=> moving2', [animate('{{duration}}ms linear')], {
-        params: { duration: 300 },
+        params: { duration: 500 },
       }),
 
       // turning transitions (toggle between turning and turning2)
       transition(
         'turning <=> turning2',
         [animate('{{turnDuration}}ms ease-in-out')],
-        { params: { turnDuration: 300 } }
+        { params: { turnDuration: 500 } }
       ),
       transition('* => turning', [animate('{{turnDuration}}ms ease-in-out')]),
       transition('* => turning2', [animate('{{turnDuration}}ms ease-in-out')]),
+      transition('turning => *', [animate('{{duration}}ms linear')]),
+      transition('turning2 => *', [animate('{{duration}}ms linear')]),
     ]),
   ],
 })
 export class RobyAnimationComponent implements OnInit, OnDestroy {
   @Input() path!: Path;
   @Input() image = 'roby-positioned';
+  @Input() isBot = false;
   @Output() finished = new EventEmitter<void>();
 
   currentX = 0;
@@ -99,8 +102,8 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
   state: AnimState = 'idle';
 
   // durations (customize)
-  moveDuration = 300;
-  turnDuration = 300;
+  moveDuration = 500;
+  turnDuration = 500;
 
   private steps: Step[] = [];
   private stepTimer?: any;
@@ -112,6 +115,16 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
       this.prepareSteps();
       this.play();
     }
+
+    console.log('Path for animation:', this.path);
+
+    this.finished.subscribe(() => {
+      if (!this.isBot) {
+        this.image = 'roby-positioned';
+      } else {
+        this.image = 'enemy-positioned';
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -132,16 +145,45 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
   }
 
   private prepareSteps(): void {
-    const tileSize = 50;
+    const tileStep = 50 + 5;
     this.steps = [];
 
     if (!this.path || !this.path.tilesCoords?.length) return;
 
+    const firstDir = this.path.direction[0];
+    const firstTile = this.path.tilesCoords[0];
+
+    const entryTileStep = 55;
+
+    let entryX = firstTile.col * entryTileStep;
+    let entryY = firstTile.row * entryTileStep;
+    switch (firstDir) {
+      case 0:
+        entryY += entryTileStep;
+        break;
+      case 1:
+        entryX -= entryTileStep;
+        break;
+      case 2:
+        entryY -= entryTileStep;
+        break;
+      case 3:
+        entryX -= entryTileStep;
+        break;
+    }
+    this.steps.push({
+      type: 'move',
+      x: entryX,
+      y: entryY,
+      angle: this.getAngle(firstDir),
+      duration: this.moveDuration,
+    });
+
     // Build sequence: move into first tile, then for each subsequent tile:
     // if direction changed -> add a turn step (at current pos), then move step
     let prevDir = this.path.direction[0];
-    let prevX = this.path.tilesCoords[0].col * tileSize;
-    let prevY = this.path.tilesCoords[0].row * tileSize;
+    let prevX = this.path.tilesCoords[0].col * tileStep;
+    let prevY = this.path.tilesCoords[0].row * tileStep;
     const firstAngle = this.getAngle(prevDir);
 
     // first move to initial tile (you may want a starting off-grid frame here)
@@ -149,8 +191,8 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
 
     for (let i = 1; i < this.path.tilesCoords.length; i++) {
       const dir = this.path.direction[i];
-      const x = this.path.tilesCoords[i].col * tileSize;
-      const y = this.path.tilesCoords[i].row * tileSize;
+      const x = this.path.tilesCoords[i].col * tileStep;
+      const y = this.path.tilesCoords[i].row * tileStep;
       const angle = this.getAngle(dir);
 
       if (dir !== prevDir) {
@@ -176,6 +218,37 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
       prevX = x;
       prevY = y;
     }
+
+    const lastTile = this.path.tilesCoords[this.path.tilesCoords.length - 1];
+    const exitDir = this.path.direction[this.path.direction.length - 1];
+    console.log('path ', this.path);
+    // se siamo sulla riga e colonna 4 e 4 e usciamo a
+    console.log('Exit dir:', exitDir);
+    // one step forward in that direction
+    let offX = prevX;
+    let offY = prevY;
+    switch (exitDir) {
+      case 0:
+        offY -= tileStep;
+        break; // up
+      case 1:
+        offX += tileStep;
+        break; // right
+      case 2:
+        offY += tileStep;
+        break; // down
+      case 3:
+        offX -= tileStep;
+        break; // left
+    }
+
+    this.steps.push({
+      type: 'move',
+      x: offX,
+      y: offY,
+      angle: this.getAngle(exitDir),
+      duration: this.moveDuration,
+    });
   }
 
   private runSteps(): void {
@@ -217,6 +290,21 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
     };
 
     next();
+  }
+
+  get currentImage() {
+    if (this.isBot) {
+      return this.state === 'moving'
+        ? 'enemy-walking-1'
+        : this.state === 'moving2'
+        ? 'enemy-walking-2'
+        : this.image;
+    }
+    return this.state === 'moving'
+      ? 'roby-walking-1'
+      : this.state === 'moving2'
+      ? 'roby-walking-2'
+      : this.image;
   }
 
   private getAngle(direction: number): number {

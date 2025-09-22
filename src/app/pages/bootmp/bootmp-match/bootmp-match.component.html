@@ -1,3 +1,14 @@
+<div class="tester">
+  <button (click)="performFixed()">Play Random Path</button>
+
+  <app-roby-animation
+    *ngIf="fixedPerform"
+    [path]="fixedPath"
+    image="roby-positioned"
+    (finished)="performFixed()"
+  ></app-roby-animation>
+</div>
+
 <div id="bootmp-match" class="page">
   <div class="page--wrapper">
     <div class="page--body">
@@ -96,14 +107,27 @@
           <!-- Small grid -->
           <div class="w-full" cdkDropListGroup>
             <div class="small-grid" [ngClass]="{ hidden: !showCompleteGrid }">
-              <app-roby-animation
-                *ngIf="executeAnimation && playerPath"
-                #player
-                [path]="playerPath"
-                (finished)="executeEndSequence()"
-                image="roby-positioned"
-                class="roby-wrapper"
-              />
+              <div class="robot-overlay">
+                <app-test-comp />
+                <app-roby-animation
+                  *ngIf="executeAnimation && playerPath"
+                  #playerAnim
+                  [path]="playerPath"
+                  (finished)="executeEndSequence('player')"
+                  image="roby-positioned"
+                  class="roby-wrapper"
+                ></app-roby-animation>
+                <div *ngIf="executeAnimation && enemyPath && botSetting !== 0">
+                  <app-roby-animation
+                    #enemyAnim
+                    [isBot]="true"
+                    [path]="enemyPath"
+                    (finished)="executeEndSequence('enemy')"
+                    [image]="'enemy-positioned'"
+                    class="roby-wrapper"
+                  ></app-roby-animation>
+                </div>
+              </div>
               <!-- Top row -->
               <div class="cell placeholder"></div>
               @for (col of grid[0]; let colIndex = $index; track colIndex) {

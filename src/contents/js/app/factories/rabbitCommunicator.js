@@ -387,6 +387,12 @@ angular.module('codyColor').factory("rabbit", [ 'gameData', 'sessionHandler', 's
                 }
                 return;
 
+            case messageTypes.s_editNicknameResponse:
+                if (pageCallbacks.onEditNicknameResponse !== undefined) {
+                    pageCallbacks.onEditNicknameResponse(message);
+                }
+                return;
+
             case messageTypes.s_userDeleteResponse:
                 if (pageCallbacks.onUserDeletedResponse !== undefined) {
                     pageCallbacks.onUserDeletedResponse(message);

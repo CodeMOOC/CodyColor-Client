@@ -150,20 +150,65 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                 });
             }
         });
+
+        $scope.enterEditMode = function() {
+            $scope.user = $scope.user || {};
+            $scope.user.nickname = $scope.serverUserData.nickname;
+            $scope.editMode = true;
+        };        
+        
+        $scope.cancelEdit = function() {
+            $scope.nickname = $scope.serverUserData.nickname;
+            $scope.editMode = false;
+        };
+        
         $scope.saveNickname = function() {
-            if ($scope.nickname && $scope.nickname.length <= 22) {
-                console.log("Saving nickname:", $scope.nickname);
-                rabbit.sendEditNicknameRequest($scope.nickname);
+            if ($scope.user.nickname && $scope.user.nickname.length <= 22) {
+                console.log("Sending nickname to server:", $scope.user);
+                rabbit.sendEditNicknameRequest($scope.user.nickname);
             }
         };
+
+        $scope.signUpFirebase = function(email, password) {
+            $scope.errorMessage = null;
+            $scope.infoMessage = null;
+        
+            if (!email || !password) {
+              $scope.errorMessage = "Email and password are required.";
+              return;
+            }
+        
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+              .then(function(userCredential) {
+                const user = userCredential.user;
+                console.log("Firebase user created:", user);
+        
+                // Save user in authHandler
+                authHandler.setFirebaseUserData(user);
+        
+                $scope.$apply(function() {
+                  $scope.infoMessage = "Firebase account created. Now set your nickname.";
+                  $scope.firebaseUid = user.uid; // store UID for server registration
+                  $scope.loginState = screens.nicknameSelection; 
+                });
+              })
+              .catch(function(error) {
+                $scope.$apply(function() {
+                  $scope.errorMessage = error.message;
+                });
+              });
+        };
+        
+          
 
         // completa la registrazione dell'utente impostando un nickname e inviandolo al server
         $scope.hideSignUpButton = false;
         $scope.ultimateSignUp = function(nickname) {
             $scope.hideSignUpButton = true;
+            $scope.nickname = nickname; 
             rabbit.sendSignUpRequest(nickname);
         };
-
+        
         rabbit.setPageCallbacks({
             onLogInResponse: function(message) {
                 // risposta del server alla registrazione/autenticazione di un utente
@@ -206,17 +251,19 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                 }
             },
             onEditNicknameResponse: function(message) {
-                if (message.success) {
-                    scopeService.safeApply($scope, function() {
+                scopeService.safeApply($scope, function() {
+                    if (message.success) {
+                        console.log("Nickname updated successfully:", message.newNickname);
+                        // Update both local copy and serverUserData
                         $scope.serverUserData.nickname = message.newNickname;
                         authHandler.setServerUserData($scope.serverUserData);
                         $scope.nickname = message.newNickname;
-                    });
-                    console.log("Nickname updated successfully:", message.newNickname);
-                } else {
-                    console.log("Error updating nickname");
-                    // optionally show modal
-                }
+                        $scope.editMode = false; 
+                    } else {
+                        console.log("Error updating nickname");
+                        // optionally show an error modal or toast
+                    }
+                });
             },
             onUserDeletedResponse: function(message) {
                 // continua il flusso di eliminazione account; nel caso i dati siano stati rimossi con successo dal

@@ -124,6 +124,7 @@
     "LOGIN_SETNICK_DESC": "Inserisci un nickname con il quale venire visualizzato ai tuoi avversari per completare la registrazione.",
     "LOGIN_SETNICK_CONFIRM": "Completa registrazione",
     "WELCOME_USER": "Welcome, {{ user }}!",
+    "EMAIL_USER":"Email utente: {{ email }}",
     "USER_STATS": "Statistiche utente",
     "TOTAL_POINTS": "Punti totali: ",
     "TOTAL_WINS": "Vittorie totali: ",

@@ -26,9 +26,9 @@ angular.module('codyColor').factory("authHandler", ['$cookies', 'settings', func
             }
         },
         signInOptions: [
-            firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-            firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-            firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+            // firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+            // firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+            // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
             firebase.auth.EmailAuthProvider.PROVIDER_ID,
         ],
         tosUrl: function() {
@@ -132,10 +132,10 @@ angular.module('codyColor').factory("authHandler", ['$cookies', 'settings', func
 
 
     // avvia l'istanza firebaseUI
-    authHandler.startUi = function () {
-        // The start method will wait until the DOM is loaded.
-        ui.start('#firebaseui-auth-container', uiConfig);
-    };
+    // authHandler.startUi = function () {
+    //     // The start method will wait until the DOM is loaded.
+    //     ui.start('#firebaseui-auth-container', uiConfig);
+    // };
 
 
     // effettua il logout in maniera 'safe', cancellando sia i dati salvati automaticamente da FirebaseAuth che
@@ -199,7 +199,6 @@ angular.module('codyColor').factory("authHandler", ['$cookies', 'settings', func
     authHandler.getServerUserData = function () {
         return serverUserData;
     };
-
 
     return authHandler;
 }]);

@@ -43,7 +43,7 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
             $scope.pendingRedirect = true;
             sessionHandler.validateSession();
             changeScreen(screens.login);
-            authHandler.startUi();
+            // authHandler.startUi();
 
         } else if (sessionHandler.isSessionInvalid()) {
             // sessione non valida: redirect alla schermata iniziale
@@ -54,6 +54,7 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
             // utente già autenticato: mostra profile screen, richiedi dati utente
             $scope.firebaseUserData = authHandler.getFirebaseUserData();
             $scope.serverUserData = authHandler.getServerUserData();
+            $scope.nickname = authHandler.getServerUserData().nickname;
             $scope.pendingRedirect = false;
             rabbit.sendLogInRequest();
             changeScreen(screens.profile);
@@ -62,7 +63,7 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
             // utente non autenticato: mostra login screen
             $scope.pendingRedirect = false;
             changeScreen(screens.login);
-            authHandler.startUi();
+            // authHandler.startUi();
         }
 
         // avvia la connessione al broker se necessario
@@ -97,7 +98,7 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                 console.log(error.toString());
                 authHandler.logout();
                 authHandler.initializeUi();
-                authHandler.startUi();
+                // authHandler.startUi();
                 changeScreen(screens.login);
 
             }, onFirebaseSignOut: function() {
@@ -110,7 +111,7 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                     translationHandler.setTranslation($scope, 'userNickname', 'NOT_LOGGED');
                 });
                 authHandler.initializeUi();
-                authHandler.startUi();
+                // authHandler.startUi();
                 changeScreen(screens.login);
 
             }, onFirebaseUserDeleted: function() {
@@ -123,7 +124,7 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                     translationHandler.setTranslation($scope, 'userNickname', 'NOT_LOGGED');
                 });
                 authHandler.initializeUi();
-                authHandler.startUi();
+                // authHandler.startUi();
                 changeScreen(screens.login);
 
             }, onFirebaseUserDeletedError: function(error) {
@@ -149,6 +150,12 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                 });
             }
         });
+        $scope.saveNickname = function() {
+            if ($scope.nickname && $scope.nickname.length <= 22) {
+                console.log("Saving nickname:", $scope.nickname);
+                rabbit.sendEditNicknameRequest($scope.nickname);
+            }
+        };
 
         // completa la registrazione dell'utente impostando un nickname e inviandolo al server
         $scope.hideSignUpButton = false;
@@ -194,8 +201,21 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                     console.log('Error auth response false.');
                     authHandler.deleteAccount();
                     authHandler.initializeUi();
-                    authHandler.startUi();
+                    // authHandler.startUi();
                     changeScreen(screens.login);
+                }
+            },
+            onEditNicknameResponse: function(message) {
+                if (message.success) {
+                    scopeService.safeApply($scope, function() {
+                        $scope.serverUserData.nickname = message.newNickname;
+                        authHandler.setServerUserData($scope.serverUserData);
+                        $scope.nickname = message.newNickname;
+                    });
+                    console.log("Nickname updated successfully:", message.newNickname);
+                } else {
+                    console.log("Error updating nickname");
+                    // optionally show modal
                 }
             },
             onUserDeletedResponse: function(message) {
@@ -301,5 +321,72 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
             audioHandler.toggleBase();
             $scope.basePlaying = audioHandler.isAudioEnabled();
         };
+
+
+        $scope.step = "email"; // step iniziale
+        $scope.email = "";
+        $scope.password = "";
+        $scope.errorMessage = "";
+        
+        // Step 1: controlla provider email
+        $scope.checkEmail = function(email) {
+            console.log("Controllo provider per email:", email);
+            $scope.email = email;
+            firebase.auth().fetchSignInMethodsForEmail(email)
+                .then(function(methods) {
+                    if (methods.length === 0) {
+                        // utente non esiste → crea nuovo account
+                        $scope.step = "register";
+                        $scope.$apply();
+                    } else if (methods.includes("password")) {
+                        // esiste login con password → chiedi la password
+                        $scope.step = "password";
+                        $scope.$apply();
+                    } else {
+                        // registrato con provider social (es. google.com)
+                        $scope.step = "social";
+                        $scope.provider = methods[0];
+                        $scope.$apply();
+                    }
+                })
+                .catch(function(error) {
+                    $scope.errorMessage = error.message;
+                    $scope.$apply();
+                });
+        };
+        
+        // Step 2a: login con password
+        $scope.loginWithPassword = function(email, password) {
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(function(result) {
+                    // 1. Save Firebase user in authHandler
+                    authHandler.setFirebaseUserData(result.user);
+
+                    // 2. Ask the server for user profile (nickname, stats, etc.)
+                    rabbit.sendLogInRequest();
+
+                    // 3. Clear any error messages
+                    $scope.errorMessage = "";
+                    $scope.$apply();
+                })
+                .catch(function(error) {
+                    $scope.errorMessage = error.message;
+                    $scope.$apply();
+                });
+        };
+        
+        // Step 2b: reset password se utente social
+        $scope.resetPassword = function(email) {
+            console.log("L'email è ,", email);
+            firebase.auth().sendPasswordResetEmail(email)
+                .then(function() {
+                    $scope.infoMessage = "Ti abbiamo inviato un link per reimpostare la password.";
+                    $scope.$apply();
+                })
+                .catch(function(error) {
+                    $scope.errorMessage = error.message;
+                    $scope.$apply();
+                });
+        }
     }
 ]);

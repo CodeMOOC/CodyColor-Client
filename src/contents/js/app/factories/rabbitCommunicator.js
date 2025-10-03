@@ -47,6 +47,9 @@ angular.module('codyColor').factory("rabbit", [ 'gameData', 'sessionHandler', 's
         c_logInRequest:   "c_logInRequest",  // richiedi nickname utente con uid
         s_authResponse:  "s_authResponse",   // fornisci il nickname utente - o messaggio error
 
+        c_editNicknameRequest: "c_editNicknameRequest", // richiedi la modifica del nickname
+        s_editNicknameResponse: "s_editNicknameResponse", // conferma la modifica del nickname - o messaggio error
+        
         c_userDeleteRequest:   "c_userDeleteRequest",  // richiedi l'eliminazione di un utente
         s_userDeleteResponse:  "s_userDeleteResponse",  // conferma l'eliminazione di un utente
 
@@ -158,6 +161,15 @@ angular.module('codyColor').factory("rabbit", [ 'gameData', 'sessionHandler', 's
             correlationId:     sessionHandler.getSessionId(),
         });
     };
+
+    rabbit.sendEditNicknameRequest = function(newNickname) {
+        let message = {
+            msgType: messageTypes.c_editNicknameRequest,
+            userId: authHandler.getFirebaseUserData().uid, 
+            newNickname: newNickname,
+        };
+        sendInServerControlQueue(message);
+    };    
 
     rabbit.sendUserDeleteRequest = function () {
         sendInServerControlQueue({

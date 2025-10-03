@@ -123,6 +123,7 @@
     "LOGIN_SETNICK_DESC": "Add meg a játékban használt beceneved a regisztráció befejezéséhez!",
     "LOGIN_SETNICK_CONFIRM": "Regisztráció befejezése",
     "WELCOME_USER": "Légy üdvözölve, {{ user }}!",
+    "EMAIL_USER":"Felhasználói e-mail: {{ email }}",
     "USER_STATS": "Játékos statisztika",
     "TOTAL_POINTS": "Összes pontszám: ",
     "TOTAL_WINS": "Összes győzelem: ",

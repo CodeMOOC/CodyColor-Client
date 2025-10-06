@@ -162,11 +162,18 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
             $scope.editMode = false;
         };
         
+
+        $scope.savingNickname = false;
         $scope.saveNickname = function() {
-            if ($scope.user.nickname && $scope.user.nickname.length <= 22) {
-                console.log("Sending nickname to server:", $scope.user);
-                rabbit.sendEditNicknameRequest($scope.user.nickname);
-            }
+            if ($scope.savingNickname) return;
+            if (!$scope.user.nickname || $scope.user.nickname.length > 22) return;
+        
+            $scope.savingNickname = true;
+            rabbit.sendEditNicknameRequest($scope.user.nickname);
+            console.log("Saving new nickname:", $scope.user.nickname);
+            $scope.serverUserData.nickname = $scope.user.nickname;
+            $scope.userNickname = $scope.user.nickname;
+            $scope.editMode = false;
         };
 
         $scope.signUpFirebase = function(email, password) {

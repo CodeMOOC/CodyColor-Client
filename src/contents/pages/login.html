@@ -94,41 +94,43 @@
                         && firebaseUserData.photoURL !== '' && firebaseUserData.photoURL !== null) ?
                             firebaseUserData.photoURL : 'img/user-avatar.png'}}" alt="User Avatar">
                     </li>
-                    <li class="list--spaced-element">
-      
-                       <!-- Normal view -->
-                        <div ng-if="!editMode" class="nickname-row">
-                          <h2>{{ 'WELCOME_USER' | translate : { 'user': serverUserData.nickname } }}</h2>
-                          <i class="fas fa-pen navigation--icon-in-text"
-                             title="Edit nickname"
-                             ng-click="enterEditMode()"></i>
-                        </div>
+                    <li class="list--spaced-element user-details">
+                        <div class="profile-row">
+                            <h2 class="profile-text">{{ 'WELCOME_USER' | translate }} <span ng-if="!editMode" style="color: #fff">{{serverUserData.nickname }}</span></h2>
+                            <!-- Normal view -->
+                            <div ng-if="!editMode">
+                              <i class="fas fa-pen navigation--icon-in-text"
+                                 title="Edit nickname"
+                                 ng-click="enterEditMode()"></i>
+                            </div>
 
-                        <!-- Edit mode -->
-                        <div ng-if="editMode" class="nickname-edit-row">
-                            <input type="text"
-                            name="nickname"
-                            ng-model="user.nickname"
-                            ng-model-options="{ updateOn: 'blur keyup', debounce: 0 }"
-                            ng-maxlength="22"
-                            placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
-                            class="standard-input"
-                            required
-                            autofocus />
-                     
+                            <!-- Edit mode -->
+                            <div ng-if="editMode" class="nickname-edit-row">
+                                <input type="text"
+                                name="nickname"
+                                ng-model="user.nickname"
+                                ng-model-options="{ updateOn: 'blur keyup', debounce: 0 }"
+                                ng-maxlength="22"
+                                placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+                                class="standard-input"
+                                required
+                                autofocus />
+                            
 
-                          <!-- Confirm -->
-                          <i class="fas fa-check icon-confirm"
-                             title="Save nickname"
-                             ng-click="saveNickname()"></i>
-                          <!-- Cancel -->
-                          <i class="fas fa-times icon-cancel"
-                             title="Cancel"
-                             ng-click="cancelEdit()"></i>
+                              <!-- Confirm -->
+                              <i class="fas fa-check icon-confirm"
+                                 title="Save nickname"
+                                 ng-click="saveNickname()"></i>
+                              <!-- Cancel -->
+                              <i class="fas fa-times icon-cancel"
+                                 title="Cancel"
+                                 ng-click="cancelEdit()"></i>
+                            </div>
                         </div>
-  
                         <!-- Email always visible -->
-                        <h2>{{ 'EMAIL_USER' | translate : { 'email': firebaseUserData.email } }}</h2>
+                         <div class="profile-row">
+                            <p class="profile-text">{{ 'EMAIL_USER' | translate  }}<span style="color: #fff;">{{ firebaseUserData.email }}</span></p>
+                        </div>
                     </li>
                       
                       
@@ -250,131 +252,3 @@
         </div>
     </div>
 </div>
-<style>
-    /* Container */
-.auth-container {
-  max-width: 360px;
-  margin: 60px auto;
-  padding: 24px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: #fff;
-  font-family: Arial, sans-serif;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-/* Description */
-.auth-desc {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 16px;
-  text-align: center;
-  color: #555;
-  font-size: 14px;
-}
-
-/* Forms */
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-/* Title */
-.auth-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  text-align: center;
-  color: #202124; /* FirebaseUI uses Google Material dark gray */
-}
-
-/* Labels */
-.auth-label {
-
-  font-size: 13px;
-  font-weight: 500;
-  color: #5f6368; /* subtle gray, matches FirebaseUI */
-  margin-bottom: 6px;
-  display: block;
-}
-
-/* Inputs */
-.auth-form input {
-  padding: 12px;
-  font-size: 14px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  outline: none;
-  transition: border 0.2s, box-shadow 0.2s;
-}
-
-.auth-form input:focus {
-  border-color: #4285f4;
-  box-shadow: 0 0 0 1px #4285f4;
-}
-
-
-.auth-form input {
-  padding: 12px;
-  font-size: 14px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  outline: none;
-  transition: border 0.2s;
-}
-
-.auth-form input:focus {
-  border-color: #4285f4;
-}
-
-/* Buttons */
-button {
-  padding: 10px 14px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background: #4285f4;
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background: #357ae8;
-}
-
-.btn-secondary {
-  background: #f1f1f1;
-  color: #444;
-}
-
-.btn-secondary:hover {
-  background: #e0e0e0;
-}
-
-/* Messages */
-.auth-message {
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.auth-error {
-  color: #d93025;
-  font-size: 13px;
-  margin-top: 8px;
-  text-align: center;
-}
-
-.auth-info {
-  color: #188038;
-  font-size: 13px;
-  margin-top: 8px;
-  text-align: center;
-}
-
-</style>

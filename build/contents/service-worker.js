@@ -58,7 +58,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "css/app.min.css",
-    "revision": "5dad6f518cf432bd45501e8301e1d799"
+    "revision": "fd6d1d304e2dc9ff36d7c755abf01a14"
   },
   {
     "url": "favicon.ico",
@@ -242,19 +242,19 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "js/app/app.min.js",
-    "revision": "424917ddd95a65dd0d5f1d5fc281fa6a"
+    "revision": "42cb55921d2193011caf5c37f043b469"
   },
   {
     "url": "locales/locale-en.json",
-    "revision": "dd870a75a34571462658514466a903a4"
+    "revision": "0408d954d825b89c57868cb895cb87b9"
   },
   {
     "url": "locales/locale-hu.json",
-    "revision": "531458beb6650dd7775d5283d01958d8"
+    "revision": "5826e7776e0e843c30cbf86b05e0cee3"
   },
   {
     "url": "locales/locale-it.json",
-    "revision": "cdeadcf720ee8de871979cf84f96af0f"
+    "revision": "1141ac832b0b3e15951df45b15349975"
   },
   {
     "url": "manifest.json",
@@ -282,11 +282,11 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/bootmp-mmaking.html",
-    "revision": "0026e98070145d773164c41ad774bb7e"
+    "revision": "933192f59fdc0ff843d37f40bc0eb54e"
   },
   {
     "url": "pages/custom-mmaking.html",
-    "revision": "d492453e73a91e8437c5e42df8238418"
+    "revision": "ccd5546e1670bee657365eae3b77cf55"
   },
   {
     "url": "pages/custom-new-match.html",
@@ -298,7 +298,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/login.html",
-    "revision": "574b3b0099056cc58e08801a334405cb"
+    "revision": "f5d2fe6d1cfc39fccb609c96cf8547e2"
   },
   {
     "url": "pages/privacy.html",
@@ -362,7 +362,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "static/style.css",
-    "revision": "666347dbcab2b274f00d4b2104c8e834"
+    "revision": "76932225d1124206390c0af84ad15e67"
   },
   {
     "url": "static/terms-of-service/index.html",

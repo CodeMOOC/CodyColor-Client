@@ -12,10 +12,11 @@
                         <li class="list--simple-element">
                             <label for="nickname">{{ 'NICKNAME' | translate }}</label>
                         </li>
+
                         <li class="list--spaced-element">
                             <input type="text" name="nickname" ng-maxlength="22" ng-model="nickname" id="nickname"
                                    placeholder="{{'NICKNAME_EXAMPLE' | translate}}" class="standard-input"
-                                   ng-disabled="userLogged"
+                                   ng-disabled="false"
                                    required autofocus/>
                         </li>
                         <li class="list--spaced-element">

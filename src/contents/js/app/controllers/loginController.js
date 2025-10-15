@@ -27,7 +27,8 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
             loadingScreen:     'loadingScreen',    // schermata di transizione
             login:             'login',            // schermata di login (gestita con FirebaseUi)
             profile:           'profile',          // schermata profilo utente
-            nicknameSelection: 'nicknameSelection' // schermata di selezione nickname nuovo utente
+            nicknameSelection: 'nicknameSelection', // schermata di selezione nickname nuovo utente
+            verifyEmail: 'verifyEmail',             // schermata di verifica email 
         };
         $scope.screens = screens;
         $scope.timeFormatter = gameData.formatTimeDecimals;
@@ -73,7 +74,6 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
         authHandler.setAuthCallbacks({
             onFirebaseSignIn: function(authResult) {
                 // cosa fare a autenticazione tramite FirebaseAuth completata.
-                console.log("Sign in with FirebaseUI completed.");
                 authHandler.setFirebaseUserData(authResult.user);
                 if (authResult.additionalUserInfo.isNewUser) {
                     // se l'utente è nuovo, va completato il flusso di registrazione e autenticazione
@@ -95,7 +95,6 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                     $scope.pendingRedirect = false;
                 });
 
-                console.log(error.toString());
                 authHandler.logout();
                 authHandler.initializeUi();
                 // authHandler.startUi();
@@ -112,6 +111,7 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                 });
                 authHandler.initializeUi();
                 // authHandler.startUi();
+                $scope.step = "email";
                 changeScreen(screens.login);
 
             }, onFirebaseUserDeleted: function() {
@@ -170,34 +170,57 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
         
             $scope.savingNickname = true;
             rabbit.sendEditNicknameRequest($scope.user.nickname);
-            console.log("Saving new nickname:", $scope.user.nickname);
             $scope.serverUserData.nickname = $scope.user.nickname;
             $scope.userNickname = $scope.user.nickname;
             $scope.editMode = false;
         };
-
-        $scope.signUpFirebase = function(email, password) {
+          
+        $scope.signUpFirebase = function(email, password, passwordConfirm) {
             $scope.errorMessage = null;
             $scope.infoMessage = null;
-        
-            if (!email || !password) {
-              $scope.errorMessage = "Email and password are required.";
-              return;
+            $scope.passwordMismatch = false;
+
+            if (!email || !password || !passwordConfirm) {
+                $scope.errorMessage = "Email and both password fields are required.";
+                return;
             }
         
+            if (password !== passwordConfirm) {
+                $scope.passwordMismatch = true;
+                return;
+            }
+        
+            $scope.newUserJustRegistered = true;
             firebase.auth().createUserWithEmailAndPassword(email, password)
               .then(function(userCredential) {
                 const user = userCredential.user;
-                console.log("Firebase user created:", user);
-        
-                // Save user in authHandler
-                authHandler.setFirebaseUserData(user);
-        
-                $scope.$apply(function() {
-                  $scope.infoMessage = "Firebase account created. Now set your nickname.";
-                  $scope.firebaseUid = user.uid; // store UID for server registration
-                  $scope.loginState = screens.nicknameSelection; 
+                
+                user.sendEmailVerification()
+                .then(function() {
+                  $scope.$apply(function() {
+                    translationHandler.setTranslation($scope, 'infoMessage', 'VERIFY_EMAIL_SENT');
+                    $scope.step = null;
+                    changeScreen(screens.verifyEmail);
+                  });
+                  firebase.auth().signOut();
+                })
+                .catch(function(error) {
+                  console.error("Error sending verification email:", error);
+                  $scope.$apply(function() {
+                    translationHandler.setTranslation($scope, 'errorMessage', 'VERIFICATION_EMAIL_FAILED', { error: error.message });
+                  });
                 });
+            
+                
+              
+                // // Save user in authHandler
+                // authHandler.setFirebaseUserData(user);
+        
+                // $scope.$apply(function() {
+                //   $scope.infoMessage = "Firebase account created. Now set your nickname.";
+                //   $scope.firebaseUid = user.uid; // store UID for server registration
+                //   $scope.loginState = screens.nicknameSelection; 
+                // });
               })
               .catch(function(error) {
                 $scope.$apply(function() {
@@ -205,6 +228,17 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                 });
               });
         };
+
+        $scope.goToLogin = function() {
+            $scope.$applyAsync(function() {
+                changeScreen(screens.login);
+                
+                $scope.step = 'email';
+                $scope.errorMessage = null;
+                $scope.infoMessage = null;
+            });
+        };
+        
         
           
 
@@ -236,31 +270,31 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                         $scope.userNickname = authHandler.getServerUserData().nickname;
                     });
 
-                    if ($scope.loginState !== screens.profile)
+                    if ($scope.loginState !== screens.profile){
                         changeScreen(screens.profile);
-
+                    }
                 } else {
-                    // message.success === false indica che non è presente un record utente nel db server
-                    // Mostra quindi un messaggio di errore, rimuovi l'account, e rimanda alla schermata di login
-                    scopeService.safeApply($scope, function () {
-                        translationHandler.setTranslation($scope, 'singleOptionText', 'ERR_LOGIN');
-                        $scope.singleOptionModal = true;
-                        $scope.firebaseUserData = undefined;
-                        $scope.serverUserData = undefined;
-                        $scope.pendingRedirect = false;
-                    });
+                    // // message.success === false indica che non è presente un record utente nel db server
+                    // // Mostra quindi un messaggio di errore, rimuovi l'account, e rimanda alla schermata di login
+                    // scopeService.safeApply($scope, function () {
+                    //     translationHandler.setTranslation($scope, 'singleOptionText', 'ERR_LOGIN');
+                    //     $scope.singleOptionModal = true;
+                    //     $scope.firebaseUserData = undefined;
+                    //     $scope.serverUserData = undefined;
+                    //     $scope.pendingRedirect = false;
+                    // });
 
-                    console.log('Error auth response false.');
-                    authHandler.deleteAccount();
-                    authHandler.initializeUi();
-                    // authHandler.startUi();
-                    changeScreen(screens.login);
+                    // console.log('Error auth response false.');
+                    // authHandler.deleteAccount();
+                    // authHandler.initializeUi();
+                    // // authHandler.startUi();
+
+                    changeScreen(screens.nicknameSelection);
                 }
             },
             onEditNicknameResponse: function(message) {
                 scopeService.safeApply($scope, function() {
                     if (message.success) {
-                        console.log("Nickname updated successfully:", message.newNickname);
                         // Update both local copy and serverUserData
                         $scope.serverUserData.nickname = message.newNickname;
                         authHandler.setServerUserData($scope.serverUserData);
@@ -301,6 +335,7 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
                 $scope.multiOptionsModal = false;
             };
         };
+          
 
         // click sul tasto eliminazione account della schermata profile. Mostra il dialog modale di conferma. In caso
         // di conferma, avvia il flusso di eliminazione account
@@ -384,7 +419,6 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
         
         // Step 1: controlla provider email
         $scope.checkEmail = function(email) {
-            console.log("Controllo provider per email:", email);
             $scope.email = email;
             firebase.auth().fetchSignInMethodsForEmail(email)
                 .then(function(methods) {
@@ -413,6 +447,22 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
         $scope.loginWithPassword = function(email, password) {
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then(function(result) {
+                    user = result.user;
+                
+                    if (!user.emailVerified && $scope.newUserJustRegistered ) {
+                      // Blocca l’accesso
+                      firebase.auth().signOut();
+                      $scope.$apply(function() {
+                        translationHandler.setTranslation($scope, 'errorMessage', 'VERIFY_EMAIL');
+                      });
+                      return;
+                    } 
+
+                    authHandler.setFirebaseUserData(user);
+                    $scope.$apply(function() {
+                      $scope.loginState = screens.mainApp;
+                    });
+
                     // 1. Save Firebase user in authHandler
                     authHandler.setFirebaseUserData(result.user);
 
@@ -431,10 +481,10 @@ angular.module('codyColor').controller('loginCtrl', ['navigationHandler', '$scop
         
         // Step 2b: reset password se utente social
         $scope.resetPassword = function(email) {
-            console.log("L'email è ,", email);
             firebase.auth().sendPasswordResetEmail(email)
                 .then(function() {
-                    $scope.infoMessage = "Ti abbiamo inviato un link per reimpostare la password.";
+                    translationHandler.setTranslation($scope, 'infoMessage', 'PASSWORD_LINK_SENT');
+                    // $scope.infoMessage = "Ti abbiamo inviato un link per reimpostare la password.";
                     $scope.$apply();
                 })
                 .catch(function(error) {

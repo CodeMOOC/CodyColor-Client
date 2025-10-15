@@ -103,13 +103,6 @@ angular.module('codyColor').controller('bootmpMmakingCtrl', ['$scope', 'rabbit',
       
         // tasto 'inizia partita'
         $scope.createBootcamp = function() {
-            // Only update nickname if logged in and it changed
-            if ($scope.userLogged && $scope.nickname !== $scope.serverUserData.nickname) {
-                rabbit.sendEditNicknameRequest($scope.nickname);
-                $scope.serverUserData.nickname = $scope.nickname;
-                $scope.userNickname = $scope.nickname;
-            }
-            
             gameData.editUser({
                 nickname: $scope.nickname,
                 playerId: 0

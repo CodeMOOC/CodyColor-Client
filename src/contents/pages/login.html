@@ -11,7 +11,7 @@
               <div class="auth-container">
 
                 
-                <h2 class="auth-title">Sign in or Create Account</h2>
+                <h2 class="auth-title">{{'LOGIN_SIGNUP' | translate}}</h2>
                 <!-- Step Email -->
                 <form ng-if="step === 'email'" ng-submit="checkEmail(email)" class="auth-form">
                     <label for="login-email" class="auth-label">Email</label>
@@ -24,33 +24,56 @@
                     <label for="login-password" class="auth-label">Password</label>
                     <input id="login-password" type="password" ng-model="password" placeholder="Enter your password" required />
                     <button type="submit" class="btn-primary">Login</button> 
+                    <p>
+                        <a href="" ng-click="resetPassword(email)" class="auth-link">{{'FORGOT_PASSWORD' | translate}}</a>
+                    </p>
                 </form>
               
                 <!-- Step Social -->
                 <div ng-if="step === 'social'" class="auth-message">
-                  <p>The email <b>{{email}}</b> is registered with {{provider}}.</p>
+                    <p>{{'PROVIDER_REGISTRATION' | translate: {email: email, provider:provider} }}</p>
                   <button ng-click="resetPassword(email)" class="btn-secondary">
-                    Convert with password reset
+                    {{'CONVERT_PROVIDER' | translate}}
                   </button>
                 </div> 
 
 
                 <!-- Step Register -->
-                <div ng-if="step === 'register'" class="auth-message" style="color: #d93025;">
-                  <p>No account found for <b>{{email}}</b>. Create a new one.</p>
-                  <label for="register-password" class="auth-label">Choose a password</label>
-                  <input id="register-password" 
-                         type="password" 
-                         ng-model="registerPassword" 
-                         placeholder="Enter a password" 
-                         required />
-                
-                  <button type="button" class="btn-primary" 
-                          ng-click="signUpFirebase(email, registerPassword)">
-                    Register
-                  </button>
-                </div>
-              
+                <div ng-if="step === 'register'" class="auth-message" style="color: #255ed9;">
+                    <p>{{'NO_ACCOUNT_FOUND' | translate: { 'email': email} }}</p>
+                  
+                    <div class="auth-field">
+                      <label for="register-password" class="auth-label">{{'CHOOSE_PASSWORD' | translate}}</label>
+                      <input id="register-password" 
+                             type="password" 
+                             ng-model="registerPassword" 
+                             placeholder="P4ssw0rd!" 
+                             required />
+                    </div>
+                  
+                    <div class="auth-field">
+                      <label for="register-password-confirm" class="auth-label">{{'CONFIRM_PASSWORD' | translate}}</label>
+                      <input id="register-password-confirm"
+                             type="password"
+                             ng-model="registerPasswordConfirm"
+                             placeholder="P4ssw0rd!"
+                             required />
+                    </div>
+                  
+                    <p ng-if="passwordMismatch" class="auth-error">
+                      {{ "PASSWORD_MISMATCH" | translate}}
+                    </p>
+                  
+                    <div class="auth-button-wrapper">
+                      <button type="button" class="btn-primary" 
+                              ng-click="signUpFirebase(email, registerPassword, registerPasswordConfirm)">
+                        {{'REGISTER_BTN'| translate}}
+                      </button>
+                    </div>
+                  </div>
+                  
+
+                  
                 <!-- Messages -->
                 <p ng-if="errorMessage" class="auth-error">{{errorMessage}}</p>
                 <p ng-if="infoMessage" class="auth-info">{{infoMessage}}</p>
@@ -171,6 +194,17 @@
                         </button>
                     </li>
                 </ul>
+            </div>
+
+            <!-- Step Verify Email -->
+            <div ng-show="loginState === screens.verifyEmail" class="auth-message" style="color: #188038;">
+                <h2>{{'VERIFY_EMAIL_SENT' | translate}}</h2>
+                <p>{{ 'VERIFY_EMAIL_DESCR_SENT' | translate: {'email': email} }}</p>
+                <div class="auth-button-wrapper">
+                  <button type="button" class="btn-primary" ng-click="goToLogin()">
+                    {{'BACK_TO_LOGIN' | translate}}
+                  </button>
+                </div>
             </div>
         </div>
 

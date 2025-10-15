@@ -58,7 +58,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "css/app.min.css",
-    "revision": "fd6d1d304e2dc9ff36d7c755abf01a14"
+    "revision": "86f3a109f35d85b34a18ac33f3b48270"
   },
   {
     "url": "favicon.ico",
@@ -242,19 +242,19 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "js/app/app.min.js",
-    "revision": "42cb55921d2193011caf5c37f043b469"
+    "revision": "33da66268083f18294bf8c2bc8d36031"
   },
   {
     "url": "locales/locale-en.json",
-    "revision": "0408d954d825b89c57868cb895cb87b9"
+    "revision": "6c7ab4f1ffb5d47040d08a3decd808fe"
   },
   {
     "url": "locales/locale-hu.json",
-    "revision": "5826e7776e0e843c30cbf86b05e0cee3"
+    "revision": "e8dffa016fb602346cec8ca1294952fc"
   },
   {
     "url": "locales/locale-it.json",
-    "revision": "1141ac832b0b3e15951df45b15349975"
+    "revision": "42ea870bd6047b11c5c524d6b538cfea"
   },
   {
     "url": "manifest.json",
@@ -298,7 +298,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/login.html",
-    "revision": "f5d2fe6d1cfc39fccb609c96cf8547e2"
+    "revision": "40fc77a386d1a463d5e2129d4287e2e3"
   },
   {
     "url": "pages/privacy.html",

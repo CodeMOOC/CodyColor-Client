@@ -582,6 +582,10 @@ li.list--super-spaced-element {
     margin-bottom: 16px;
     text-align: center;
   }
+
+  .auth-message p {
+    color: #000;
+  }
   
   .auth-error {
     color: #d93025;

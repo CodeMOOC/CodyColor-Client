@@ -31,9 +31,9 @@
               
                 <!-- Step Social -->
                 <div ng-if="step === 'social'" class="auth-message">
-                    <p>{{'PROVIDER_REGISTRATION' | translate: {email: email, provider:provider} }}</p>
+                    <p >{{'PROVIDER_REGISTRATION' | translate: {provider: provider, email:email} }}</p>
                   <button ng-click="resetPassword(email)" class="btn-secondary">
-                    {{'CONVERT_PROVIDER' | translate}}
+                    {{'CONVERT_PROVIDER' | translate }}
                   </button>
                 </div> 
 

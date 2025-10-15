@@ -246,7 +246,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "locales/locale-en.json",
-    "revision": "7726038d629517aac71599ccfe96a706"
+    "revision": "8f9fde5ec35163657336768540f2b9cf"
   },
   {
     "url": "locales/locale-hu.json",
@@ -254,7 +254,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "locales/locale-it.json",
-    "revision": "def0da16c486ea505a45f06f09cefa68"
+    "revision": "a88a6e8a952fa620f23a75ad17f900e6"
   },
   {
     "url": "manifest.json",

@@ -34,8 +34,6 @@ export class BootmpAftermatchComponent implements OnInit {
   draw = false;
   winner = '';
   matchCount = 0;
-  userMatch: any;
-  userGlobal: any;
   enemyMatch: any;
   enemyGlobal: any;
   newMatchClicked = false;
@@ -75,28 +73,14 @@ export class BootmpAftermatchComponent implements OnInit {
       this.forceExitModal = true;
     });
 
-    this.userLogged = this.auth.loginCompleted();
-    if (this.userLogged) {
-      this.userNickname = this.auth.currentUser?.serverData?.nickname
-        ? this.auth.currentUser.serverData.nickname
-        : '';
-    } else {
-      this.language.setTranslation('userNickname', 'NOT_LOGGED');
-    }
-
     // Match data
-    this.gameData.select('user').subscribe((user) => {
-      console.log('User updated:', user);
-    });
-
     this.gameData.gameData$.subscribe((data) => {
+      this.user = data.user;
       this.enemy = data.enemy;
       this.general = data.general;
       this.draw = data.match.winnerId === -1;
       this.winner = this.gameData.getMatchWinner().nickname;
       this.matchCount = data.aggregated.matchCount;
-      this.userMatch = data.userMatchResult;
-      this.userGlobal = data.userGlobalResult;
       this.enemyMatch = data.enemyMatchResult;
       this.enemyGlobal = data.enemyGlobalResult;
     });
@@ -138,29 +122,6 @@ export class BootmpAftermatchComponent implements OnInit {
     );
   }
 
-  // Exit modal controls
-  exitGame(): void {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = true;
-  }
-
-  continueExitGame(): void {
-    this.audio.playSound('menu-click');
-    this.quitGame();
-    this.router.navigate(['/home']);
-  }
-
-  stopExitGame(): void {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = false;
-  }
-
-  // Audio controls
-  toggleBase(): void {
-    this.audio.toggleBase();
-    this.basePlaying = this.audio.isEnabled();
-  }
-
   // Helpers used in template
   timeFormatter = this.gameData.formatTimeDecimals;
 
@@ -168,5 +129,12 @@ export class BootmpAftermatchComponent implements OnInit {
     this.audio.playSound('menu-click');
     this.quitGame();
     this.router.navigate(['/home']);
+  }
+
+  get userMatch() {
+    return this.user?.matchResult;
+  }
+  get userGlobal() {
+    return this.user?.globalResult;
   }
 }

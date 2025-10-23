@@ -34,9 +34,6 @@ export class BootmpMmakingComponent implements OnInit {
   forceExitModal = false;
   forceExitText = '';
 
-  languageModal = false;
-  basePlaying = false;
-
   constructor(
     private gameData: GameDataService,
     private auth: AuthService,
@@ -50,6 +47,16 @@ export class BootmpMmakingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.auth.authReady$.subscribe((ready) => {
+      if (ready) {
+        this.auth.user$.subscribe((appUser) => {
+          this.userLogged = !!appUser.firebaseUser && !!appUser.serverData;
+          this.userNickname = appUser.serverData?.nickname || '';
+          this.nickname = this.userNickname;
+        });
+      }
+    });
+
     this.gameData.update('general', {
       gameType: this.gameData.getGameTypes().bootmp,
     });
@@ -66,8 +73,6 @@ export class BootmpMmakingComponent implements OnInit {
 
     this.loadTimerSettings();
     this.loadBotSettings();
-
-    this.basePlaying = this.audio.isEnabled();
   }
 
   private quitGame(): void {
@@ -115,11 +120,6 @@ export class BootmpMmakingComponent implements OnInit {
     this.gameData.setNewMatchTiles();
 
     this.router.navigateByUrl('/bootmp-match');
-  }
-
-  toggleBase(): void {
-    this.audio.toggleBase();
-    this.basePlaying = this.audio.isEnabled();
   }
 
   private loadTimerSettings(): void {

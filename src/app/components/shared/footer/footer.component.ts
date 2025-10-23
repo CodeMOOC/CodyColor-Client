@@ -140,10 +140,6 @@ export class FooterComponent implements OnInit {
 
   navigateToLogin() {
     if (this.rabbit.getServerConnectionState()) {
-      if (this.userLogged) {
-        this.router.navigate(['/profile']);
-        return;
-      }
       this.router.navigate(['/login']);
     }
     return;

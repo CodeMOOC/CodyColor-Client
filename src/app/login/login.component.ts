@@ -95,9 +95,6 @@ export class LoginComponent {
 
     this.basePlaying = this.audio.isEnabled();
 
-    // initialize auth UI
-    this.auth.initializeAuth();
-
     // subscribe to auth state
     this.subs.push(
       this.auth.user$.subscribe((user) => {

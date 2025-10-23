@@ -10,11 +10,11 @@ import { SettingsService } from './settings.service';
 
 import { SessionService } from './session.service';
 import { GameDataService } from './game-data.service';
-import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
 // TMP: To change when updating BE
 import * as LZUTF8 from 'lzutf8';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class RabbitService {
@@ -26,6 +26,8 @@ export class RabbitService {
   private subscriptions: Record<string, StompSubscription> = {};
   private lastMsgId?: string;
   private debug: boolean;
+  private loginResponseSubject = new BehaviorSubject<any>(null);
+  loginResponse$: Observable<any> = this.loginResponseSubject.asObservable();
 
   private readonly endpoints = {
     serverControlQueue: '/queue/serverControl',
@@ -66,6 +68,9 @@ export class RabbitService {
     c_logInRequest: 'c_logInRequest', // richiedi nickname utente con uid
     s_authResponse: 's_authResponse', // fornisci il nickname utente - o messaggio error
 
+    c_editNicknameRequest: 'c_editNicknameRequest', // richiedi la modifica del nickname
+    s_editNicknameResponse: 's_editNicknameResponse', // conferma la modifica del nickname - o messaggio error
+
     c_userDeleteRequest: 'c_userDeleteRequest', // richiedi l'eliminazione di un utente
     s_userDeleteResponse: 's_userDeleteResponse', // conferma l'eliminazione di un utente
 
@@ -74,7 +79,6 @@ export class RabbitService {
   };
 
   constructor(
-    private authHandler: AuthService,
     private gameDataService: GameDataService,
     private sessionHandler: SessionService,
     private settings: SettingsService
@@ -103,6 +107,17 @@ export class RabbitService {
     this.client.activate();
   }
 
+  async waitForBrokerConnection(): Promise<void> {
+    if (this.connectedToBroker) return;
+    return new Promise((resolve) => {
+      const check = setInterval(() => {
+        if (this.connectedToBroker) {
+          clearInterval(check);
+          resolve();
+        }
+      }, 100);
+    });
+  }
   setPageCallbacks(callbacks: any): void {
     this.pageCallbacks = callbacks;
   }
@@ -169,10 +184,16 @@ export class RabbitService {
   private sendInServerControlQueue(message: any): void {
     if (this.debug)
       console.log('DEBUG: Sent message in server queue:', message);
+
     message.msgId = Math.floor(Math.random() * 100000).toString();
+
     this.client.publish({
       destination: this.endpoints.serverControlQueue,
       body: JSON.stringify(message),
+      headers: {
+        durable: 'false',
+        exclusive: 'false',
+      },
     });
   }
 
@@ -222,12 +243,17 @@ export class RabbitService {
 
     const cb = this.pageCallbacks;
 
+    this.loginResponseSubject.next(message);
+
     switch (message.msgType) {
       case this.messageTypes.s_gameResponse:
         cb?.onGameRequestResponse?.(message);
         break;
       case this.messageTypes.s_authResponse:
         cb?.onLogInResponse?.(message);
+        break;
+      case this.messageTypes.s_editNicknameResponse:
+        cb?.onEditNicknameResponse?.(message);
         break;
       case this.messageTypes.s_userDeleteResponse:
         cb?.onUserDeletedResponse?.(message);
@@ -279,33 +305,84 @@ export class RabbitService {
   }
 
   // richiesta per iniziare una nuova partita
-  sendGameRequest(): void {
+  sendGameRequest(userId: string): void {
     this.sendInServerControlQueue({
       msgType: this.messageTypes.c_gameRequest,
       user: this.gameDataService.value.user,
       general: this.gameDataService.value.general,
       gameType: this.gameDataService.value.general.gameType,
-      userId: this.authHandler.getFirebaseUserData().uid,
+      userId: userId,
       correlationId: this.sessionHandler.getSessionId(),
       clientVersion: this.sessionHandler.getClientVersion(),
     });
   }
 
-  sendSignUpRequest(nickname: string): void {
-    this.sendInServerControlQueue({
-      msgType: this.messageTypes.c_signUpRequest,
-      nickname: nickname,
-      email: this.authHandler.getFirebaseUserData().email,
-      correlationId: this.sessionHandler.getSessionId(),
-      userId: this.authHandler.getFirebaseUserData().uid,
+  sendSignUpRequestAndWait(
+    nickname: string,
+    email: string,
+    userId: string
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const correlationId = this.sessionHandler.getSessionId();
+
+      // Subscribe to loginResponse$ (which also gets auth/signup responses)
+      const sub = this.loginResponse$.subscribe((msg) => {
+        if (!msg) return;
+
+        // Only handle the response for this specific sign-up
+        if (
+          msg.msgType === this.messageTypes.s_authResponse &&
+          msg.correlationId === correlationId
+        ) {
+          sub.unsubscribe(); // stop listening after receiving response
+
+          if (msg.success) {
+            resolve(msg); // resolved with server data
+          } else {
+            reject(new Error('Sign up failed'));
+          }
+        }
+      });
+
+      // Send the request
+      this.sendSignUpRequest(nickname, email, userId);
     });
   }
 
-  sendLogInRequest(): void {
+  sendSignUpRequest(nickname: string, email: string, userId: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_signUpRequest,
+      nickname: nickname,
+      email: email,
+      correlationId: this.sessionHandler.getSessionId(),
+      userId: userId,
+    });
+  }
+
+  sendLogInRequestAndWait(userId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const correlationId = this.sessionHandler.getSessionId();
+      const sub = this.loginResponse$.subscribe((msg) => {
+        if (!msg) return;
+        if (
+          msg.msgType === this.messageTypes.s_authResponse &&
+          msg.correlationId === correlationId
+        ) {
+          sub.unsubscribe();
+          if (msg.success) resolve(msg);
+          else reject(new Error('Login failed'));
+        }
+      });
+
+      this.sendLogInRequest(userId);
+    });
+  }
+
+  sendLogInRequest(userId: string): void {
     this.sendInServerControlQueue({
       msgType: this.messageTypes.c_logInRequest,
       correlationId: this.sessionHandler.getSessionId(),
-      userId: this.authHandler.getFirebaseUserData().uid,
+      userId: userId,
     });
   }
 
@@ -316,11 +393,45 @@ export class RabbitService {
     });
   }
 
-  sendUserDeleteRequest(): void {
+  sendEditNicknameAndWait(userId: string, newNickname: string): Promise<any> {
+    console.log(
+      'Sending edit nickname request for userId:',
+      userId,
+      newNickname
+    );
+    return new Promise((resolve, reject) => {
+      const correlationId = this.sessionHandler.getSessionId();
+
+      const sub = this.loginResponse$.subscribe((msg) => {
+        if (!msg) return;
+
+        if (
+          msg.msgType === this.messageTypes.s_editNicknameResponse &&
+          msg.correlationId === correlationId
+        ) {
+          sub.unsubscribe();
+          if (msg.success) resolve(msg);
+          else reject(new Error(msg.error || 'Nickname update failed'));
+        }
+      });
+
+      this.sendEditNicknameRequest(userId, newNickname);
+    });
+  }
+
+  sendEditNicknameRequest(userId: string, newNickname: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_editNicknameRequest,
+      userId: userId,
+      newNickname: newNickname,
+    });
+  }
+
+  sendUserDeleteRequest(userId: string): void {
     this.sendInServerControlQueue({
       msgType: this.messageTypes.c_userDeleteRequest,
       correlationId: this.sessionHandler.getSessionId(),
-      userId: this.authHandler.getFirebaseUserData().uid,
+      userId: userId,
     });
   }
 

@@ -1,0 +1,50 @@
+<div class="page--component">
+  <form #nickForm="ngForm" (ngSubmit)="onSubmit(nickForm)">
+    <ul class="list">
+      <!-- Title -->
+      <li class="list--simple-element">
+        <h2>{{ "LOGIN_SETNICK" | translate }}</h2>
+      </li>
+
+      <!-- Description -->
+      <li class="list--spaced-element">
+        {{ "LOGIN_SETNICK_DESC" | translate }}
+      </li>
+
+      <!-- Label -->
+      <li class="list--simple-element">
+        <label for="nickname">{{ "NICKNAME" | translate }}</label>
+      </li>
+
+      <!-- Input -->
+      <li class="list--spaced-element">
+        <input
+          id="nickname"
+          name="username"
+          type="text"
+          class="standard-input"
+          maxlength="22"
+          placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+          required
+          autofocus
+          [(ngModel)]="username"
+          #usernameCtrl="ngModel"
+        />
+      </li>
+
+      <!-- Submit button -->
+      <li class="list--spaced-element">
+        <button
+          type="submit"
+          class="navigation--button flashing-animation"
+          [disabled]="nickForm.invalid"
+        >
+          <span>{{ "LOGIN_SETNICK_CONFIRM" | translate }}</span>
+          <i
+            class="fas fa-angle-double-right navigation--icon-in-text floating-right-animation"
+          ></i>
+        </button>
+      </li>
+    </ul>
+  </form>
+</div>

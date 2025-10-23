@@ -167,7 +167,9 @@ export class CustomMmakingComponent {
       this.joinMessage = text;
     });
     this.gameData.update('general', { code: codeValue });
-    this.rabbit.sendGameRequest();
+    this.rabbit.sendGameRequest(
+      this.authHandler.currentUser?.firebaseUser?.uid || ''
+    );
   }
 
   playerReady() {
@@ -201,9 +203,11 @@ export class CustomMmakingComponent {
     this.userLogged = this.authHandler.loginCompleted();
 
     if (this.userLogged) {
-      const userData = this.authHandler.getServerUserData();
-      this.userNickname = userData.nickname;
-      this.nickname = userData.nickname;
+      const userData = this.authHandler.currentUser.serverData;
+      if (userData) {
+        this.userNickname = userData.nickname;
+        this.nickname = userData.nickname;
+      }
     } else {
       this.languageService.setTranslation('userNickname', 'NOT_LOGGED');
     }

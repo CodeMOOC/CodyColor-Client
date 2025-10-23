@@ -10,6 +10,7 @@ import { PathService } from '../../../services/path.service';
 import { GameDataService } from '../../../services/game-data.service';
 import { filter } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
+import { RabbitService } from '../../../services/rabbit.service';
 
 @Component({
   selector: 'app-footer',
@@ -33,14 +34,10 @@ export class FooterComponent implements OnInit {
     private dialog: MatDialog,
     private gameData: GameDataService,
     private matDialog: MatDialog,
-    private pathService: PathService,
+    private rabbit: RabbitService,
     private router: Router,
     private translate: TranslateService
-  ) {
-    this.translate.addLangs(['it', 'en']);
-    this.translate.setDefaultLang('it');
-    this.translate.use('it');
-  }
+  ) {}
 
   ngOnInit(): void {
     this.userLogin();
@@ -50,17 +47,29 @@ export class FooterComponent implements OnInit {
         this.showExitButton = event.urlAfterRedirects !== '/home';
       });
   }
-  userLogin(): void {
-    this.userLogged = this.auth.loginCompleted();
 
-    if (this.userLogged) {
-      const user = this.auth.getServerUserData();
-      this.userNickname = user.nickname;
-    } else {
-      this.userNickname = this.translate.instant('NOT_LOGGED');
-    }
+  userLogin(): void {
+    this.auth.user$.subscribe(() => {
+      const appUser = this.auth.currentUser;
+
+      this.userLogged = !!appUser.firebaseUser && !!appUser.serverData;
+
+      if (this.userLogged && appUser.serverData) {
+        this.userNickname = appUser.serverData.nickname;
+      } else {
+        this.translate.get('NOT_LOGGED').subscribe((res: string) => {
+          this.userNickname = res;
+        });
+      }
+    });
   }
+
   openExitGameDialog(): void {
+    const currentUrl = this.router.url;
+    if (currentUrl === '/login') {
+      this.goToHome();
+      return;
+    }
     const dialogRef = this.dialog.open(ExitGameModalComponent, {
       width: '400px',
       disableClose: true,
@@ -69,10 +78,7 @@ export class FooterComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        console.log('User confirmed exit');
         this.quitGame();
-      } else {
-        console.log('User cancelled exit');
       }
     });
   }
@@ -112,7 +118,6 @@ export class FooterComponent implements OnInit {
       })
       .afterClosed()
       .subscribe((result) => {
-        console.log('Dialog closed with result:');
         if (result) {
           this.changeLanguage(result);
         }
@@ -129,7 +134,18 @@ export class FooterComponent implements OnInit {
   }
 
   changeLanguage(lang: string) {
-    console.log('Changing language to:', lang);
     this.language = lang;
+    this.translate.use(lang);
+  }
+
+  navigateToLogin() {
+    if (this.rabbit.getServerConnectionState()) {
+      if (this.userLogged) {
+        this.router.navigate(['/profile']);
+        return;
+      }
+      this.router.navigate(['/login']);
+    }
+    return;
   }
 }

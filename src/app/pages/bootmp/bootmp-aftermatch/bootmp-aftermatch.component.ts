@@ -77,7 +77,9 @@ export class BootmpAftermatchComponent implements OnInit {
 
     this.userLogged = this.auth.loginCompleted();
     if (this.userLogged) {
-      this.userNickname = this.auth.getServerUserData().nickname;
+      this.userNickname = this.auth.currentUser?.serverData?.nickname
+        ? this.auth.currentUser.serverData.nickname
+        : '';
     } else {
       this.language.setTranslation('userNickname', 'NOT_LOGGED');
     }
@@ -88,7 +90,6 @@ export class BootmpAftermatchComponent implements OnInit {
     });
 
     this.gameData.gameData$.subscribe((data) => {
-      console.log('Game data updated:', data);
       this.enemy = data.enemy;
       this.general = data.general;
       this.draw = data.match.winnerId === -1;

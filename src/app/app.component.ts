@@ -1,11 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { FooterComponent } from './components/shared/footer/footer.component';
 import { filter } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
-import { Firestore, collectionData, collection } from '@angular/fire/firestore';
-import { Auth, onAuthStateChanged } from '@angular/fire/auth';
+import { Firestore } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +14,7 @@ import { Auth, onAuthStateChanged } from '@angular/fire/auth';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'CodyColor-Client';
 
   showFooter = true;
@@ -29,12 +29,5 @@ export class AppComponent implements OnInit {
       .subscribe((event: any) => {
         this.showFooter = event.urlAfterRedirects !== '/';
       });
-  }
-
-  ngOnInit() {
-    // watch auth state
-    onAuthStateChanged(this.auth, (user) => {
-      console.log('User:', user);
-    });
   }
 }

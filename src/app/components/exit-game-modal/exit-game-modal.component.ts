@@ -9,6 +9,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 @Component({
   selector: 'app-exit-game-modal',
   imports: [CommonModule, TranslateModule],
+  standalone: true,
   templateUrl: './exit-game-modal.component.html',
   styleUrl: './exit-game-modal.component.scss',
 })
@@ -22,9 +23,8 @@ export class ExitGameModalComponent implements OnInit {
     private navigation: NavigationService
   ) {}
 
-  ngOnInit(): void {
-    console.log('ExitGameModalComponent initialized');
-  }
+  ngOnInit(): void {}
+
   stopExitGame(): void {
     this.audioHandler.playSound('menu-click');
     this.closed.emit();

@@ -1,3 +1,10 @@
+<h2>Live Game Info</h2>
+<p>Broker: {{ brokerConnected ? "✅ Connected" : "❌ Disconnected" }}</p>
+<p>Server: {{ serverConnected ? "✅ Connected" : "❌ Disconnected" }}</p>
+<p>Total Matches: {{ totalMatches }}</p>
+<p>Connected Players: {{ connectedPlayers }}</p>
+<button (click)="sendPing()">Send Ping</button>
+
 <div id="home" class="page">
   <div class="page--wrapper">
     <div class="page--header">
@@ -43,8 +50,8 @@
           </button>
         </li>
 
-        <li class="list--simple-element" *ngIf="connected">
-          <div [ngClass]="connected ? 'flashing-animation' : ''">
+        <li class="list--simple-element" *ngIf="brokerConnected">
+          <div [ngClass]="brokerConnected ? 'flashing-animation' : ''">
             {{
               "NOTIF_GENERAL"
                 | translate
@@ -55,8 +62,8 @@
             }}
           </div>
         </li>
-        <li class="list--simple-element" *ngIf="!connected">
-          <div [ngClass]="!connected ? 'flashing-animation' : ''">
+        <li class="list--simple-element" *ngIf="!brokerConnected">
+          <div [ngClass]="!brokerConnected ? 'flashing-animation' : ''">
             {{ "NOTIF_OFFLINE" | translate }}
           </div>
         </li>

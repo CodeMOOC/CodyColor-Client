@@ -24,12 +24,12 @@
   </div>
 
   <div class="page--footer-column-right ellipsize">
-    <button class="page--footer-button">
+    <button class="page--footer-button" (click)="navigateToLogin()">
+      <span class="page--footer-icons material-symbols-outlined">
+        account_circle
+      </span>
       <span class="ellipsize">
-        <i
-          class="page--footer-icons"
-          [ngClass]="userLogged ? 'fas fa-user-circle' : 'far fa-user-circle'"
-        ></i>
+    
         {{ userNickname }}
       </span>
     </button>

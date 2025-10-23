@@ -7,6 +7,7 @@ import { AudioService } from '../../services/audio.service';
 @Component({
   selector: 'app-splash',
   imports: [TranslateModule],
+  standalone: true,
   templateUrl: './splash.component.html',
   styleUrl: './splash.component.scss',
 })
@@ -17,7 +18,6 @@ export class SplashComponent implements OnInit {
   constructor(private router: Router, private sessionHandler: SessionService) {}
 
   ngOnInit(): void {
-    console.log('Splash component initialized');
     this.sessionHandler.validateSession();
   }
 

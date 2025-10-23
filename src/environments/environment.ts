@@ -1,7 +1,8 @@
 export const environment = {
   production: false,
   firebaseConfig: {
-    apiKey: 'AIzaSyCJoAvdMagPFHTG--zurc3RjBekWLJzvxo',
+    apiKey: 'AIzaSyBSFxbzE8YMo6a6mr40j_OywsHKqy4xHyw',
+    // apiKey: 'AIzaSyCJoAvdMagPFHTG--zurc3RjBekWLJzvxo',
     authDomain: 'codycolor-f2519.firebaseapp.com',
     databaseURL: 'https://codycolor-f2519.firebaseio.com',
     projectId: 'codycolor-f2519',

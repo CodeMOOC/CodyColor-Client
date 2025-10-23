@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-bootmp-mmaking',
   imports: [CommonModule, FormsModule, TranslateModule],
+  standalone: true,
   templateUrl: './bootmp-mmaking.component.html',
   styleUrl: './bootmp-mmaking.component.scss',
 })

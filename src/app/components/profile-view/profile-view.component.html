@@ -1,0 +1,139 @@
+<div class="page--component">
+  <ul class="list">
+    <!-- User image -->
+    <li class="list--simple-element">
+      <img class="profile--image" [src]="avatarUrl" alt="User Avatar" />
+    </li>
+
+    <!-- Welcome text -->
+    <li class="list--spaced-element">
+      <div class="profile-row">
+        <h2 class="profile-text">
+          {{ "WELCOME_USER" | translate }}
+          <span *ngIf="!editMode" style="color: #fff">{{
+            serverUser.nickname
+          }}</span>
+        </h2>
+
+        <!-- Edit button -->
+        <div *ngIf="!editMode">
+          <i
+            class="material-symbols-outlined"
+            title="Edit nickname"
+            (click)="enterEditMode()"
+            >{{ "edit" }}</i
+          >
+        </div>
+
+        <!-- Edit mode -->
+        <div *ngIf="editMode" class="nickname-edit-row">
+          <input
+            type="text"
+            [(ngModel)]="editableNickname"
+            maxlength="22"
+            placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+            class="standard-input"
+            required
+            autofocus
+          />
+
+          <!-- Confirm -->
+          <i
+            class="material-symbols-outlined icon-confirm"
+            title="Save nickname"
+            (click)="saveNickname()"
+            >check</i
+          >
+
+          <!-- Cancel -->
+          <i
+            class="material-symbols-outlined icon-cancel"
+            title="Cancel"
+            (click)="cancelEdit()"
+            >close</i
+          >
+        </div>
+      </div>
+
+      <div class="profile-row">
+        <p class="profile-text">
+          {{ "EMAIL_USER" | translate
+          }}<span style="color: #fff">{{ firebaseUser.email }}</span>
+        </p>
+      </div>
+    </li>
+
+    <!-- Stats -->
+    <li class="list--spaced-element">
+      <div class="stats">
+        <span>{{ "USER_STATS" | translate }}</span>
+
+        <p class="stats--line">
+          {{ "TOTAL_POINTS" | translate }}
+          <span class="stats--player-text">{{ serverUser.totalPoints }}</span>
+        </p>
+
+        <p class="stats--line">
+          {{ "TOTAL_WINS" | translate }}
+          <span class="stats--player-text">{{ serverUser.wonMatches }}</span>
+        </p>
+
+        <p class="stats--line">
+          {{ "AVG_MATCH" | translate }}
+          <span class="stats--player-text">{{ serverUser.avgPoints }}</span>
+        </p>
+
+        <!-- Best match shown only if present -->
+        <p class="stats--line" *ngIf="serverUser.bestMatch">
+          {{ "BEST_MATCH" | translate }}
+          <span class="stats--player-text">
+            {{
+              "BEST_MATCH_DESC"
+                | translate
+                  : {
+                      points: serverUser.bestMatch.points,
+                      pathLength: serverUser.bestMatch.pathLength,
+                      time: serverUser.bestMatch.time | number : "1.0-2"
+                    }
+            }}
+          </span>
+        </p>
+      </div>
+    </li>
+
+    <!-- Action buttons -->
+    <li class="list--simple-element">
+      <button class="navigation--button" type="button" (click)="logout.emit()">
+        {{ "LOGOUT" | translate }}
+        <span
+          class="material-symbols-outlined floating-right-animation navigation--icon-in-text"
+          >keyboard_double_arrow_right</span
+        >
+      </button>
+    </li>
+
+    <li class="list--spaced-element">
+      <button
+        class="navigation--button"
+        type="button"
+        (click)="deleteAccount.emit()"
+      >
+        {{ "DELETE_ACCOUNT" | translate }}
+        <span
+          class="material-symbols-outlined floating-right-animation navigation--icon-in-text"
+          >keyboard_double_arrow_right</span
+        >
+      </button>
+    </li>
+
+    <li class="list--simple-element">
+      <button class="navigation--button" type="button" (click)="goHome.emit()">
+        {{ "GOTO_GAME" | translate }}
+        <span
+          class="material-symbols-outlined floating-right-animation navigation--icon-in-text"
+          >keyboard_double_arrow_right</span
+        >
+      </button>
+    </li>
+  </ul>
+</div>

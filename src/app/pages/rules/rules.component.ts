@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'app-rules',
   imports: [CommonModule, TranslateModule],
+  standalone: true,
   templateUrl: './rules.component.html',
   styleUrl: './rules.component.scss',
 })
@@ -16,11 +17,7 @@ export class RulesComponent {
   userLogged = false;
   userNickname = 'Guest';
 
-  constructor(private router: Router, private translate: TranslateService) {
-    this.translate.addLangs(['it', 'en']);
-    this.translate.setDefaultLang('it');
-    this.translate.use('it');
-  }
+  constructor(private router: Router, private translate: TranslateService) {}
 
   goToHome() {
     this.router.navigate(['/home']);

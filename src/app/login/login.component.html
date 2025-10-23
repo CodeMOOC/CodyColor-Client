@@ -1,1 +1,165 @@
-<p>login works!</p>
+<div class="page" id="login">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <p *ngIf="screen !== ScreenState.Profile">
+        {{ "LOGIN_DESC" | translate }}
+      </p>
+      <!-- Login screen -->
+      <section *ngIf="screen === ScreenState.Login" class="auth-container">
+        <div class="auth-card">
+          <h2 class="auth-title">
+            {{
+              isSignUp
+                ? ("SIGNUP_TITLE" | translate)
+                : ("LOGIN_TITLE" | translate)
+            }}
+          </h2>
+          <p class="auth-subtitle">
+            {{ isSignUp ? "Sign up to get started" : "Log in to continue" }}
+          </p>
+
+          <form
+            [formGroup]="authForm"
+            (ngSubmit)="submitAuth()"
+            class="auth-form"
+          >
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="test@example.com"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">{{ "INSERT_PASSWORD" | translate }}</label>
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <div class="form-group" *ngIf="isSignUp">
+              <label for="repeatPassword">{{
+                "CONFIRM_PASSWORD" | translate
+              }}</label>
+              <input
+                id="repeatPassword"
+                type="password"
+                formControlName="repeatPassword"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <div class="form-group relative" *ngIf="isSignUp">
+              <label for="nickname"
+                >{{ "NICKNAME" | translate }}
+                <button
+                  type="button"
+                  class="info-btn"
+                  (mouseenter)="showInfo()"
+                  (mouseleave)="hideInfo()"
+                  (click)="toggleInfo()"
+                >
+                  ⓘ
+                </button>
+              </label>
+
+              <div class="info-tooltip" *ngIf="infoVisible">
+                {{ "LOGIN_SETNICK_DESC" | translate }}
+              </div>
+
+              <input
+                id="nickname"
+                type="text"
+                formControlName="nickname"
+                placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+                required
+              />
+            </div>
+
+            <button
+              class="btn-primary"
+              type="submit"
+              [disabled]="authForm.invalid || loading"
+            >
+              {{ isSignUp ? ("REGISTER_BTN" | translate) : "Login" }}
+            </button>
+          </form>
+
+          <div class="auth-footer">
+            <button type="button" class="btn-link" (click)="toggleMode()">
+              {{
+                isSignUp
+                  ? ("ALREADY_HAVE_ACCOUNT" | translate)
+                  : ("NEED_SIGN_UP" | translate)
+              }}
+            </button>
+          </div>
+        </div>
+        <div class="social-login" *ngIf="!isSignUp">
+          <p class="social-divider">{{ "OR_CONTINUE_WITH" | translate }}</p>
+
+          <button
+            type="button"
+            class="social-btn google"
+            (click)="onGoogleLogin()"
+          >
+            <img src="assets/icons/google.svg" alt="Google" class="icon" />
+            {{ "LOGIN_WITH_GOOGLE" | translate }}
+          </button>
+
+          <button
+            type="button"
+            class="social-btn facebook"
+            (click)="onFacebookLogin()"
+          >
+            <img src="assets/icons/facebook.svg" alt="Facebook" class="icon" />
+            {{ "LOGIN_WITH_FACEBOOK" | translate }}
+          </button>
+        </div>
+      </section>
+
+      <!-- Nickname selection -->
+      <app-nickname-form
+        *ngIf="screen === ScreenState.Nickname"
+        (submitNickname)="ultimateSignUp($event)"
+      >
+      </app-nickname-form>
+
+      <!-- Profile -->
+      <app-profile-view
+        *ngIf="screen === ScreenState.Profile"
+        [serverUser]="serverUserData"
+        [firebaseUser]="firebaseUserData"
+        (logout)="logout()"
+        (deleteAccount)="deleteAccount()"
+        (goHome)="goToHome()"
+      >
+      </app-profile-view>
+    </div>
+    <div class="page--push"></div>
+  </div>
+
+  <app-single-option-modal
+    *ngIf="singleOptionModal"
+    [text]="singleOptionText"
+    (ok)="singleOptionOk()"
+  >
+  </app-single-option-modal>
+
+  <app-multi-options-modal
+    *ngIf="multiOptionsModal"
+    [text]="multiOptionsText"
+    (ok)="multiOptionsOk()"
+    (cancel)="multiOptionsCancel()"
+  >
+  </app-multi-options-modal>
+</div>

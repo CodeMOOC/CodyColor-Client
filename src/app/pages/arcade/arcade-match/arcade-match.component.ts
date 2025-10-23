@@ -3,9 +3,8 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-arcade-match',
   imports: [],
+  standalone: true,
   templateUrl: './arcade-match.component.html',
-  styleUrl: './arcade-match.component.scss'
+  styleUrl: './arcade-match.component.scss',
 })
-export class ArcadeMatchComponent {
-
-}
+export class ArcadeMatchComponent {}

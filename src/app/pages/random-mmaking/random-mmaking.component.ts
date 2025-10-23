@@ -17,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-random-mmaking',
   imports: [TranslateModule, CommonModule, FormsModule],
+  standalone: true,
   templateUrl: './random-mmaking.component.html',
   styleUrl: './random-mmaking.component.scss',
 })
@@ -98,8 +99,9 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
 
     this.userLogged = this.authHandler.loginCompleted();
     if (this.userLogged) {
-      const user = this.authHandler.getServerUserData();
-      this.nickname = this.userNickname = user.nickname;
+      const user = this.authHandler.currentUser?.serverData;
+
+      this.nickname = this.userNickname = user?.nickname ? user.nickname : '';
     } else {
       this.translation
         .setTranslation('userNickname', 'NOT_LOGGED')
@@ -225,7 +227,9 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     this.mmakingRequested = true;
     this.audio.playSound('menu-click');
     this.gameData.update('user', { nickname: this.nickname });
-    this.rabbit.sendGameRequest();
+    this.rabbit.sendGameRequest(
+      this.authHandler.currentUser?.firebaseUser?.uid ?? ''
+    );
   }
 
   playerReady(): void {

@@ -73,19 +73,15 @@ export class PathService {
     // ottieni primo elemento
     switch (path.startPosition.side) {
       case 0:
-        console.log('top');
         path.tilesCoords.push({ row: 0, col: path.startPosition.distance });
         break;
       case 1:
-        console.log('right');
         path.tilesCoords.push({ row: path.startPosition.distance, col: 4 });
         break;
       case 2:
-        console.log('Bottom');
         path.tilesCoords.push({ row: 4, col: path.startPosition.distance });
         break;
       case 3:
-        console.log('left');
         path.tilesCoords.push({ row: path.startPosition.distance, col: 0 });
         break;
     }

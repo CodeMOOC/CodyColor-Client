@@ -1,0 +1,41 @@
+.profile-row,
+.nickname-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* spacing between text and icons */
+}
+
+.navigation--icon-in-text,
+.icon-confirm,
+.icon-cancel {
+  cursor: pointer;
+  font-size: 1.2em;
+  transition: color 0.2s ease;
+}
+
+.icon-confirm {
+  color: green;
+  transition-duration: 500ms;
+}
+
+.icon-confirm:hover {
+  color: #054f05;
+}
+
+.icon-cancel {
+  color: red;
+}
+
+.icon-cancel:hover {
+  color: rgb(182, 31, 31);
+}
+
+.navigation--icon-in-text:hover,
+.icon-confirm:hover,
+.icon-cancel:hover {
+  opacity: 0.8;
+}
+
+.profile-text {
+  color: #bababa;
+}

@@ -56,9 +56,13 @@ export class RankingsComponent implements OnInit {
     }
 
     this.userLogged = this.auth.loginCompleted();
-    this.userNickname = this.userLogged
-      ? this.auth.getServerUserData().nickname
-      : this.translationHandler.getTranslation('NOT_LOGGED');
+    if (this.userLogged && this.auth.currentUser?.serverData) {
+      this.userNickname = this.auth.currentUser.serverData.nickname;
+    } else {
+      this.translate.get('NOT_LOGGED').subscribe((res: string) => {
+        this.userNickname = res;
+      });
+    }
 
     this.loadTranslations();
     this.initRankings();

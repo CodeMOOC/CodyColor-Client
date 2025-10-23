@@ -36,6 +36,9 @@ export class BootmpAftermatchComponent implements OnInit {
   matchCount = 0;
   enemyMatch: any;
   enemyGlobal: any;
+  userMatch: any;
+  userGlobal: any;
+
   newMatchClicked = false;
 
   exitGameModal = false;
@@ -75,12 +78,15 @@ export class BootmpAftermatchComponent implements OnInit {
 
     // Match data
     this.gameData.gameData$.subscribe((data) => {
+      console.log('data aftermatch ', data);
       this.user = data.user;
       this.enemy = data.enemy;
       this.general = data.general;
       this.draw = data.match.winnerId === -1;
       this.winner = this.gameData.getMatchWinner().nickname;
       this.matchCount = data.aggregated.matchCount;
+      this.userGlobal = data.userGlobalResult;
+      this.userMatch = data.userMatchResult;
       this.enemyMatch = data.enemyMatchResult;
       this.enemyGlobal = data.enemyGlobalResult;
     });
@@ -129,12 +135,5 @@ export class BootmpAftermatchComponent implements OnInit {
     this.audio.playSound('menu-click');
     this.quitGame();
     this.router.navigate(['/home']);
-  }
-
-  get userMatch() {
-    return this.user?.matchResult;
-  }
-  get userGlobal() {
-    return this.user?.globalResult;
   }
 }

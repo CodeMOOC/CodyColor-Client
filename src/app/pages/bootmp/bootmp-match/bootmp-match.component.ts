@@ -7,6 +7,7 @@ import {
   AfterViewInit,
   ViewChild,
   ChangeDetectorRef,
+  ElementRef,
 } from '@angular/core';
 
 import { GameDataService } from '../../../services/game-data.service';
@@ -21,10 +22,10 @@ import { VisibilityService } from '../../../services/visibility.service';
 import { PathService } from '../../../services/path.service';
 import {
   CdkDrag,
-  CdkDragDrop,
   DragDropModule,
   CdkDropList,
   CdkDropListGroup,
+  CdkDragMove,
 } from '@angular/cdk/drag-drop';
 import { Player } from '../../../models/player.model';
 import { Match } from '../../../models/match.model';
@@ -51,7 +52,7 @@ import { TestCompComponent } from '../../../components/test-comp/test-comp.compo
   styleUrls: ['./bootmp-match.component.scss'],
   standalone: true,
 })
-export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
+export class BootmpMatchComponent implements OnInit, OnDestroy {
   @ViewChildren(CdkDropList) dropLists!: QueryList<CdkDropList>;
   @ViewChild('player') playerAnim?: RobyAnimationComponent;
   @ViewChild('enemy') enemyAnim?: RobyAnimationComponent;
@@ -115,6 +116,13 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
 
   subs = new Subscription();
 
+  @ViewChildren('arrowCell', { read: ElementRef })
+  arrowElements!: QueryList<ElementRef>;
+
+  currentSide: Side | null = null;
+  currentIndex: number | null = null;
+
+  isOverArrow = false;
   fixedPath: Path = {
     startPosition: {
       side: 2,
@@ -214,8 +222,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.executeAnimation = false;
 
-    console.log('Player path  ', this.playerPath);
-
     this.subs.add(
       this.gameData.gameData$
         .pipe(takeUntil(this.destroy$))
@@ -249,8 +255,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    console.log('Match data chehchhe:', this.match);
-
     this.initializeTilesCss();
 
     // TO UNCOMMENT AFTER TESTING
@@ -270,23 +274,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.destroy$.next();
     this.destroy$.complete();
     this.gameData.stopTimer();
-  }
-
-  ngAfterViewInit() {
-    // initialize once after view is ready
-    this.updateConnectedIds();
-    // Aggiorna le connessioni tra le drop list (appare la griglia)
-    this.dropLists.changes.subscribe(() => this.updateConnectedIds());
-    this.cdr.detectChanges();
-  }
-
-  // popola l'array connectedIds con gli id di tutte le drop list
-  private updateConnectedIds() {
-    setTimeout(() => {
-      // array di tutti gli ID delle drop list presenti nella vista
-      this.connectedIds = this.dropLists.map((dl) => dl.id);
-      console.log('Connected IDs:', this.connectedIds);
-    });
   }
 
   private quitGame(): void {
@@ -381,78 +368,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  //...a meno che, non venga rilasciato in una posizione valida. In quel caso, viene utilizzata un secondo tag
-  // img, per mostrare roby nella sua posizione di partenza. Viene inoltre fermato il timer, e notificato
-  // l'avversario dell'avvenuta presa di posizione
-  onTileDropped(
-    event: CdkDragDrop<any>,
-    sideValue: Side,
-    distanceValue: number
-  ): void {
-    console.log('Tile dropped on side', sideValue, 'distance', distanceValue);
-    this.audio.playSound('roby-positioned');
-    this.showCompleteGrid = true;
-
-    if (!this.isAnimationReady) {
-      const finalUserTime = this.gameData.getUserFinalTime();
-      // aggiorna i dati della partita
-      this.gameData.update('match', {
-        positioned: true,
-        time: finalUserTime,
-        startPosition: {
-          side: sideValue,
-          distance: distanceValue,
-        },
-      });
-
-      this.showDraggableRoby = false;
-      this.userTimerAnimation = 'clock--end';
-      this.userTimerValue = this.gameData.value.match.time;
-
-      // calcolo risultato giocatore
-      this.path.computePath(this.gameData.value.match.startPosition);
-
-      this.gameData.update('userMatchResult', {
-        nickname: this.gameData.value.user.nickname,
-        playerId: this.gameData.value.user.playerId,
-        pathLength: this.path.value.pathLength,
-        time: this.gameData.value.match.time,
-        startPosition: this.gameData.value.match.startPosition,
-      });
-
-      // posizionamento avversario (bot)
-      if (
-        !this.gameData.value.match.enemyPositioned &&
-        this.gameData.value.general.botSetting !== 0
-      ) {
-        const botPath = this.path.calculateBotPath(
-          this.gameData.value.general.botSetting
-        );
-        console.log('Positioning BOT ', botPath);
-
-        this.gameData.update('match', {
-          enemyPositioned: true,
-          enemyTime: this.positionEnemyTrigger,
-          enemyStartPosition: botPath.startPosition,
-        });
-
-        this.enemyTimerValue = this.gameData.value.match.enemyTime;
-        this.enemyTimerAnimation = 'clock--end';
-      }
-    }
-  }
-
-  // private buildArrowCss(side: number, distance: number, over: boolean): string {
-  //   console.log('Building arrow CSS for ', side, distance, over);
-  //   const sides = ['down', 'left', 'up', 'right'];
-  //   const arrowSide = sides[side] ?? '';
-  //   let cls = over
-  //     ? `fas fa-chevron-circle-${arrowSide} playground--arrow-over`
-  //     : `fas fa-angle-${arrowSide} playground--arrow`;
-  //   if (this.showArrows) cls += ` floating-${arrowSide}-animation`;
-  //   return cls;
-  // }
-
   // assegna classi CSS alle celle della griglia
   private initializeTilesCss(): void {
     const tiles = this.match.tiles;
@@ -530,7 +445,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // giocatore non piazza il suo personaggio in tempo
   private handleUserTimeout(): void {
-    console.log('USER TIMEOUT');
     if (!this.match.positioned) {
       this.gameData.update('match', {
         positioned: true,
@@ -639,9 +553,113 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.showCompleteGrid = true;
     this.draggableRobyImage = 'roby-dragging-trasp';
     this.showArrows = true;
+  }
 
-    // after grid is shown, update connections again
-    setTimeout(() => this.updateConnectedIds());
+  onDragEnded() {
+    if (this.isOverArrow) {
+      if (
+        this.currentSide !== null &&
+        this.currentSide !== undefined &&
+        this.currentIndex !== null &&
+        this.currentIndex !== undefined
+      ) {
+        this.onTileDropped(this.currentSide, this.currentIndex);
+      }
+    }
+  }
+
+  //...a meno che, non venga rilasciato in una posizione valida. In quel caso, viene utilizzata un secondo tag
+  // img, per mostrare roby nella sua posizione di partenza. Viene inoltre fermato il timer, e notificato
+  // l'avversario dell'avvenuta presa di posizione
+  onTileDropped(sideValue: Side, distanceValue: number): void {
+    this.audio.playSound('roby-positioned');
+    this.showCompleteGrid = true;
+
+    if (!this.isAnimationReady) {
+      const finalUserTime = this.gameData.getUserFinalTime();
+      // aggiorna i dati della partita
+      this.gameData.update('match', {
+        positioned: true,
+        time: finalUserTime,
+        startPosition: {
+          side: sideValue,
+          distance: distanceValue,
+        },
+      });
+
+      this.showDraggableRoby = false;
+      this.userTimerAnimation = 'clock--end';
+      this.userTimerValue = this.gameData.value.match.time;
+
+      // calcolo risultato giocatore
+      this.path.computePath(this.gameData.value.match.startPosition);
+
+      this.gameData.update('userMatchResult', {
+        nickname: this.gameData.value.user.nickname,
+        playerId: this.gameData.value.user.playerId,
+        pathLength: this.path.value.pathLength,
+        time: this.gameData.value.match.time,
+        startPosition: this.gameData.value.match.startPosition,
+      });
+
+      // posizionamento avversario (bot)
+      if (
+        !this.gameData.value.match.enemyPositioned &&
+        this.gameData.value.general.botSetting !== 0
+      ) {
+        const botPath = this.path.calculateBotPath(
+          this.gameData.value.general.botSetting
+        );
+
+        this.gameData.update('match', {
+          enemyPositioned: true,
+          enemyTime: this.positionEnemyTrigger,
+          enemyStartPosition: botPath.startPosition,
+        });
+
+        this.enemyTimerValue = this.gameData.value.match.enemyTime;
+        this.enemyTimerAnimation = 'clock--end';
+      }
+    }
+  }
+
+  onDragMoved(event: CdkDragMove) {
+    const pointerX = event.pointerPosition.x;
+    const pointerY = event.pointerPosition.y;
+
+    let found = false;
+    const arrowEls = document.querySelectorAll('.arrow-cell');
+    arrowEls.forEach((el: any) => {
+      const rect = el.getBoundingClientRect();
+      if (
+        pointerX >= rect.left &&
+        pointerX <= rect.right &&
+        pointerY >= rect.top &&
+        pointerY <= rect.bottom
+      ) {
+        this.isOverArrow = true;
+
+        this.currentSide = Number(el.dataset.side) as Side;
+        this.currentIndex = Number(el.dataset.index);
+
+        found = true;
+      }
+    });
+
+    if (!found) {
+      // Pointer is over empty surface
+      if (this.isOverArrow) {
+        this.onEmptySurfaceHover();
+      }
+
+      this.isOverArrow = false;
+      this.currentSide = null;
+      this.currentIndex = null;
+    }
+  }
+
+  onEmptySurfaceHover() {
+    this.isOverArrow = false;
   }
 
   skip(): void {
@@ -649,12 +667,4 @@ export class BootmpMatchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.quitGame();
     this.router.navigate(['/bootmp-aftermatch']);
   }
-
-  dropListId(rowIndex: number, colIndex: number): string {
-    return `drop-${rowIndex}-${colIndex}`;
-  }
-
-  robyOver(row: number, col: number): void {}
-
-  robyOut(row: number, col: number): void {}
 }

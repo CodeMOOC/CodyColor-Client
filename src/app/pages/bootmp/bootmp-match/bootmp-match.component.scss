@@ -15,6 +15,7 @@
   width: 50px;
   height: 50px;
   display: flex;
+  z-index: 10;
   justify-content: center;
   align-items: center;
   border-radius: 4px;
@@ -43,4 +44,15 @@
 .roby img {
   width: 30px;
   height: 30px;
+}
+
+.empty-surface {
+  position: absolute;
+  background-color: aqua;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5; /* below robot's z-index */
+  pointer-events: none; /* allow robot to be clickable */
 }

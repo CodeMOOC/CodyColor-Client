@@ -89,21 +89,7 @@
               </tr>
             </table>
           </div>
-          <!-- <table
-  cdkDropList
-  [cdkDropListData]="smallGrid"
-  (cdkDropListDropped)="onTileDropped($event)"
->
-  <tr *ngFor="let row of smallGrid; let rowIndex = index">
-    <td *ngFor="let cell of row; let colIndex = index" class="playground--cell">
-      <div *ngIf="cell.placeholder"></div>
-      <span *ngIf="cell.start" [ngClass]="startPositionsCss[rowIndex][colIndex]">
-        keyboard_arrow_right
-      </span>
-      <div *ngIf="cell.tile" [ngClass]="tilesCss[cell.tile.row][cell.tile.col]"></div>
-    </td>
-  </tr>
-</table> -->
+
           <!-- Small grid -->
           <div class="w-full" cdkDropListGroup>
             <div class="small-grid" [ngClass]="{ hidden: !showCompleteGrid }">
@@ -131,34 +117,40 @@
               <!-- Top row -->
               <div class="cell placeholder"></div>
               @for (col of grid[0]; let colIndex = $index; track colIndex) {
-              <div
-                class="cell"
+              <!-- <div
+                class="cell arrow-cell"
                 cdkDropList
                 [id]="'drop-top-' + colIndex"
                 [cdkDropListConnectedTo]="connectedIds"
                 #arrowList="cdkDropList"
                 [cdkDropListData]="{ side: 'top', index: colIndex }"
                 (cdkDropListDropped)="onTileDropped($event, Side.Top, colIndex)"
+                (cdkDropListEntered)="onDropListEntered($event)"
+                (cdkDragEnded)="onDropListEnded($event)"
+              >
+                <span class="material-symbols-outlined">
+                  {{ getArrowIcon(Side.Top) }}
+                </span>
+              </div> -->
+              <div
+                class="cell arrow-cell"
+                [attr.data-side]="Side.Top"
+                [attr.data-index]="colIndex"
               >
                 <span class="material-symbols-outlined">
                   {{ getArrowIcon(Side.Top) }}
                 </span>
               </div>
+
               }
               <div class="cell placeholder"></div>
               <!-- Playable rows -->
               @for (row of grid; let rowIndex = $index; track rowIndex) {
               <!-- Left arrow -->
               <div
-                class="cell"
-                cdkDropList
-                [id]="'drop-left-' + rowIndex"
-                [cdkDropListConnectedTo]="connectedIds"
-                #arrowList="cdkDropList"
-                [cdkDropListData]="{ side: 'left', index: rowIndex }"
-                (cdkDropListDropped)="
-                  onTileDropped($event, Side.Left, rowIndex)
-                "
+                class="cell arrow-cell"
+                [attr.data-side]="Side.Left"
+                [attr.data-index]="rowIndex"
               >
                 <span class="material-symbols-outlined">
                   {{ getArrowIcon(Side.Left) }}
@@ -172,15 +164,9 @@
 
               <!-- Right arrow -->
               <div
-                class="cell"
-                cdkDropList
-                [id]="'drop-right-' + rowIndex"
-                #arrowList="cdkDropList"
-                [cdkDropListConnectedTo]="connectedIds"
-                [cdkDropListData]="{ side: 'right', index: rowIndex }"
-                (cdkDropListDropped)="
-                  onTileDropped($event, Side.Right, rowIndex)
-                "
+                class="cell arrow-cell"
+                [attr.data-side]="Side.Right"
+                [attr.data-index]="rowIndex"
               >
                 <span class="material-symbols-outlined">
                   {{ getArrowIcon(Side.Right) }}
@@ -189,20 +175,12 @@
               }
 
               <!-- Bottom row -->
-
-              <!-- Bottom row -->
               <div class="cell placeholder"></div>
               @for (col of grid[0]; let colIndex = $index; track colIndex) {
               <div
-                class="cell"
-                cdkDropList
-                [cdkDropListConnectedTo]="connectedIds"
-                [id]="'drop-bottom-' + colIndex"
-                #arrowList="cdkDropList"
-                [cdkDropListData]="{ side: 'bottom', index: colIndex }"
-                (cdkDropListDropped)="
-                  onTileDropped($event, Side.Bottom, colIndex)
-                "
+                class="cell arrow-cell"
+                [attr.data-side]="Side.Bottom"
+                [attr.data-index]="colIndex"
               >
                 <span class="material-symbols-outlined">
                   {{ getArrowIcon(Side.Bottom) }}
@@ -212,11 +190,17 @@
               <div class="cell placeholder"></div>
             </div>
 
-            <div cdkDropList [cdkDropListConnectedTo]="connectedIds">
+            <div
+              cdkDropList
+              [cdkDropListConnectedTo]="connectedIds"
+              class="z-20"
+            >
               <div
                 cdkDrag
                 [cdkDragData]="{ type: 'robot' }"
                 (cdkDragStarted)="onDragStarted($event)"
+                (cdkDragMoved)="onDragMoved($event)"
+                (cdkDragEnded)="onDragEnded()"
                 class="draggable-wrapper"
               >
                 <!-- Normal image (when not dragging) -->
@@ -232,7 +216,11 @@
 
                 <!-- Preview that follows the cursor -->
                 <img
-                  [src]="'assets/img/roby-dragging-trasp.png'"
+                  [src]="
+                    isOverArrow
+                      ? 'assets/img/roby-over.png'
+                      : 'assets/img/roby-dragging-trasp.png'
+                  "
                   *cdkDragPreview
                   alt="dragging Roby"
                   [ngClass]="

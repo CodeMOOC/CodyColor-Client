@@ -10,6 +10,7 @@ import { VisibilityService } from '../../../services/visibility.service';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../services/language.service';
 import { FormsModule } from '@angular/forms';
+import { PathService } from '../../../services/path.service';
 
 @Component({
   selector: 'app-bootmp-mmaking',
@@ -38,12 +39,10 @@ export class BootmpMmakingComponent implements OnInit {
     private gameData: GameDataService,
     private auth: AuthService,
     private audio: AudioService,
+    private path: PathService,
     private translate: TranslateService,
-    private translation: LanguageService,
     private router: Router,
-    private navigation: NavigationService,
-    private session: SessionService,
-    private visibility: VisibilityService
+    private session: SessionService
   ) {}
 
   ngOnInit(): void {
@@ -115,6 +114,8 @@ export class BootmpMmakingComponent implements OnInit {
   }
 
   createBootcamp(): void {
+    this.path.reset();
+
     this.gameData.update('user', { nickname: this.nickname, playerId: 0 });
     this.gameData.update('enemy', { nickname: 'CodyColor', playerId: 1 });
     this.gameData.setNewMatchTiles();

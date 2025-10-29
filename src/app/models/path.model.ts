@@ -6,4 +6,5 @@ export interface Path {
   tilesCoords: Tile[];
   direction: number[];
   pathLength: number;
+  exitDirection?: number;
 }

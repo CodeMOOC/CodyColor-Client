@@ -1,14 +1,3 @@
-<div class="tester">
-  <button (click)="performFixed()">Play Random Path</button>
-
-  <app-roby-animation
-    *ngIf="fixedPerform"
-    [path]="fixedPath"
-    image="roby-positioned"
-    (finished)="performFixed()"
-  ></app-roby-animation>
-</div>
-
 <div id="bootmp-match" class="page">
   <div class="page--wrapper">
     <div class="page--body">
@@ -94,11 +83,11 @@
           <div class="w-full" cdkDropListGroup>
             <div class="small-grid" [ngClass]="{ hidden: !showCompleteGrid }">
               <div class="robot-overlay">
-                <app-test-comp />
                 <app-roby-animation
                   *ngIf="executeAnimation && playerPath"
                   #playerAnim
                   [path]="playerPath"
+                  [startPixel]="rectCurrentArrow"
                   (finished)="executeEndSequence('player')"
                   image="roby-positioned"
                   class="roby-wrapper"

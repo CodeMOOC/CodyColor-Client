@@ -22,3 +22,8 @@ export interface EntryPoint {
   side: Side;
   distance: number;
 }
+
+export interface StartPixel {
+  x: number;
+  y: number;
+}

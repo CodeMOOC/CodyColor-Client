@@ -34,7 +34,6 @@ import { GeneralSettings } from '../../../models/game-data.model';
 import { Subject, Subscription, takeUntil } from 'rxjs';
 import { RobyAnimationComponent } from '../../../components/roby-animation/roby-animation.component';
 import { Path } from '../../../models/path.model';
-import { TestCompComponent } from '../../../components/test-comp/test-comp.component';
 
 @Component({
   selector: 'app-match',
@@ -43,7 +42,6 @@ import { TestCompComponent } from '../../../components/test-comp/test-comp.compo
     CdkDrag,
     CdkDropList,
     TranslateModule,
-    TestCompComponent,
     CdkDropListGroup,
     DragDropModule,
     RobyAnimationComponent,
@@ -121,75 +119,11 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
 
   currentSide: Side | null = null;
   currentIndex: number | null = null;
+  rectCurrentArrow: any;
 
   isOverArrow = false;
-  fixedPath: Path = {
-    startPosition: {
-      side: 2,
-      distance: 1,
-    },
-    endPosition: {
-      side: 1,
-      distance: 1,
-    },
-    tilesCoords: [
-      {
-        row: 4,
-        col: 1,
-      },
-      {
-        row: 3,
-        col: 1,
-      },
-      {
-        row: 2,
-        col: 1,
-      },
-      {
-        row: 2,
-        col: 2,
-      },
-      // {
-      //   row: 2,
-      //   col: 3,
-      // },
-      // {
-      //   row: 3,
-      //   col: 3,
-      // },
-      // {
-      //   row: 3,
-      //   col: 4,
-      // },
-      // {
-      //   row: 2,
-      //   col: 4,
-      // },
-      // {
-      //   row: 2,
-      //   col: 3,
-      // },
-      // {
-      //   row: 1,
-      //   col: 3,
-      // },
-      // {
-      //   row: 1,
-      //   col: 4,
-      // },
-    ],
-    direction: [0, 0, 0, 1, 1, 2, 1, 0, 3, 0, 1],
-    pathLength: 11,
-  };
 
   timerFormatter!: (time: number) => string;
-
-  draggable = {
-    data: 'myDragData',
-    effectAllowed: 'all',
-    disable: false,
-    handle: false,
-  };
 
   // create a calculator for side and distance
   listStartPosition = [{ side: 0, distance: 0 }];
@@ -197,21 +131,12 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private cdr: ChangeDetectorRef,
     private gameData: GameDataService,
     private path: PathService,
-    private navigation: NavigationService,
     private audio: AudioService,
     private session: SessionService,
-    private translate: TranslateService,
-    private translation: LanguageService,
-    private visibility: VisibilityService,
     private router: Router
   ) {}
-  fixedPerform = false;
-  performFixed() {
-    this.fixedPerform = !this.fixedPerform;
-  }
 
   ngOnInit(): void {
     // Costruisce griglia statica
@@ -557,12 +482,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
 
   onDragEnded() {
     if (this.isOverArrow) {
-      if (
-        this.currentSide !== null &&
-        this.currentSide !== undefined &&
-        this.currentIndex !== null &&
-        this.currentIndex !== undefined
-      ) {
+      if (this.currentSide !== null && this.currentIndex !== null) {
         this.onTileDropped(this.currentSide, this.currentIndex);
       }
     }
@@ -641,6 +561,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
 
         this.currentSide = Number(el.dataset.side) as Side;
         this.currentIndex = Number(el.dataset.index);
+        this.rectCurrentArrow = rect;
 
         found = true;
       }

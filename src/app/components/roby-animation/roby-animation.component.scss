@@ -1,12 +1,12 @@
 .board {
-  position: relative; /* IMPORTANT: makes .roby translate relative to the board */
+  position: relative;
   width: 350px;
   height: 350px;
 }
 
 .roby {
   position: absolute;
-  top: 0; /* anchor top-left so translate(x,y) starts from board origin */
+  top: 0;
   left: 0;
   width: 45px;
   height: 45px;

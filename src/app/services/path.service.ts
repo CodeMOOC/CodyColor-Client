@@ -146,21 +146,25 @@ export class PathService {
         // uscita dal lato in alto
         path.endPosition.side = 0;
         path.endPosition.distance = nextTileCoords.col;
+        path.exitDirection = nextTileDirection;
         endOfPath = true;
       } else if (nextTileDirection === 1 && nextTileCoords.col > 4) {
         // uscita dal lato destro
         path.endPosition.side = 1;
         path.endPosition.distance = nextTileCoords.row;
+        path.exitDirection = nextTileDirection;
         endOfPath = true;
       } else if (nextTileDirection === 2 && nextTileCoords.row > 4) {
         // uscita dal lato in basso
         path.endPosition.side = 2;
         path.endPosition.distance = nextTileCoords.col;
+        path.exitDirection = nextTileDirection;
         endOfPath = true;
       } else if (nextTileDirection === 3 && nextTileCoords.col < 0) {
         // uscita dal lato sinistro
         path.endPosition.side = 3;
         path.endPosition.distance = nextTileCoords.row;
+        path.exitDirection = nextTileDirection;
         endOfPath = true;
       }
 

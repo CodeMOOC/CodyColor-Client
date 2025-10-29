@@ -78,7 +78,6 @@ export class BootmpAftermatchComponent implements OnInit {
 
     // Match data
     this.gameData.gameData$.subscribe((data) => {
-      console.log('data aftermatch ', data);
       this.user = data.user;
       this.enemy = data.enemy;
       this.general = data.general;

@@ -4,9 +4,7 @@ import {
   OnDestroy,
   ViewChildren,
   QueryList,
-  AfterViewInit,
   ViewChild,
-  ChangeDetectorRef,
   ElementRef,
 } from '@angular/core';
 
@@ -14,11 +12,8 @@ import { GameDataService } from '../../../services/game-data.service';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { NavigationService } from '../../../services/navigation.service';
 import { AudioService } from '../../../services/audio.service';
 import { SessionService } from '../../../services/session.service';
-import { LanguageService } from '../../../services/language.service';
-import { VisibilityService } from '../../../services/visibility.service';
 import { PathService } from '../../../services/path.service';
 import {
   CdkDrag,
@@ -34,6 +29,8 @@ import { GeneralSettings } from '../../../models/game-data.model';
 import { Subject, Subscription, takeUntil } from 'rxjs';
 import { RobyAnimationComponent } from '../../../components/roby-animation/roby-animation.component';
 import { Path } from '../../../models/path.model';
+import { MatchManagerService } from '../../../services/match-manager.service';
+import { MatchGridComponent } from '../../../components/match-grid/match-grid.component';
 
 @Component({
   selector: 'app-match',
@@ -41,6 +38,7 @@ import { Path } from '../../../models/path.model';
     CommonModule,
     CdkDrag,
     CdkDropList,
+    MatchGridComponent,
     TranslateModule,
     CdkDropListGroup,
     DragDropModule,
@@ -54,8 +52,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   @ViewChildren(CdkDropList) dropLists!: QueryList<CdkDropList>;
   @ViewChild('player') playerAnim?: RobyAnimationComponent;
   @ViewChild('enemy') enemyAnim?: RobyAnimationComponent;
-
-  connectedIds: any;
 
   rows = 5;
   cols = 5;
@@ -131,11 +127,12 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
+    private audio: AudioService,
     private gameData: GameDataService,
     private path: PathService,
-    private audio: AudioService,
-    private session: SessionService,
-    private router: Router
+    private matchManager: MatchManagerService,
+    private router: Router,
+    private session: SessionService
   ) {}
 
   ngOnInit(): void {
@@ -195,6 +192,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.matchManager.stopAll();
     this.subs.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
@@ -323,156 +321,40 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   // direttamente la funzione setInterval(), ma implementa un procedimento per evitare l'interruzione del tempo
   // a tab inattivo
   private startMatchTimers(): void {
-    // Start the shared timer inside the service
-    this.gameData.startTimer(this.general.timerSetting);
-
-    // React to the user countdown
-    this.subs.add(
-      this.gameData.getUserTimer().subscribe((ms) => {
-        if (this.isAnimationReady) return; // stop updates once the end sequence starts
-        if (!this.match.positioned) {
-          // se sotto i dieci secondi animazione di allarme
-          if (ms < 10000) this.userTimerAnimation = 'clock-ending-animation';
-          this.userTimerValue = ms;
-        }
-        // se il tempo è finito
-        if (ms <= 0) this.handleUserTimeout();
-      })
+    this.matchManager.startMatchTimers(
+      this.general.botSetting,
+      this.general.timerSetting,
+      (ms) => this.updateUserTimer(ms),
+      (ms) => this.updateEnemyTimer(ms),
+      () => this.matchManager.handleUserTimeout(this.user)
     );
-
-    // React to the enemy countdown (for bot only)
-    if (this.general.botSetting !== 0) {
-      this.subs.add(
-        this.gameData.getEnemyTimer().subscribe((ms) => {
-          if (this.isAnimationReady) return;
-          if (!this.match.enemyPositioned) {
-            if (ms < 10000) this.enemyTimerAnimation = 'clock-ending-animation';
-
-            // auto-position the bot when the trigger time is reached
-            if (ms <= this.positionEnemyTrigger) {
-              const botPath = this.path.calculateBotPath(
-                this.general.botSetting
-              );
-              this.gameData.update('match', {
-                enemyPositioned: true,
-                enemyTime: this.positionEnemyTrigger,
-                enemyStartPosition: botPath.startPosition,
-              });
-              this.enemyTimerAnimation = 'clock--end';
-            }
-
-            this.enemyTimerValue = ms;
-          }
-        })
-      );
-    }
   }
 
-  // giocatore non piazza il suo personaggio in tempo
-  private handleUserTimeout(): void {
-    if (!this.match.positioned) {
-      this.gameData.update('match', {
-        positioned: true,
-        time: 0,
-        startPosition: { side: -1, distance: -1 },
-      });
-      this.userTimerAnimation = 'clock--end';
-
-      this.gameData.update('userMatchResult', {
-        nickname: this.user.nickname,
-        playerId: this.user.playerId,
-        pathLength: 0,
-        time: 0,
-        points: 0,
-        startPosition: { side: -1, distance: -1 },
-      });
-    }
-    this.executeEndSequence();
+  updateUserTimer(ms: number) {
+    if (this.isAnimationReady || this.match.positioned) return;
+    if (ms < 10000) this.userTimerAnimation = 'clock-ending-animation';
+    this.userTimerValue = ms;
   }
 
-  private playerAnimationDone = false;
-  private enemyAnimationDone = false;
+  updateEnemyTimer(ms: number) {
+    if (this.isAnimationReady || this.match.enemyPositioned) return;
+    if (ms < 10000) this.enemyTimerAnimation = 'clock-ending-animation';
+    this.enemyTimerValue = ms;
+  }
 
   // cosa fare una volta terminata senza intoppi la partita; mostra la schermata aftermatch
-  executeEndSequence(playerType?: string): void {
-    // 2. trigger the child’s animation
-    if (playerType === 'player') {
-      this.playerAnim?.play();
-      this.playerAnimationDone = true;
-    }
-    if (playerType === 'enemy') {
-      this.enemyAnim?.play();
-      this.enemyAnimationDone = true;
-    }
+  executeEndSequence(playerType?: 'player' | 'enemy') {
+    if (playerType === 'player') this.playerAnim?.play();
+    if (playerType === 'enemy') this.enemyAnim?.play();
 
-    // !playerType: è scaduto il tempo quindi si passa alla nuova schermata
-    if (
-      !playerType ||
-      this.botSetting === 0 ||
-      (this.playerAnimationDone && this.enemyAnimationDone)
-    ) {
-      // prevent double execution
-      if (this.isAnimationReady) return;
-      this.isAnimationReady = true;
+    // Delegate scoring, winner determination, navigation
 
-      const current = this.gameData.value; // safe for reading only
-
-      // Handle enemy result if a bot is active
-      if (current.general.botSetting !== 0 && this.enemyPath) {
-        this.gameData.update('enemyMatchResult', {
-          nickname: current.enemy.nickname,
-          playerId: current.enemy.playerId,
-          pathLength: this.enemyPath.pathLength,
-          time: current.match.enemyTime,
-          startPosition: current.match.enemyStartPosition,
-        });
-      }
-
-      // Increment aggregated match counter
-      this.gameData.update('aggregated', {
-        matchCount: current.aggregated.matchCount + 1,
-      });
-
-      // Determine winner
-      const winner = this.gameData.getMatchWinner();
-      this.gameData.update('match', { winnerId: winner.playerId });
-      //Scoring
-      if (winner.playerId === current.user.playerId) {
-        const userPoints =
-          this.gameData.calculateMatchPoints(
-            this.gameData.value.userMatchResult.pathLength
-          ) +
-          this.gameData.calculateWinnerBonusPoints(
-            this.gameData.value.userMatchResult.time
-          );
-
-        this.gameData.update('userMatchResult', { points: userPoints });
-        this.gameData.update('userGlobalResult', {
-          points: current.userGlobalResult.points + userPoints,
-          wonMatches: current.userGlobalResult.wonMatches + 1,
-        });
-      } else if (winner.playerId === current.enemy.playerId) {
-        const enemyPoints =
-          this.gameData.calculateMatchPoints(
-            this.gameData.value.enemyMatchResult.pathLength
-          ) +
-          this.gameData.calculateWinnerBonusPoints(
-            this.gameData.value.enemyMatchResult.time
-          );
-
-        this.gameData.update('enemyMatchResult', { points: enemyPoints });
-        this.gameData.update('enemyGlobalResult', {
-          points: current.enemyGlobalResult.points + enemyPoints,
-          wonMatches: current.enemyGlobalResult.wonMatches + 1,
-        });
-      }
-
-      // navigate to aftermatch screen
-      this.router.navigate(['/bootmp-aftermatch']);
-    }
+    this.matchManager.executeEndSequence(playerType, {
+      onComplete: () => this.router.navigate(['/bootmp-aftermatch']),
+    });
   }
 
-  onDragStarted(event: any) {
+  onDragStarted() {
     this.isDragging = true;
     this.audio.playSound('roby-drag');
     this.showCompleteGrid = true;

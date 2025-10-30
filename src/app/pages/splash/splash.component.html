@@ -24,7 +24,9 @@
       <a href="https://www.riccardomaldini.it/blog/codycolor-changelog"
         >Changelog</a
       ><br />
-      <div [innerHTML]="'SPLASH_FOOTER' | translate"></div>
+      <div
+        [innerHTML]="'SPLASH_FOOTER' | translate : { year: currentYear }"
+      ></div>
     </div>
   </div>
 </div>

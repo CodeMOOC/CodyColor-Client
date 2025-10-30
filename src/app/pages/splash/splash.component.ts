@@ -14,6 +14,7 @@ import { AudioService } from '../../services/audio.service';
 export class SplashComponent implements OnInit {
   clientVersion = '3.3.4';
   basePlaying = false;
+  currentYear = new Date().getFullYear();
 
   constructor(private router: Router, private sessionHandler: SessionService) {}
 

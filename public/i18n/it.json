@@ -4,7 +4,7 @@
   "APP_NAME_SHORT": "CodyColor",
   "APP_SUBTITLE": "Un mini gioco multiplayer.",
   "PRESS_TO_CONTINUE": "Premi per continuare",
-  "SPLASH_FOOTER": "Sviluppato da <a href=\"https://www.riccardomaldini.it/\">Riccardo Maldini</a><br>Music by <a href=\"https://www.instagram.com/el.favelas\">ElFavelas</a><br>© Digit S.r.l. 2019 per <a href=\"https://codemooc.net\">CodeMOOC.net</a>",
+  "SPLASH_FOOTER": "Sviluppato da <a href=\"https://www.riccardomaldini.it/\">Riccardo Maldini</a><br>Music by <a href=\"https://www.instagram.com/el.favelas\">ElFavelas</a><br>© Digit S.r.l. {{year}} per <a href=\"https://codemooc.net\">CodeMOOC.net</a>",
   "HOW_TO_PLAY": "Come si gioca?",
   "RANDOM_MATCH": "Partita casuale",
   "CUSTOM_MATCH": "Partita custom",

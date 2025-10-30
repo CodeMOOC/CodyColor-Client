@@ -4,7 +4,7 @@
   "APP_NAME_SHORT": "CodyColor",
   "APP_SUBTITLE": "Többrésztvevős minijáték.",
   "PRESS_TO_CONTINUE": "Kattints a folytatáshoz",
-  "SPLASH_FOOTER": "Készítette <a href=\"https://www.riccardomaldini.it/\">Riccardo Maldini</a><br>, zenéjét szerezte <a href=\"https://www.instagram.com/el.favelas\">ElFavelas</a><br>© Digit S.r.l. 2019 <a href=\"https://codemooc.net\">CodeMOOC.net számára.</a>",
+  "SPLASH_FOOTER": "Készítette <a href=\"https://www.riccardomaldini.it/\">Riccardo Maldini</a><br>, zenéjét szerezte <a href=\"https://www.instagram.com/el.favelas\">ElFavelas</a><br>© Digit S.r.l. {{year}} <a href=\"https://codemooc.net\">CodeMOOC.net számára.</a>",
   "HOW_TO_PLAY": "Játékszabály",
   "RANDOM_MATCH": "Játék bárkivel",
   "CUSTOM_MATCH": "Tervezett játék",

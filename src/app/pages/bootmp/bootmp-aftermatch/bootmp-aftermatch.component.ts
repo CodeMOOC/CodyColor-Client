@@ -5,15 +5,15 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 // Import the Angular services you already have, converted from AngularJS
 import { RabbitService } from '../../../services/rabbit.service';
 import { GameDataService } from '../../../services/game-data.service';
-import { NavigationService } from '../../../services/navigation.service';
 import { AudioService } from '../../../services/audio.service';
 import { SessionService } from '../../../services/session.service';
-import { AuthService } from '../../../services/auth.service';
 import { LanguageService } from '../../../services/language.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { ShareService } from '../../../services/share.service';
 import { CommonModule } from '@angular/common';
 import { PathService } from '../../../services/path.service';
+import { Subject, takeUntil } from 'rxjs';
+import { MatchManagerService } from '../../../services/match-manager.service';
 
 @Component({
   selector: 'app-bootmp-aftermatch',
@@ -47,14 +47,14 @@ export class BootmpAftermatchComponent implements OnInit {
   basePlaying = false;
   sharedLegacy = false;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private rabbit: RabbitService,
-    private navigation: NavigationService,
     private audio: AudioService,
-    private session: SessionService,
-    private translate: TranslateService,
-    private auth: AuthService,
+    private matchManager: MatchManagerService,
     private path: PathService,
+    private session: SessionService,
     private language: LanguageService,
     private shareService: ShareService,
     private visibility: VisibilityService,
@@ -77,7 +77,7 @@ export class BootmpAftermatchComponent implements OnInit {
     });
 
     // Match data
-    this.gameData.gameData$.subscribe((data) => {
+    this.gameData.gameData$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
       this.user = data.user;
       this.enemy = data.enemy;
       this.general = data.general;
@@ -112,6 +112,7 @@ export class BootmpAftermatchComponent implements OnInit {
     // reset match
     this.gameData.initializeMatchData();
     this.path.reset();
+    this.matchManager.resetMatchState();
 
     this.gameData.setNewMatchTiles();
     this.router.navigate(['/bootmp-match']);

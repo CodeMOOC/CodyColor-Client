@@ -11,6 +11,8 @@ import { GameDataService } from '../../../services/game-data.service';
 import { filter } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { RabbitService } from '../../../services/rabbit.service';
+import { Match } from '../../../models/match.model';
+import { MatchManagerService } from '../../../services/match-manager.service';
 
 @Component({
   selector: 'app-footer',
@@ -33,6 +35,7 @@ export class FooterComponent implements OnInit {
     private audio: AudioService,
     private dialog: MatDialog,
     private gameData: GameDataService,
+    private matchManager: MatchManagerService,
     private matDialog: MatDialog,
     private rabbit: RabbitService,
     private router: Router,
@@ -91,6 +94,7 @@ export class FooterComponent implements OnInit {
   private quitGame(): void {
     // this.pathService.quitGame();
     this.gameData.reset();
+    this.matchManager.resetMatchState();
   }
   onExitGame(): void {
     this.audio.playSound('menu-click');

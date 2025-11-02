@@ -10,7 +10,7 @@ import { RulesComponent } from './pages/rules/rules.component';
 import { RandomMmakingComponent } from './pages/random-mmaking/random-mmaking.component';
 import { CustomMmakingComponent } from './pages/custom/custom-mmaking/custom-mmaking.component';
 import { RoyaleMmakingComponent } from './pages/royale/royale-mmaking/royale-mmaking.component';
-import { CustomNewMatchComponent } from './pages/custom/custom-new-match/custom-new-match.component';
+import { NewMatchComponent } from './pages/custom/new-match/new-match.component';
 import { RoyaleNewMatchComponent } from './pages/royale/royale-new-match/royale-new-match.component';
 import { ArcadeMatchComponent } from './pages/arcade/arcade-match/arcade-match.component';
 import { ArcadeAftermatchComponent } from './pages/arcade/arcade-aftermatch/arcade-aftermatch.component';
@@ -32,7 +32,7 @@ export const routes: Routes = [
   { path: 'random-mmaking', component: RandomMmakingComponent },
   { path: 'custom-mmaking', component: CustomMmakingComponent },
   { path: 'royale-mmaking', component: RoyaleMmakingComponent },
-  { path: 'custom-new-match', component: CustomNewMatchComponent },
+  { path: 'custom-new-match', component: NewMatchComponent },
   { path: 'royale-new-match', component: RoyaleNewMatchComponent },
   { path: 'arcade-match', component: ArcadeMatchComponent },
   { path: 'arcade-aftermatch', component: ArcadeAftermatchComponent },

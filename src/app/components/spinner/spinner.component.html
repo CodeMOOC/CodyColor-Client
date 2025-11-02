@@ -1,0 +1,25 @@
+<!-- Ready clicked, aspettando il segnale di ready dell'avversario -->
+<div
+  id="waiting-confirm"
+  ng-show="mmakingState === screens.waitingReady"
+  class="page--component"
+>
+  <ul class="list">
+    <li class="list--spaced-element">
+      <div class="loading-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </li>
+    <li class="list--spaced-element">
+      <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
+    </li>
+  </ul>
+</div>

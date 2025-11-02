@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ArcadeMatchComponent } from './arcade-match.component';
+import { NewMatchComponent } from './new-match.component';
 
-describe('ArcadeMatchComponent', () => {
-  let component: ArcadeMatchComponent;
-  let fixture: ComponentFixture<ArcadeMatchComponent>;
+describe('NewMatchComponent', () => {
+  let component: NewMatchComponent;
+  let fixture: ComponentFixture<NewMatchComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ArcadeMatchComponent]
+      imports: [NewMatchComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ArcadeMatchComponent);
+    fixture = TestBed.createComponent(NewMatchComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

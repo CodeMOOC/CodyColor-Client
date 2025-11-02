@@ -1,53 +1,39 @@
-<div id="bootmp-mmaking" class="page">
+<div id="custom-new-match" class="page">
   <div class="page--wrapper">
-    <div class="page--body" *ngIf="pageReady">
-      <form #customMatchForm="ngForm" (ngSubmit)="createBootcamp()">
+    <div class="page--body">
+      <!-- Create match -->
+      <form #customMatchForm="ngForm" (ngSubmit)="requestMMaking()" novalidate>
         <ul class="list">
-          <li class="list--simple-element">
-            <h2>{{ "BOOT_CAMP" | translate }}</h2>
-          </li>
           <li class="list--spaced-element">
-            {{ "BOOTCAMPMAKING_DESC" | translate }}
+            <h2>{{ "NEW_CUSTOM_EXT" | translate }}</h2>
+          </li>
+
+          <li class="list--spaced-element">
+            {{ "NEW_CUSTOM_MATCH_DESC" | translate }}
           </li>
 
           <li class="list--simple-element">
             <label for="nickname">{{ "NICKNAME" | translate }}</label>
           </li>
+
           <li class="list--spaced-element">
             <input
               type="text"
+              id="nickname"
               name="nickname"
               maxlength="22"
               [(ngModel)]="nickname"
-              id="nickname"
-              [placeholder]="'NICKNAME_EXAMPLE' | translate"
+              placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
               class="standard-input"
               required
               autofocus
-              #nicknameModel="ngModel"
             />
           </li>
 
-          <li class="list--simple-element">{{ "ENEMY" | translate }}</li>
-          <li class="list--spaced-element">
-            <div class="selector">
-              <div class="selector--button" (click)="editBotSetting(false)">
-                <span class="material-symbols-outlined">{{
-                  "keyboard_arrow_left"
-                }}</span>
-              </div>
-              <div class="selector--text">
-                {{ botSettings[currentBotSettingIndex].text }}
-              </div>
-              <div class="selector--button" (click)="editBotSetting(true)">
-                <span class="material-symbols-outlined">{{
-                  "keyboard_arrow_right"
-                }}</span>
-              </div>
-            </div>
+          <li class="list--simple-element">
+            {{ "MATCH_TIME" | translate }}
           </li>
 
-          <li class="list--simple-element">{{ "MATCH_TIME" | translate }}</li>
           <li class="list--spaced-element">
             <div class="selector">
               <div class="selector--button" (click)="editTimer(false)">
@@ -68,20 +54,27 @@
 
           <li class="list--spaced-element">
             <button
-              class="navigation--button flashing-animation"
               type="submit"
-              [disabled]="nicknameModel.invalid"
+              class="navigation--button flashing-animation"
+              [disabled]="customMatchForm.invalid"
             >
               {{ "CREATE_MATCH" | translate }}
-              <span
+              <i
                 class="material-symbols-outlined inline-block animate-slide-left"
-                >{{ "keyboard_double_arrow_right" }}</span
+                >{{ "keyboard_double_arrow_right" }}</i
               >
             </button>
+          </li>
+
+          <li class="list--spaced-element" *ngIf="creatingMatch">
+            <div class="flashing-animation">
+              {{ "CREATING_MATCH" | translate }}
+            </div>
           </li>
         </ul>
       </form>
     </div>
+
     <div class="page--push"></div>
   </div>
 </div>

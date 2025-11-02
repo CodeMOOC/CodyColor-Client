@@ -27,32 +27,18 @@ import { Match } from '../../../models/match.model';
 import { Cell, EntryPoint, Side, Tile } from '../../../models/cell.model';
 import { GeneralSettings } from '../../../models/game-data.model';
 import { Subject, Subscription, takeUntil } from 'rxjs';
-import { RobyAnimationComponent } from '../../../components/roby-animation/roby-animation.component';
 import { Path } from '../../../models/path.model';
 import { MatchManagerService } from '../../../services/match-manager.service';
 import { MatchGridComponent } from '../../../components/match-grid/match-grid.component';
 
 @Component({
   selector: 'app-match',
-  imports: [
-    CommonModule,
-    CdkDrag,
-    CdkDropList,
-    MatchGridComponent,
-    TranslateModule,
-    CdkDropListGroup,
-    DragDropModule,
-    RobyAnimationComponent,
-  ],
+  imports: [CommonModule, MatchGridComponent, TranslateModule, DragDropModule],
   templateUrl: './bootmp-match.component.html',
   styleUrls: ['./bootmp-match.component.scss'],
   standalone: true,
 })
 export class BootmpMatchComponent implements OnInit, OnDestroy {
-  @ViewChildren(CdkDropList) dropLists!: QueryList<CdkDropList>;
-  @ViewChild('player') playerAnim?: RobyAnimationComponent;
-  @ViewChild('enemy') enemyAnim?: RobyAnimationComponent;
-
   rows = 5;
   cols = 5;
 
@@ -342,18 +328,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
     this.enemyTimerValue = ms;
   }
 
-  // cosa fare una volta terminata senza intoppi la partita; mostra la schermata aftermatch
-  executeEndSequence(playerType?: 'player' | 'enemy') {
-    if (playerType === 'player') this.playerAnim?.play();
-    if (playerType === 'enemy') this.enemyAnim?.play();
-
-    // Delegate scoring, winner determination, navigation
-
-    this.matchManager.executeEndSequence(playerType, {
-      onComplete: () => this.router.navigate(['/bootmp-aftermatch']),
-    });
-  }
-
   onDragStarted() {
     this.isDragging = true;
     this.audio.playSound('roby-drag');
@@ -423,46 +397,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
         this.enemyTimerAnimation = 'clock--end';
       }
     }
-  }
-
-  onDragMoved(event: CdkDragMove) {
-    const pointerX = event.pointerPosition.x;
-    const pointerY = event.pointerPosition.y;
-
-    let found = false;
-    const arrowEls = document.querySelectorAll('.arrow-cell');
-    arrowEls.forEach((el: any) => {
-      const rect = el.getBoundingClientRect();
-      if (
-        pointerX >= rect.left &&
-        pointerX <= rect.right &&
-        pointerY >= rect.top &&
-        pointerY <= rect.bottom
-      ) {
-        this.isOverArrow = true;
-
-        this.currentSide = Number(el.dataset.side) as Side;
-        this.currentIndex = Number(el.dataset.index);
-        this.rectCurrentArrow = rect;
-
-        found = true;
-      }
-    });
-
-    if (!found) {
-      // Pointer is over empty surface
-      if (this.isOverArrow) {
-        this.onEmptySurfaceHover();
-      }
-
-      this.isOverArrow = false;
-      this.currentSide = null;
-      this.currentIndex = null;
-    }
-  }
-
-  onEmptySurfaceHover() {
-    this.isOverArrow = false;
   }
 
   skip(): void {

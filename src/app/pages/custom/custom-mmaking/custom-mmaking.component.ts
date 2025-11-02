@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RabbitService } from '../../../services/rabbit.service';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -16,6 +16,7 @@ import { environment } from '../../../../environments/environment';
 import { Bubble } from '../../../models/bubble.model';
 import { ChatHandlerService } from '../../../services/chat.service';
 import { ShareService } from '../../../services/share.service';
+import { SpinnerComponent } from '../../../components/spinner/spinner.component';
 
 interface TimerSetting {
   text: string;
@@ -24,12 +25,12 @@ interface TimerSetting {
 
 @Component({
   selector: 'app-custom-mmaking',
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, SpinnerComponent],
   standalone: true,
   templateUrl: './custom-mmaking.component.html',
   styleUrl: './custom-mmaking.component.scss',
 })
-export class CustomMmakingComponent {
+export class CustomMmakingComponent implements OnInit {
   user!: Player;
   enemy!: Player;
 
@@ -44,7 +45,6 @@ export class CustomMmakingComponent {
   forceExitModal = false;
   forceExitText = '';
   languageModal = false;
-  basePlaying = false;
 
   screens = {
     loadingScreen: 'loadingScreen',
@@ -54,7 +54,7 @@ export class CustomMmakingComponent {
     waitingReady: 'waitingReady',
     enemyFound: 'enemyFound',
   };
-  mmakingState = this.screens.loadingScreen;
+  mmakingState: string = this.screens.joinMatch;
   mmakingRequested = false;
   enemyReady = false;
   readyClicked = false;
@@ -65,7 +65,7 @@ export class CustomMmakingComponent {
 
   codeValue: string = '';
 
-  joinMessage = ''; //TO DEFINE
+  joinMessage = '';
 
   general: any;
   totTime: string = '';
@@ -83,50 +83,180 @@ export class CustomMmakingComponent {
   chatHints: string[] = [];
 
   constructor(
+    private auth: AuthService,
     private chatService: ChatHandlerService,
     private rabbit: RabbitService,
     private router: Router,
     private navigation: NavigationService,
     private translate: TranslateService,
-    private languageService: LanguageService,
     private audio: AudioService,
     private session: SessionService,
     private gameData: GameDataService,
     private authHandler: AuthService,
-    private shareService: ShareService,
-    private visibilityHandler: VisibilityService
+    private shareService: ShareService
   ) {}
 
   ngOnInit(): void {
-    this.initializeSession();
-    this.setupUser();
-    this.loadTimerSettings();
-    this.basePlaying = this.audio.isEnabled();
+    this.gameData.update('general', {
+      gameType: this.gameData.getGameTypes().custom,
+    });
+    this.auth.authReady$.subscribe((ready) => {
+      if (ready) {
+        this.auth.user$.subscribe((appUser) => {
+          this.userLogged = !!appUser.firebaseUser && !!appUser.serverData;
+          this.userNickname = appUser.serverData?.nickname || '';
+          this.nickname = this.userNickname;
+        });
+      }
+    });
 
-    this.general = this.gameData.value.general;
+    this.loadTimerSettings();
+
+    this.gameData.gameData$.subscribe((gameData) => {
+      this.general = gameData.general;
+      this.enemy = gameData.enemy;
+    });
 
     this.chatBubbles = this.chatService.getChatMessages();
     this.chatHints = this.chatService.getChatHintsPreMatch();
 
-    this.rabbit.setPageCallbacks({
-      onGameRequestResponse: (message: any) => {
-        if (message.code.toString() !== '0000') {
-          this.gameData.update('general', message.general);
-          this.matchUrl = `${this.baseUrl}/#!?custom=${message.general.code}`;
+    this.handleInitialGameRequest();
 
-          this.rabbit.subscribeGameRoom();
+    this.rabbit.setPageCallbacks({
+      onGeneralInfoMessage: () => {
+        if (!this.session.isClientVersionValid()) {
+          this.quitGame();
+          this.translate.get('OUTDATED_VERSION_DESC').subscribe((text) => {
+            this.forceExitText = text;
+            this.forceExitModal = true;
+          });
         }
       },
-      onConnectionLost: () => this.quitGame(),
+
+      onGameRequestResponse: (message: any) => {
+        if (message.code.toString() === '0000') {
+          // invalid match code
+          this.mmakingRequested = false;
+          this.translate.get('CODE_NOT_VALID').subscribe((text) => {
+            this.joinMessage = text;
+          });
+          this.gameData.update('general', { code: '0000' });
+        } else {
+          // valid response from server
+          this.gameData.update('general', message.general);
+          this.gameData.update('user', message.user);
+          this.gameData.update('enemy', message.enemy);
+
+          this.matchUrl = `${this.baseUrl}/#!?custom=${message.general.code}`;
+          this.rabbit.subscribeGameRoom();
+
+          const formattedTranslateCode = this.gameData.formatTimeStatic(
+            message.general.timerSetting
+          );
+          this.translate
+            .get(formattedTranslateCode)
+            .subscribe((res: string) => {
+              this.totTime = res;
+            });
+
+          if (this.gameData.value.user.validated) {
+            this.changeScreen(this.screens.waitingEnemy);
+          } else {
+            this.changeScreen(this.screens.nicknameSelection);
+          }
+        }
+      },
+
+      onPlayerAdded: (message: any) => {
+        const user = this.gameData.value.user;
+        if (message.addedPlayerId === user.playerId) {
+          if (!user.validated) {
+            this.changeScreen(this.screens.enemyFound);
+          }
+          this.gameData.update('user', message.addedPlayer);
+        } else {
+          this.audio.playSound('enemy-found');
+          this.gameData.update('enemy', message.addedPlayer);
+          this.changeScreen(this.screens.enemyFound);
+        }
+      },
+
+      onReadyMessage: () => {
+        this.enemyReady = true;
+      },
+
+      onStartMatch: (message: any) => {
+        this.gameData.update('match', {
+          tiles: this.gameData.formatMatchTiles(message.tiles),
+        });
+        this.navigation.goToPage('/arcade-match');
+      },
+
+      onGameQuit: () => {
+        this.quitGame();
+        this.translate.get('ENEMY_LEFT').subscribe((text) => {
+          this.forceExitText = text;
+          this.forceExitModal = true;
+        });
+      },
+
+      onConnectionLost: () => {
+        this.quitGame();
+        this.translate.get('FORCE_EXIT').subscribe((text) => {
+          this.forceExitText = text;
+          this.forceExitModal = true;
+        });
+      },
+
+      onChatMessage: (message: any) => {
+        this.audio.playSound('roby-over');
+        this.chatService.enqueueChatMessage(message);
+        this.chatBubbles = this.chatService.getChatMessages();
+      },
     });
 
-    this.visibilityHandler.setDeadlineCallback(() => this.quitGame());
     let formattedTranslateCode = this.gameData.formatTimeStatic(
       this.gameData.value.general.timerSetting
     );
     this.translate.get(formattedTranslateCode).subscribe((res: string) => {
       this.totTime = res;
     });
+  }
+
+  private handleInitialGameRequest() {
+    const connected = this.rabbit.getBrokerConnectionState();
+
+    if (!connected) {
+      console.log('Broker not connected yet, connecting...');
+      this.rabbit.connect();
+
+      // Wait for connection and then send the request
+      this.rabbit.waitForBrokerConnection().then(() => {
+        console.log('Broker connected, sending delayed game request...');
+        this.sendGameRequestIfNeeded();
+      });
+    } else {
+      this.sendGameRequestIfNeeded();
+    }
+  }
+
+  private sendGameRequestIfNeeded() {
+    const general = this.gameData.value.general;
+    const user = this.gameData.value.user;
+
+    if (general.code !== '0000' || user.organizer) {
+      console.log(
+        'Sending initial game request... ',
+        this.authHandler.currentUser?.firebaseUser?.uid
+      );
+      this.rabbit.sendGameRequest(
+        this.authHandler.currentUser?.firebaseUser?.uid || ''
+      );
+
+      this.translate.get('SEARCH_MATCH_INFO').subscribe((text) => {
+        this.joinMessage = text;
+      });
+    }
   }
 
   private quitGame() {
@@ -150,14 +280,6 @@ export class CustomMmakingComponent {
   goToCreateMatch() {
     this.audio.playSound('menu-click');
     this.navigation.goToPage('/custom-new-match');
-  }
-  private initializeSession() {
-    this.navigation.allowBackNavigationOnce();
-
-    if (this.session.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigate(['/']);
-    }
   }
 
   joinGame(codeValue: string) {
@@ -198,19 +320,6 @@ export class CustomMmakingComponent {
     this.shareService.copyTextToClipboard(this.gameData.value.general.code);
     this.linkCopied = false;
     this.codeCopied = true;
-  }
-  private setupUser() {
-    this.userLogged = this.authHandler.loginCompleted();
-
-    if (this.userLogged) {
-      const userData = this.authHandler.currentUser.serverData;
-      if (userData) {
-        this.userNickname = userData.nickname;
-        this.nickname = userData.nickname;
-      }
-    } else {
-      this.languageService.setTranslation('userNickname', 'NOT_LOGGED');
-    }
   }
 
   changeScreen(newScreen: string) {

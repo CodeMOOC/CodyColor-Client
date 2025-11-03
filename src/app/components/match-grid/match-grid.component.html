@@ -79,7 +79,7 @@
 
     <!-- Tiles -->
     @for (cell of row; track cell) {
-    <div class="cell" [ngClass]="tilesCss[cell.row][cell.col]"></div>
+    <div class="cell" [ngClass]="tilesCss[cell.row]?.[cell.col]"></div>
     }
 
     <!-- Right arrow -->

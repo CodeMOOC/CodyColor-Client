@@ -1,1 +1,124 @@
-<p>arcade-match works!</p>
+<div id="arcade-match" class="page">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <!-- countdown -->
+      <div id="countdown" *ngIf="countdownInProgress" class="page--component">
+        {{ startCountdownText }}
+      </div>
+      <div
+        id="match-in-progress"
+        *ngIf="!countdownInProgress"
+        class="page--component"
+      >
+        <!-- player and enemy points and time -->
+        <div class="centered-columns" *ngIf="general?.botSetting !== 0">
+          <div class="centered-columns--pair">
+            <div class="centered-columns--column">
+              <div class="big-text ellipsize">{{ userMatchResult.points }}</div>
+            </div>
+            <div class="centered-columns--column">
+              <div class="big-text ellipsize">
+                {{ enemyMatchResult.points }}
+              </div>
+            </div>
+          </div>
+
+          <div class="centered-columns--pair">
+            <div class="centered-columns--column ellipsize">
+              {{ user.nickname }}
+            </div>
+            <div class="centered-columns--column ellipsize">
+              {{ enemy.nickname }}
+            </div>
+          </div>
+
+          <div class="centered-columns--pair">
+            <div
+              class="centered-columns--column ellipsize"
+              [ngClass]="userTimerAnimation"
+            >
+              <span class="material-symbols-outlined">schedule</span>
+              {{ timerFormatter(userTimerValue) }}
+            </div>
+            <div
+              class="centered-columns--column ellipsize"
+              [ngClass]="enemyTimerAnimation"
+            >
+              <span class="material-symbols-outlined">schedule</span>
+              {{ timerFormatter(enemyTimerValue) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- PLAYER-ONLY STATS (BOT MODE) -->
+        <div class="two-columns" *ngIf="general?.botSetting === 0">
+          <div
+            class="two-columns--column clock ellipsize"
+            [ngClass]="userTimerAnimation"
+          >
+            <span class="material-symbols-outlined">schedule</span>
+            {{ timerFormatter(userTimerValue) }}
+          </div>
+          <div class="two-columns--column">
+            <div class="big-text ellipsize">{{ userMatchResult.points }}</div>
+            <div class="ellipsize">{{ userMatchResult.nickname }}</div>
+          </div>
+        </div>
+
+        <!-- PLAYGROUND (grid + draggable Roby) -->
+        <div class="playground">
+          <app-match-grid
+            [grid]="grid"
+            [tilesCss]="tilesCss"
+            [executeAnimation]="executeAnimation"
+            [showCompleteGrid]="showCompleteGrid"
+            [playerPath]="playerPath"
+            [enemyPaths]="enemyPaths"
+            [botSetting]="general.botSetting || 0"
+            [Side]="Side"
+            [endRoute]="'/arcade-aftermatch'"
+            (tileDropped)="onTileDropped($event.side, $event.distance)"
+            (dragStarted)="onDragStarted()"
+            (dragEnded)="onDragEnded()"
+          ></app-match-grid>
+
+          <!-- PLAYER TIME DISPLAY -->
+          <div
+            class="centered-container"
+            *ngIf="match?.positioned && match.time > 0"
+          >
+            <span class="material-symbols-outlined">schedule</span>
+            {{
+              "TIME_PLAYER" | translate : { time: timerFormatter(match.time) }
+            }}
+          </div>
+
+          <div
+            class="centered-container"
+            *ngIf="match?.positioned && match?.time === 0"
+          >
+            <span class="material-symbols-outlined">schedule</span>
+            {{ "TIME_OUT" | translate }}
+          </div>
+
+          <!-- SKIP BUTTON -->
+          <div class="centered-container" *ngIf="startAnimation">
+            <button
+              class="navigation--button flashing-animation"
+              (click)="skip()"
+            >
+              {{ "SKIP" | translate }}
+              <span
+                class="material-symbols-outlined inline-block animate-slide-left"
+              >
+                keyboard_double_arrow_right
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="page--push"></div>
+    </div>
+  </div>
+</div>

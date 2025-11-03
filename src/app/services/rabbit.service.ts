@@ -460,6 +460,8 @@ export class RabbitService {
 
   // notifica all'avversario l'avvenuto posizionamento di roby
   sendPlayerPositionedMessage(): void {
+    console.log('Sending player positioned message');
+    console.log('Game data:', this.gameDataService.value);
     this.sendInGameRoomTopic({
       msgType: this.messageTypes.c_positioned,
       gameRoomId: this.gameDataService.value.general.gameRoomId,

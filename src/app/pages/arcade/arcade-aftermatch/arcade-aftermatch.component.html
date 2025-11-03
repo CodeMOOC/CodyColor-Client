@@ -1,1 +1,153 @@
-<p>arcade-aftermatch works!</p>
+<div id="arcade-aftermatch" class="page">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <ul class="list">
+        <!-- Player-Enemy total points -->
+        <li class="list--spaced-element">
+          <div class="centered-columns">
+            <div class="centered-columns--pair">
+              <div class="centered-columns--column">
+                <div class="big-text ellipsize">{{ userGlobal.points }}</div>
+              </div>
+              <div class="centered-columns--column">
+                <div class="big-text ellipsize">{{ enemyGlobal.points }}</div>
+              </div>
+            </div>
+
+            <div class="centered-columns--pair">
+              <div class="centered-columns--column ellipsize">
+                {{ user.nickname }}
+              </div>
+              <div class="centered-columns--column ellipsize">
+                {{ enemy.nickname }}
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- Match winner -->
+        <li class="list--spaced-element">
+          <h2 class="capitalize" *ngIf="!draw">
+            {{
+              "WINNER" | translate : { winner: winner, matchCount: matchCount }
+            }}
+          </h2>
+          <h2 *ngIf="draw">
+            {{ "DRAW" | translate }}
+          </h2>
+        </li>
+
+        <!-- Match stats -->
+        <li class="list--simple-element">
+          <div class="stats">
+            <span>{{ "STATS_TITLE" | translate }}</span>
+            <p class="stats--line">
+              <i class="material-symbols-outlined">footprint</i>
+              {{ "STATS_MOVES" | translate }}
+              <span class="stats--player-text">{{ userMatch.pathLength }}</span>
+              -
+              <span class="stats--enemy-text">{{ enemyMatch.pathLength }}</span>
+            </p>
+            <p class="stats--line">
+              <i class="material-symbols-outlined">schedule</i>
+              {{ "STATS_TIME" | translate }}
+              <span class="stats--player-text">{{
+                timeFormatter(userMatch.time)
+              }}</span>
+              -
+              <span class="stats--enemy-text">{{
+                timeFormatter(enemyMatch.time)
+              }}</span>
+            </p>
+            <p class="stats--line">
+              <i class="material-symbols-outlined">smart_toy</i>
+              {{ "STATS_POINTS" | translate }}
+              <span class="stats--player-text">{{ userMatch.points }}</span> -
+              <span class="stats--enemy-text">{{ enemyMatch.points }}</span>
+            </p>
+          </div>
+        </li>
+
+        <!-- Share button -->
+        <li class="list--simple-element">
+          <button
+            class="navigation--button flashing-animation"
+            (click)="shareResult()"
+          >
+            {{ "SHARE" | translate }}
+            <i
+              class="material-symbols-outlined floating-right-animation navigation--icon-in-text"
+              >keyboard_double_arrow_right</i
+            >
+          </button>
+          <div class="copyable--copy-text" *ngIf="shareCopied">
+            <i class="material-symbols-outlined">content_copy</i>
+            {{ "COPIED" | translate }}
+          </div>
+        </li>
+
+        <!-- New match options -->
+        <li id="aftermatch-options" class="list--spaced-element">
+          <div *ngIf="!newMatchClicked">
+            <button
+              class="navigation--button flashing-animation"
+              (click)="newMatch()"
+            >
+              {{ "PLAY_AGAIN" | translate }}
+              <i
+                class="material-symbols-outlined floating-right-animation navigation--icon-in-text"
+                >keyboard_double_arrow_right</i
+              >
+            </button>
+          </div>
+          <div>
+            {{
+              "MAT_START_COUNTDOWN"
+                | translate : { countdown: timeFormatter(newMatchTimerValue) }
+            }}
+          </div>
+          <div *ngIf="enemyRequestNewMatch">
+            <div class="flashing-animation">
+              {{ "ENEMY_REQUEST_NM" | translate }}
+            </div>
+          </div>
+          <div *ngIf="newMatchClicked">
+            <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
+          </div>
+        </li>
+
+        <!-- Chat module -->
+        <li class="list--spaced-element">
+          <div class="chat">
+            <div class="chat--bubbles-container">
+              {{ "CHAT_TITLE" | translate }}
+              <div
+                class="chat--bubbles-sub-container"
+                *ngFor="let bubble of chatBubbles"
+              >
+                <div class="chat--bubble-row">
+                  <div [ngClass]="getBubbleStyle(bubble)">
+                    <div class="chat--bubble-sender">{{ bubble.sender }}</div>
+                    {{ bubble.body | translate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat--hints-container">
+              {{ "CHAT_SEND" | translate }}
+              <div
+                class="chat--hints-sub-container"
+                *ngFor="let hint of chatHints"
+              >
+                <button class="chat--hint" (click)="sendChatMessage(hint)">
+                  {{ hint | translate }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

@@ -12,6 +12,11 @@ import { BehaviorSubject } from 'rxjs';
 export class PathService {
   private pathSubject = new BehaviorSubject<Path>(this.emptyPath());
   public readonly path$ = this.pathSubject.asObservable();
+  private enemiesPathsSubject = new BehaviorSubject<Path[]>([]);
+  public readonly enemiesPaths$ = this.enemiesPathsSubject.asObservable();
+
+  private enemiesPositioned$ = new BehaviorSubject<boolean>(false);
+  private playerPositioned$ = new BehaviorSubject<boolean>(false);
 
   constructor(private gameData: GameDataService) {}
 
@@ -37,6 +42,22 @@ export class PathService {
   /** current snapshot */
   get value(): Path {
     return this.pathSubject.value;
+  }
+
+  public positionAllEnemies(startPositions: any[]): void {
+    const paths: Path[] = [];
+    const userPosition = this.gameData.value.match.startPosition;
+
+    for (const { position, playerCount } of startPositions) {
+      const isUserPos =
+        position.side === userPosition.side &&
+        position.distance === userPosition.distance;
+      if (playerCount > 1 || !isUserPos) {
+        paths.push(this.calculatePath(position));
+      }
+    }
+    console.log('Calculated enemy paths:', paths);
+    this.enemiesPathsSubject.next(paths);
   }
 
   calculateBotPath(difficulty: number): any {

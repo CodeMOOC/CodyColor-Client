@@ -1,213 +1,459 @@
-import { Component, NgZone } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChildren,
+  QueryList,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
+import { Subject, Subscription, interval } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
 import { GameDataService } from '../../../services/game-data.service';
-import { PathService } from '../../../services/path.service';
 import { AudioService } from '../../../services/audio.service';
 import { SessionService } from '../../../services/session.service';
-import { AuthService } from '../../../services/auth.service';
-import { VisibilityService } from '../../../services/visibility.service';
-import { Subject, Subscription, takeUntil } from 'rxjs';
+import { PathService } from '../../../services/path.service';
+import { MatchManagerService } from '../../../services/match-manager.service';
+import { MatchGridComponent } from '../../../components/match-grid/match-grid.component';
 import { Player } from '../../../models/player.model';
-import { GeneralSettings } from '../../../models/game-data.model';
-import { Match } from '../../../models/match.model';
+import { Match, MatchResult } from '../../../models/match.model';
+import { Cell, EntryPoint, Side, Tile } from '../../../models/cell.model';
 import { Path } from '../../../models/path.model';
+import { GeneralSettings } from '../../../models/game-data.model';
+import { RabbitService } from '../../../services/rabbit.service';
 
 @Component({
   selector: 'app-arcade-match',
-  imports: [],
   standalone: true,
+  imports: [CommonModule, MatchGridComponent, TranslateModule, DragDropModule],
   templateUrl: './arcade-match.component.html',
-  styleUrl: './arcade-match.component.scss',
+  styleUrls: ['./arcade-match.component.scss'],
 })
-export class ArcadeMatchComponent {
+export class ArcadeMatchComponent implements OnInit, OnDestroy {
+  @ViewChild(MatchGridComponent) matchGrid!: MatchGridComponent;
+  @ViewChildren('arrowCell', { read: ElementRef })
+  arrowElements!: QueryList<ElementRef>;
+
+  // Grid
+  rows = 5;
+  cols = 5;
+  grid: Tile[][] = [];
+  smallGrid: Cell[][] = [];
+  entryPoints: EntryPoint[] = [];
+
+  // Players & match
+  user!: Player;
+  enemy!: Player;
+  userMatchResult!: MatchResult;
+  enemyMatchResult!: MatchResult;
+  match!: Match;
+  playerPath?: Path;
+  enemyPaths?: Path[];
+  general!: GeneralSettings;
+
+  // UI flags
+  countdownInProgress = true;
+  startCountdownText = '';
   showDraggableRoby = true;
   showCompleteGrid = false;
   showArrows = false;
   draggableRobyImage = 'roby-idle';
-  startCountdownText = '';
-  countdownInProgress = false;
+  exitGameModal = false;
+  forceExitModal = false;
+  languageModal = false;
+  basePlaying = false;
+
+  isAnimationReady = false;
+
+  executeAnimation = false;
+  Side = Side; // expose enum to template
+
+  // Timers
   userTimerValue = 0;
   enemyTimerValue = 0;
   userTimerAnimation = '';
   enemyTimerAnimation = '';
-  exitGameModal = false;
-  forceExitModal = false;
-  forceExitText = '';
 
-  //dati di gioco
-  user!: Player;
-  enemy!: Player;
-  general!: GeneralSettings;
-  match!: Match;
-  playerPath?: Path;
-  enemyPath?: Path;
+  timerFormatter: (time: number) => string = (t) => t.toString();
 
-  //punti attuali
-  userPoints = 0;
-  enemyPoints = 0;
+  startAnimation = false;
+  currentSide: Side | null = null;
+  currentIndex: number | null = null;
+  isOverArrow = false;
+  isDragging = false;
+  positionEnemyTrigger = 0;
+  forceExitText: string = '';
 
-  private destroy$ = new Subject<void>();
-
-  userNickname = '';
-  userLogged = false;
-
-  private countdownInterval?: any;
-  private gameTimer?: any;
-  private nextGameTimerValue = 0;
+  // CSS
+  tilesCss: string[][] = [];
+  startPositionsCss: string[][] = [];
 
   subs = new Subscription();
+  private destroy$ = new Subject<void>();
 
   constructor(
-    private router: Router,
-    private translate: TranslateService,
+    private audio: AudioService,
     private gameData: GameDataService,
     private path: PathService,
-    private audio: AudioService,
+    private matchManager: MatchManagerService,
+    private rabbit: RabbitService,
+    private router: Router,
     private session: SessionService,
-    private auth: AuthService,
-    private visibility: VisibilityService,
-    private zone: NgZone
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
     if (this.session.isSessionInvalid()) {
-      // this.quitGame();
-      this.router.navigateByUrl('/');
+      this.quitGame();
+      this.router.navigate(['/']);
       return;
     }
+    this.executeAnimation = false;
 
-    this.initUserData();
-    // this.initMatch();
-    this.startCountdown();
+    this.buildGrid();
+    this.buildSmallGrid();
+    this.buildEntryPoints();
+    this.calculateAllStartPositionCss(false);
 
-    // handle visibility loss
-    this.visibility.setDeadlineCallback(() => {
-      this.zone.run(() => {
-        // this.quitGame();
-        this.translate
-          .get('FORCE_EXIT')
-          .subscribe((t) => (this.forceExitText = t));
-        this.forceExitModal = true;
-      });
-    });
-  }
-
-  ngOnDestroy(): void {
-    // this.quitGame();
-  }
-
-  private initUserData(): void {
     this.subs.add(
       this.gameData.gameData$
         .pipe(takeUntil(this.destroy$))
         .subscribe((data) => {
           this.user = data.user;
           this.enemy = data.enemy;
+          this.userMatchResult = data.userMatchResult;
+          this.enemyMatchResult = data.enemyMatchResult;
           this.general = data.general;
           this.match = data.match;
-          this.userPoints = data.userGlobalResult.points;
-          this.enemyPoints = data.enemyGlobalResult.points;
         })
+    );
+
+    this.path.path$.subscribe((p) => {
+      this.playerPath = p;
+
+      if (this.playerPath.startPosition.side !== Side.None) {
+        this.executeAnimation = true;
+      }
+    });
+
+    this.path.enemiesPaths$.subscribe((paths) => {
+      this.enemyPaths = paths;
+    });
+
+    this.basePlaying = this.audio.isEnabled();
+    this.timerFormatter = this.gameData.formatTimeMatchClock;
+
+    this.startCountdown();
+    this.initializeTilesCss();
+    this.registerRabbitCallbacks();
+  }
+
+  ngOnDestroy(): void {
+    this.matchManager.stopAll();
+    this.subs.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.gameData.stopTimer();
+  }
+
+  private buildGrid() {
+    this.grid = Array.from({ length: this.rows }, (_, row) =>
+      Array.from({ length: this.cols }, (_, col) => ({ row, col }))
     );
   }
 
-  // private initMatch(): void {
-  //   this.user = this.gameData.getUser();
-  //   this.enemy = this.gameData.getEnemy();
-  //   this.match = this.gameData.getMatch();
-  //   this.userTimerValue = this.gameData.getGeneral().timerSetting;
-  //   this.enemyTimerValue = this.gameData.getGeneral().timerSetting;
-  //   this.nextGameTimerValue = this.userTimerValue;
+  private buildSmallGrid(): void {
+    const placeholder = { placeholder: true } as Cell;
+    const numRows = this.rows;
+    const numCols = this.cols;
 
-  //   this.path.();
-  // }
+    this.smallGrid = [];
 
-  private startCountdown(): void {
+    this.smallGrid.push([
+      placeholder,
+      ...Array.from({ length: numCols }, (_, col) => ({
+        id: `start-0${col}`,
+        start: true,
+      })),
+      placeholder,
+    ]);
+
+    for (let row = 0; row < numRows; row++) {
+      const newRow: Cell[] = [];
+      newRow.push({ id: `start-3${row}`, start: true });
+      for (let col = 0; col < numCols; col++)
+        newRow.push({ tile: { row, col } });
+      newRow.push({ id: `start-1${row}`, start: true });
+      this.smallGrid.push(newRow);
+    }
+
+    this.smallGrid.push([
+      placeholder,
+      ...Array.from({ length: numCols }, (_, col) => ({
+        id: `start-2${col}`,
+        start: true,
+      })),
+      placeholder,
+    ]);
+  }
+
+  private buildEntryPoints() {
+    this.entryPoints = [];
+    for (let col = 0; col < this.cols; col++) {
+      this.entryPoints.push({ side: Side.Top, distance: col });
+      this.entryPoints.push({ side: Side.Bottom, distance: col });
+    }
+    for (let row = 0; row < this.rows; row++) {
+      this.entryPoints.push({ side: Side.Left, distance: row });
+      this.entryPoints.push({ side: Side.Right, distance: row });
+    }
+  }
+
+  private startCountdown() {
+    let countdownValue = 3;
     this.countdownInProgress = true;
+    this.startCountdownText = countdownValue.toString();
     this.audio.playSound('countdown');
-    let value = 3;
-    this.startCountdownText = value.toString();
 
-    this.countdownInterval = setInterval(() => {
-      this.zone.run(() => {
-        value--;
-        if (value > 0) {
-          this.audio.playSound('countdown');
-          this.startCountdownText = value.toString();
-        } else if (value === 0) {
-          this.audio.playSound('start');
-          this.startCountdownText = "Let's Cody!";
-        } else {
-          clearInterval(this.countdownInterval);
-          this.countdownInterval = undefined;
-          this.countdownInProgress = false;
-          this.startMatchTimers();
-        }
-      });
+    const intervalId = setInterval(() => {
+      countdownValue--;
+      if (countdownValue > 0) {
+        this.startCountdownText = countdownValue.toString();
+        this.audio.playSound('countdown');
+      } else if (countdownValue === 0) {
+        this.startCountdownText = "Let's Cody!";
+        this.audio.playSound('start');
+      } else {
+        clearInterval(intervalId);
+        this.countdownInProgress = false;
+        this.startMatchTimers();
+      }
     }, 1000);
   }
 
-  private startMatchTimers(): void {
-    const interval = 10;
-    let expected = Date.now() + interval;
-
-    const step = () => {
-      this.zone.run(() => {
-        const drift = Date.now() - expected;
-        this.nextGameTimerValue -= interval + drift;
-
-        if (this.nextGameTimerValue > 0) {
-          if (!this.match.positioned)
-            this.userTimerValue = this.nextGameTimerValue;
-          if (!this.match.enemyPositioned)
-            this.enemyTimerValue = this.nextGameTimerValue;
-          if (this.userTimerValue < 10000)
-            this.userTimerAnimation = 'clock-ending-animation';
-          if (this.enemyTimerValue < 10000)
-            this.enemyTimerAnimation = 'clock-ending-animation';
-
-          expected = Date.now() + interval;
-          this.gameTimer = setTimeout(step, interval);
-        } else {
-          this.onTimerEnd();
+  private initializeTilesCss(): void {
+    const tiles = this.match.tiles;
+    this.tilesCss = tiles.map((row: string[], x: number) =>
+      row.map((cell, y) => {
+        switch (cell) {
+          case 'Y':
+            return 'playground--tile-yellow';
+          case 'R':
+            return 'playground--tile-red';
+          case 'G':
+            return 'playground--tile-gray';
+          default:
+            return '';
         }
-      });
-    };
-
-    this.gameTimer = setTimeout(step, interval);
+      })
+    );
   }
 
-  private onTimerEnd(): void {
-    if (!this.match.positioned) {
-      this.match.positioned = true;
-      this.match.time = 0;
-      this.match.startPosition = { side: -1, distance: -1 };
-      this.userTimerValue = 0;
-      this.userTimerAnimation = 'clock--end';
-      this.showCompleteGrid = true;
-      this.showArrows = false;
-      this.showDraggableRoby = false;
+  private setArrowCss(side: Side, distance: number, over: boolean) {
+    let arrowSide = '';
+    switch (side) {
+      case Side.Top:
+        arrowSide = 'down';
+        break;
+      case Side.Left:
+        arrowSide = 'left';
+        break;
+      case Side.Bottom:
+        arrowSide = 'up';
+        break;
+      case Side.Right:
+        arrowSide = 'right';
+        break;
     }
-    if (!this.match.enemyPositioned) {
-      this.enemyTimerAnimation = 'clock--end';
-      this.enemyTimerValue = 0;
+
+    let finalResult = over
+      ? `fas fa-chevron-circle-${arrowSide} playground--arrow-over`
+      : `fas fa-angle-${arrowSide} playground--arrow`;
+
+    if (this.showArrows) finalResult += ` floating-${arrowSide}-animation`;
+    this.startPositionsCss[side][distance] = finalResult;
+  }
+
+  private calculateAllStartPositionCss(over = false) {
+    this.startPositionsCss = Array.from({ length: 4 }, () =>
+      Array.from({ length: this.cols }, () => '')
+    );
+
+    for (let side = 0; side < 4; side++) {
+      for (let distance = 0; distance < this.cols; distance++) {
+        this.setArrowCss(side, distance, over);
+      }
     }
   }
 
-  startDragging(): void {
+  private startMatchTimers(): void {
+    this.matchManager.startMatchTimers(
+      0, // No bot
+      this.general.timerSetting,
+      (ms) => this.updateUserTimer(ms),
+      (ms) => this.updateEnemyTimer(ms),
+      () => this.matchManager.handleUserTimeout(this.user)
+    );
+  }
+
+  private quitGame(): void {
+    this.gameData.reset();
+  }
+
+  private registerRabbitCallbacks(): void {
+    this.rabbit.setPageCallbacks({
+      onEnemyPositioned: (message: any) => {
+        this.gameData.update('match', {
+          enemyTime: message.matchTime,
+          enemyPositioned: true,
+        });
+        this.enemyTimerAnimation = 'clock--end';
+        this.enemyTimerValue = message.matchTime;
+      },
+
+      onGameQuit: () => {
+        this.quitGame();
+        this.translate.get('ENEMY_LEFT').subscribe((text) => {
+          this.forceExitText = text;
+          this.forceExitModal = true;
+        });
+      },
+
+      onConnectionLost: () => {
+        this.quitGame();
+        this.translate.get('FORCE_EXIT').subscribe((text) => {
+          this.forceExitText = text;
+          this.forceExitModal = true;
+        });
+      },
+
+      onStartAnimation: (message: any) => {
+        this.matchManager.startMatchTimers(
+          0, // No bot
+          this.general.timerSetting,
+          (ms) => this.updateUserTimer(ms),
+          (ms) => this.updateEnemyTimer(ms),
+          () => this.matchManager.handleUserTimeout(this.user)
+        );
+
+        this.startAnimation = true;
+        this.path.positionAllEnemies(message.startPositions);
+
+        // Trigger visual animation sequence in MatchGrid
+        this.matchGrid.executeEndSequence('enemy');
+      },
+
+      onEndMatch: (message: any) => {
+        this.gameData.update('aggregated', message.aggregated);
+        this.gameData.update('match', { winnerId: message.winnerId });
+        this.gameData.updateMatchRanking(message.matchRanking);
+        this.gameData.updateGlobalRanking(message.globalRanking);
+
+        if (!this.forceExitModal) {
+          this.router.navigate(['/arcade-aftermatch']);
+        }
+      },
+    });
+  }
+
+  updateUserTimer(ms: number) {
+    if (this.isAnimationReady || this.match.positioned) return;
+    if (ms < 10000) this.userTimerAnimation = 'clock-ending-animation';
+    this.userTimerValue = ms;
+  }
+
+  updateEnemyTimer(ms: number) {
+    if (this.isAnimationReady || this.match.enemyPositioned) return;
+    if (ms < 10000) this.enemyTimerAnimation = 'clock-ending-animation';
+    this.enemyTimerValue = ms;
+  }
+
+  // Drag events
+  onDragStarted() {
+    this.isDragging = true;
     this.audio.playSound('roby-drag');
     this.showCompleteGrid = true;
-    this.showArrows = true;
     this.draggableRobyImage = 'roby-dragging-trasp';
+    this.showArrows = true;
+    this.calculateAllStartPositionCss(false);
   }
 
-  endDragging(): void {
+  onRobyOver(side: Side, distance: number) {
+    this.audio.playSound('roby-over');
+    this.draggableRobyImage = 'roby-over';
+    this.setArrowCss(side, distance, true);
+  }
+
+  onRobyOut(side: Side, distance: number) {
+    this.draggableRobyImage = 'roby-dragging-trasp';
+    this.setArrowCss(side, distance, false);
+  }
+
+  onDragEnded() {
+    if (
+      this.isOverArrow &&
+      this.currentSide !== null &&
+      this.currentIndex !== null
+    ) {
+      this.onTileDropped(this.currentSide, this.currentIndex);
+    } else {
+      this.endDragging();
+    }
+  }
+
+  endDragging() {
     this.audio.playSound('roby-drop');
-    // if (!this.match.startAnimation) {
-    //   this.showArrows = false;
-    //   this.showCompleteGrid = false;
-    //   this.draggableRobyImage = 'roby-idle';
-    // }
+    this.showArrows = false;
+    this.showCompleteGrid = false;
+    this.draggableRobyImage = 'roby-idle';
+    this.calculateAllStartPositionCss(false);
+  }
+
+  onTileDropped(sideValue: Side, distanceValue: number) {
+    this.audio.playSound('roby-positioned');
+    this.showCompleteGrid = true;
+    this.showArrows = false;
+    this.draggableRobyImage = 'roby-idle';
+    this.showDraggableRoby = false;
+
+    // Update match
+    this.gameData.update('match', {
+      positioned: true,
+      time: this.userTimerValue,
+      startPosition: { side: sideValue, distance: distanceValue },
+    });
+
+    // Compute path
+    this.path.computePath(this.gameData.value.match.startPosition);
+
+    // notify opponent via Rabbit
+    this.rabbit.sendPlayerPositionedMessage();
+  }
+
+  skip() {
+    this.audio.playSound('menu-click');
+    this.quitGame();
+    this.router.navigate(['/arcade-aftermatch']);
+  }
+
+  exitGame() {
+    this.audio.playSound('menu-click');
+    this.exitGameModal = true;
+  }
+
+  continueExitGame() {
+    this.audio.playSound('menu-click');
+    this.quitGame();
+    this.router.navigate(['/home']);
+  }
+
+  stopExitGame() {
+    this.audio.playSound('menu-click');
+    this.exitGameModal = false;
   }
 }

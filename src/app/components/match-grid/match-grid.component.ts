@@ -22,6 +22,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { RobyAnimationComponent } from '../roby-animation/roby-animation.component';
 import { MatchManagerService } from '../../services/match-manager.service';
 import { Router } from '@angular/router';
+import { RabbitService } from '../../services/rabbit.service';
 
 @Component({
   selector: 'app-match-grid',
@@ -68,6 +69,7 @@ export class MatchGridComponent {
 
   constructor(
     private matchManager: MatchManagerService,
+    private rabbit: RabbitService,
     private router: Router
   ) {}
 
@@ -150,7 +152,10 @@ export class MatchGridComponent {
     // Delegate scoring, winner determination, navigation
 
     this.matchManager.executeEndSequence(playerType, {
-      onComplete: () => this.router.navigate([this.endRoute]),
+      onComplete: () => {
+        this.router.navigate([this.endRoute]);
+        this.rabbit.sendEndAnimationMessage();
+      },
     });
   }
 }

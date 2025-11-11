@@ -14,6 +14,7 @@ export class MatchManagerService {
   private isAnimationReady = false;
   private playerAnimationDone = false;
   private enemyAnimationDone = false;
+  private botPlaced = false;
 
   constructor(
     private gameData: GameDataService,
@@ -90,6 +91,9 @@ export class MatchManagerService {
    * Auto-position the bot when its timer hits the trigger threshold
    */
   private placeBot(botSetting: number, triggerTime: number) {
+    if (this.botPlaced) return;
+    this.botPlaced = true;
+
     const botPath = this.path.calculateBotPath(botSetting);
     this.gameData.update('match', {
       enemyPositioned: true,
@@ -99,12 +103,18 @@ export class MatchManagerService {
   }
 
   resetMatchState() {
-    this.isAnimationReady = false;
-    this.playerAnimationDone = false;
-    this.enemyAnimationDone = false;
-    this.positionEnemyTrigger = 0;
+    this.resetForNewTimers();
+  }
+
+  private resetForNewTimers() {
     this.subs.unsubscribe();
     this.subs = new Subscription();
+    this.botPlaced = false;
+    this.positionEnemyTrigger = 0;
+    this.playerAnimationDone = false;
+    this.enemyAnimationDone = false;
+    this.isAnimationReady = false;
+    this.gameData.stopTimer();
   }
 
   executeEndSequence(
@@ -115,7 +125,7 @@ export class MatchManagerService {
 
     // --- Handle animation state ---
     if (playerType === 'player') this.playerAnimationDone = true;
-    if (playerType === 'enemy' || current.general.botSetting === 0) {
+    if (playerType === 'enemy') {
       this.enemyAnimationDone = true;
     }
 
@@ -209,7 +219,6 @@ export class MatchManagerService {
   }
 
   stopAll() {
-    this.subs.unsubscribe();
-    this.gameData.stopTimer();
+    this.resetForNewTimers();
   }
 }

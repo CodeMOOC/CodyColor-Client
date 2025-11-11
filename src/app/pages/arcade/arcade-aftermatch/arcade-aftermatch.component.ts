@@ -162,7 +162,8 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
           this.newMatchTimer = undefined;
           if (!this.newMatchClicked) {
             this.newMatchClicked = true;
-            this.rabbit.sendReadyMessage();
+
+            this.newMatch();
           }
         } else {
           this.newMatchTimerValue -= 1000;
@@ -174,7 +175,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   newMatch(): void {
     this.audio.playSound('menu-click');
     this.newMatchClicked = true;
-
+    this.gameData.initializeMatchData();
     this.path.reset(); // If Arcade uses a path service
     this.matchManager.resetMatchState(); // if you have a match manager
 
@@ -190,33 +191,6 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
       text,
       '[https://codycolor.codemooc.net](https://codycolor.codemooc.net)'
     );
-  }
-
-  exitGame(): void {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = true;
-  }
-
-  continueExitGame(): void {
-    this.audio.playSound('menu-click');
-    this.rabbit.sendPlayerQuitRequest();
-    this.quitGame();
-    this.router.navigate(['/home']);
-  }
-
-  stopExitGame(): void {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = false;
-  }
-
-  continueForceExit(): void {
-    this.audio.playSound('menu-click');
-    this.router.navigate(['/home']);
-  }
-
-  toggleBase(): void {
-    this.audio.toggleBase();
-    this.basePlaying = this.audio.isEnabled();
   }
 
   // --- Rabbit callbacks ---

@@ -35,12 +35,10 @@ export class AudioService {
 
   toggleBase(): void {
     if (!this.isEnabled()) {
-      console.log('Enabling audio');
       this.isAudioEnabled = true;
       this.cookies.set('audioEnabled', 'true');
       this.musicBase.play();
     } else {
-      console.log('Disabling audio');
       this.isAudioEnabled = false;
       this.cookies.set('audioEnabled', 'false');
       this.musicBase.pause();

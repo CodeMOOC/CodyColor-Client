@@ -73,7 +73,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   startPositionsCss: string[][] = [];
 
   // flag per logica UI
-  showCompleteGrid = false;
   showArrows = false;
   isAnimationReady = false;
 
@@ -331,7 +330,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   onDragStarted() {
     this.isDragging = true;
     this.audio.playSound('roby-drag');
-    this.showCompleteGrid = true;
     this.draggableRobyImage = 'roby-dragging-trasp';
     this.showArrows = true;
   }
@@ -349,7 +347,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   // l'avversario dell'avvenuta presa di posizione
   onTileDropped(sideValue: Side, distanceValue: number): void {
     this.audio.playSound('roby-positioned');
-    this.showCompleteGrid = true;
 
     if (!this.isAnimationReady) {
       const finalUserTime = this.gameData.getUserFinalTime();

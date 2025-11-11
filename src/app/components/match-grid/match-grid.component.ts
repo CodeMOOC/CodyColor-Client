@@ -1,8 +1,10 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
   Input,
+  OnInit,
   Output,
   QueryList,
   ViewChild,
@@ -16,6 +18,7 @@ import {
   CdkDropList,
   CdkDropListGroup,
   CdkDragMove,
+  CdkDragEnd,
 } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -38,11 +41,11 @@ import { RabbitService } from '../../services/rabbit.service';
   templateUrl: './match-grid.component.html',
   styleUrl: './match-grid.component.scss',
 })
-export class MatchGridComponent {
+export class MatchGridComponent implements OnInit, AfterViewInit {
   @Input() tilesCss: string[][] = [];
+  @Input() isBot: boolean = false;
   @Input() grid: Tile[][] = [];
   @Input() executeAnimation = false;
-  @Input() showCompleteGrid = false;
   @Input() playerPath?: Path;
   @Input() enemyPaths?: Path[];
   @Input() botSetting = 0;
@@ -67,14 +70,31 @@ export class MatchGridComponent {
   @ViewChild('player') playerAnim?: RobyAnimationComponent;
   @ViewChild('enemy') enemyAnim?: RobyAnimationComponent;
 
+  @ViewChild('smallGridRef') smallGridRef!: ElementRef;
+  gridRect: DOMRect | null = null;
+
+  releasePosition = { x: 0, y: 0 };
+  isReturning = false;
+  showCompleteGrid = false;
+
+  isPlayerAnimationDone = false;
+  isEnemyAnimationDone = false;
+
   constructor(
     private matchManager: MatchManagerService,
     private rabbit: RabbitService,
     private router: Router
   ) {}
 
+  ngOnInit(): void {}
+
+  ngAfterViewInit(): void {
+    const el = this.smallGridRef?.nativeElement as HTMLElement;
+    if (el) this.gridRect = el.getBoundingClientRect();
+  }
   /** --- Drag & Drop handlers --- */
   onDragStarted(event: any): void {
+    this.showCompleteGrid = true;
     this.isDragging = true;
     this.dragStarted.emit();
   }
@@ -108,7 +128,7 @@ export class MatchGridComponent {
     }
   }
 
-  onDragEnded(): void {
+  onDragEnded(event: CdkDragEnd): void {
     this.isDragging = false;
     this.dragEnded.emit();
 
@@ -117,15 +137,38 @@ export class MatchGridComponent {
       this.currentSide !== null &&
       this.currentIndex !== null
     ) {
+      this.showCompleteGrid = true;
       this.tileDropped.emit({
         side: this.currentSide,
         distance: this.currentIndex,
       });
+    } else {
+      this.showCompleteGrid = false;
+
+      const { x, y } = event.source.getFreeDragPosition();
+      this.releasePosition = { x, y };
+      this.playReturnAnimation();
     }
 
     this.isOverArrow = false;
     this.currentSide = null;
     this.currentIndex = null;
+  }
+
+  // NOT WORKING
+  playReturnAnimation() {
+    this.isReturning = true;
+
+    // Wait one frame to apply the target style
+    requestAnimationFrame(() => {
+      const el = document.querySelector('.returning-roby') as HTMLElement;
+      if (el) el.classList.add('returning');
+    });
+
+    // Clean up after animation
+    setTimeout(() => {
+      this.isReturning = false;
+    }, 1000);
   }
 
   /** Utility to choose arrow icon */
@@ -146,16 +189,27 @@ export class MatchGridComponent {
 
   // cosa fare una volta terminata senza intoppi la partita; mostra la schermata aftermatch
   executeEndSequence(playerType?: 'player' | 'enemy') {
-    if (playerType === 'player') this.playerAnim?.play();
-    if (playerType === 'enemy') this.enemyAnim?.play();
+    if (playerType === 'player') {
+      this.isPlayerAnimationDone = true;
+      this.playerAnim?.play();
+    }
+    if (playerType === 'enemy') {
+      this.isEnemyAnimationDone = true;
+      this.enemyAnim?.play();
+    }
+
+    // if (
+    //   (this.isPlayerAnimationDone && this.isEnemyAnimationDone) ||
+    //   this.isBot
+    // ) {
 
     // Delegate scoring, winner determination, navigation
-
     this.matchManager.executeEndSequence(playerType, {
       onComplete: () => {
-        this.router.navigate([this.endRoute]);
+        if (this.isBot) this.router.navigate([this.endRoute]);
         this.rabbit.sendEndAnimationMessage();
       },
     });
+    // }
   }
 }

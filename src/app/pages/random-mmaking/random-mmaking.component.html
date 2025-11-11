@@ -55,32 +55,14 @@
       </div>
 
       <!-- Entrato nella gameRoom, aspetta un avversario -->
-      <div
+      <!-- Waiting Ready -->
+      <app-spinner
         *ngIf="mmakingState === screens.waitingEnemy"
+        id="waiting-confirm"
         class="page--component"
-      >
-        <ul class="list">
-          <li class="list--spaced-element">
-            <div class="loading-spinner">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-          </li>
-          <li class="list--spaced-element">
-            <div class="flashing-animation">
-              {{ "WAITING_NEW_PLAYERS" | translate }}<br />
-              {{ mmakingTimerFormatter(mmakingTimerValue) }}
-            </div>
-          </li>
-        </ul>
-      </div>
+        [messageKey]="'WAITING_NEW_PLAYERS'"
+        [timerValue]="mmakingTimerValue"
+      ></app-spinner>
 
       <!-- Players accoppiati, in attesa di ready -->
       <div
@@ -99,39 +81,24 @@
               [disabled]="readyClicked"
             >
               {{ "START" | translate }}
+
               <i
-                class="fas fa-angle-double-right navigation--icon-in-text floating-right-animation"
-              ></i>
+                class="material-symbols-outlined inline-block animate-slide-left"
+              >
+                keyboard_double_arrow_right
+              </i>
             </button>
           </li>
         </ul>
       </div>
 
       <!-- Ready clicked, aspettando il segnale di ready dell'avversario -->
-      <div
-        id="waiting-confirm"
+      <app-spinner
         *ngIf="mmakingState === screens.waitingReady"
+        id="waiting-confirm"
         class="page--component"
-      >
-        <ul class="list">
-          <li class="list--spaced-element">
-            <div class="loading-spinner">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-          </li>
-          <li class="list--spaced-element">
-            <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
-          </li>
-        </ul>
-      </div>
+        [messageKey]="'ENEMY_WAIT'"
+      ></app-spinner>
 
       <!-- Chat module -->
       <div

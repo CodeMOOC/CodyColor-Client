@@ -14,10 +14,10 @@ import {
   animate,
 } from '@angular/animations';
 import { Path } from '../../models/path.model';
-import { RobotState } from '../../models/robot-state.model';
 import { StartPixel } from '../../models/cell.model';
 
 import { ElementRef, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 type AnimState = 'idle' | 'moving' | 'moving2' | 'turning' | 'turning2';
 type Step = {
@@ -32,6 +32,7 @@ type Step = {
   selector: 'app-roby-animation',
   templateUrl: './roby-animation.component.html',
   styleUrls: ['./roby-animation.component.scss'],
+  imports: [CommonModule],
   standalone: true,
   animations: [
     trigger('move', [
@@ -96,7 +97,7 @@ type Step = {
 export class RobyAnimationComponent implements OnInit, OnDestroy {
   @Input() path!: Path;
   @Input() image = 'roby-positioned';
-  @Input() isBot = false;
+  @Input() isBotOrEnemy = false;
   @Input() startPixel: StartPixel = { x: 0, y: 0 };
   @Output() finished = new EventEmitter<void>();
 
@@ -106,8 +107,8 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
   state: AnimState = 'idle';
 
   // durations (customize)
-  moveDuration = 500;
-  turnDuration = 500;
+  moveDuration = 700;
+  turnDuration = 700;
 
   private steps: Step[] = [];
   private stepTimer?: any;
@@ -122,7 +123,7 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
     }
 
     this.finished.subscribe(() => {
-      if (!this.isBot) {
+      if (!this.isBotOrEnemy) {
         this.image = 'roby-positioned';
       } else {
         this.image = 'enemy-positioned';
@@ -324,6 +325,7 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
     let idx = 0;
     const next = () => {
       if (idx >= this.steps.length) {
+        console.log('All steps completed');
         this.state = 'idle';
         this.finished.emit();
         return;
@@ -399,7 +401,7 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
   // }
 
   get currentImage() {
-    if (this.isBot) {
+    if (this.isBotOrEnemy) {
       return this.state === 'moving'
         ? 'enemy-walking-1'
         : this.state === 'moving2'

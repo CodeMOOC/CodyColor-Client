@@ -10,7 +10,6 @@ import {
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
 import { Subject, Subscription, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -26,11 +25,12 @@ import { Cell, EntryPoint, Side, Tile } from '../../../models/cell.model';
 import { Path } from '../../../models/path.model';
 import { GeneralSettings } from '../../../models/game-data.model';
 import { RabbitService } from '../../../services/rabbit.service';
+import { ChatHandlerService } from '../../../services/chat.service';
 
 @Component({
   selector: 'app-arcade-match',
   standalone: true,
-  imports: [CommonModule, MatchGridComponent, TranslateModule, DragDropModule],
+  imports: [CommonModule, MatchGridComponent, TranslateModule],
   templateUrl: './arcade-match.component.html',
   styleUrls: ['./arcade-match.component.scss'],
 })
@@ -60,7 +60,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   countdownInProgress = true;
   startCountdownText = '';
   showDraggableRoby = true;
-  showCompleteGrid = false;
   showArrows = false;
   draggableRobyImage = 'roby-idle';
   exitGameModal = false;
@@ -98,6 +97,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
 
   constructor(
     private audio: AudioService,
+    private chat: ChatHandlerService,
     private gameData: GameDataService,
     private path: PathService,
     private matchManager: MatchManagerService,
@@ -113,7 +113,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
       this.router.navigate(['/']);
       return;
     }
-    this.executeAnimation = false;
 
     this.buildGrid();
     this.buildSmallGrid();
@@ -121,29 +120,27 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     this.calculateAllStartPositionCss(false);
 
     this.subs.add(
-      this.gameData.gameData$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((data) => {
-          this.user = data.user;
-          this.enemy = data.enemy;
-          this.userMatchResult = data.userMatchResult;
-          this.enemyMatchResult = data.enemyMatchResult;
-          this.general = data.general;
-          this.match = data.match;
-        })
+      this.gameData.gameData$.subscribe((data) => {
+        this.user = data.user;
+        this.enemy = data.enemy;
+        this.userMatchResult = data.userMatchResult;
+        this.enemyMatchResult = data.enemyMatchResult;
+        this.general = data.general;
+        this.match = data.match;
+      })
     );
 
-    this.path.path$.subscribe((p) => {
-      this.playerPath = p;
+    this.subs.add(
+      this.path.path$.subscribe((p) => {
+        this.playerPath = p;
+      })
+    );
 
-      if (this.playerPath.startPosition.side !== Side.None) {
-        this.executeAnimation = true;
-      }
-    });
-
-    this.path.enemiesPaths$.subscribe((paths) => {
-      this.enemyPaths = paths;
-    });
+    this.subs.add(
+      this.path.enemiesPaths$.subscribe((paths) => {
+        this.enemyPaths = paths;
+      })
+    );
 
     this.basePlaying = this.audio.isEnabled();
     this.timerFormatter = this.gameData.formatTimeMatchClock;
@@ -159,6 +156,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.gameData.stopTimer();
+    this.executeAnimation = false;
   }
 
   private buildGrid() {
@@ -236,6 +234,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
+  // inizializzazione tiles
   private initializeTilesCss(): void {
     const tiles = this.match.tiles;
     this.tilesCss = tiles.map((row: string[], x: number) =>
@@ -301,8 +300,26 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     );
   }
 
+  // metodo per terminare la partita in modo sicuro, disattivando i timer,
+  // interrompendo animazioni e connessioni con il server
   private quitGame(): void {
     this.gameData.reset();
+    if (this.startCountdownText !== '') {
+      this.startCountdownText = '';
+    }
+
+    if (this.userTimerValue !== 0) {
+      this.userTimerValue = 0;
+    }
+
+    if (this.enemyTimerValue !== 0) {
+      this.enemyTimerValue = 0;
+    }
+
+    this.rabbit.quitGame();
+    // this.path.quitGame();
+    this.chat.clearChat();
+    this.gameData.initializeMatchData();
   }
 
   private registerRabbitCallbacks(): void {
@@ -314,6 +331,13 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
         });
         this.enemyTimerAnimation = 'clock--end';
         this.enemyTimerValue = message.matchTime;
+
+        if (this.match?.positioned) {
+          this.executeAnimation = true;
+          this.isAnimationReady = true;
+          // Trigger visual animation sequence in MatchGrid
+          this.matchGrid.executeEndSequence('enemy');
+        }
       },
 
       onGameQuit: () => {
@@ -333,19 +357,16 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
       },
 
       onStartAnimation: (message: any) => {
-        this.matchManager.startMatchTimers(
-          0, // No bot
-          this.general.timerSetting,
-          (ms) => this.updateUserTimer(ms),
-          (ms) => this.updateEnemyTimer(ms),
-          () => this.matchManager.handleUserTimeout(this.user)
-        );
+        // this.matchManager.startMatchTimers(
+        //   0, // No bot
+        //   this.general.timerSetting,
+        //   (ms) => this.updateUserTimer(ms),
+        //   (ms) => this.updateEnemyTimer(ms),
+        //   () => this.matchManager.handleUserTimeout(this.user)
+        // );
 
-        this.startAnimation = true;
+        this.executeAnimation = true;
         this.path.positionAllEnemies(message.startPositions);
-
-        // Trigger visual animation sequence in MatchGrid
-        this.matchGrid.executeEndSequence('enemy');
       },
 
       onEndMatch: (message: any) => {
@@ -377,7 +398,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   onDragStarted() {
     this.isDragging = true;
     this.audio.playSound('roby-drag');
-    this.showCompleteGrid = true;
     this.draggableRobyImage = 'roby-dragging-trasp';
     this.showArrows = true;
     this.calculateAllStartPositionCss(false);
@@ -409,14 +429,12 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   endDragging() {
     this.audio.playSound('roby-drop');
     this.showArrows = false;
-    this.showCompleteGrid = false;
     this.draggableRobyImage = 'roby-idle';
     this.calculateAllStartPositionCss(false);
   }
 
   onTileDropped(sideValue: Side, distanceValue: number) {
     this.audio.playSound('roby-positioned');
-    this.showCompleteGrid = true;
     this.showArrows = false;
     this.draggableRobyImage = 'roby-idle';
     this.showDraggableRoby = false;
@@ -438,7 +456,8 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   skip() {
     this.audio.playSound('menu-click');
     this.quitGame();
-    this.router.navigate(['/arcade-aftermatch']);
+    // wait for the enemy animation to end or skip it
+    this.rabbit.sendEndAnimationMessage();
   }
 
   exitGame() {

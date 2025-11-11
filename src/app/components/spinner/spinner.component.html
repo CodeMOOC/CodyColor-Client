@@ -19,7 +19,18 @@
       </div>
     </li>
     <li class="list--spaced-element">
-      <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
+      <div
+        *ngIf="timerValue !== undefined; else noTimerValue"
+        class="flashing-animation"
+      >
+        {{ messageKey | translate }} <br />
+        {{ formattedTimer }}
+      </div>
+      <ng-template #noTimerValue>
+        <div class="flashing-animation">
+          {{ messageKey | translate }} <br />
+        </div>
+      </ng-template>
     </li>
   </ul>
 </div>

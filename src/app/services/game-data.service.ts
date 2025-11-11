@@ -144,7 +144,6 @@ export class GameDataService {
   /* ------------------ Helper Methods ------------------ */
 
   startTimer(initial: number) {
-    console.log('Starting timer with', initial);
     this.userTimer$.next(initial);
     // this.userTimer$.next(3000);
     this.enemyTimer$.next(initial);
@@ -210,7 +209,7 @@ export class GameDataService {
 
   // formattazione utilizzata durante il match
   formatTimeMatchClock(ms: number): string {
-    const dec = Math.floor((ms / 100) % 10).toString();
+    const dec = Math.floor((ms / 100) % 100).toString();
     const sec = Math.floor((ms / 1000) % 60)
       .toString()
       .padStart(2, '0');

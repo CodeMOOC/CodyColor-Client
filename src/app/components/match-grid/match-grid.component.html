@@ -1,6 +1,4 @@
 <div *ngIf="!showCompleteGrid" class="playground">
-  <!-- match.component.html -->
-  <!-- Big grid (reduced) -->
   <table class="playground--table">
     <tr *ngFor="let row of tilesCss; let rowIndex = index">
       <td *ngFor="let tileClass of row; let colIndex = index">
@@ -9,8 +7,12 @@
     </tr>
   </table>
 </div>
-<div class="w-full" cdkDropListGroup>
-  <div class="small-grid" [ngClass]="{ hidden: !showCompleteGrid }">
+<div class="w-full relative" cdkDropListGroup>
+  <div
+    class="small-grid"
+    [ngClass]="{ hidden: !showCompleteGrid }"
+    #smallGridRef
+  >
     <div class="robot-overlay">
       <app-roby-animation
         *ngIf="executeAnimation && playerPath"
@@ -25,7 +27,7 @@
       <div *ngIf="executeAnimation && enemyPath && botSetting !== 0">
         <app-roby-animation
           #enemyAnim
-          [isBot]="true"
+          [isBotOrEnemy]="true"
           [path]="enemyPath"
           (finished)="executeEndSequence('enemy')"
           [image]="'enemy-positioned'"
@@ -37,21 +39,6 @@
     <!-- Top row -->
     <div class="cell placeholder"></div>
     @for (col of grid[0]; let colIndex = $index; track colIndex) {
-    <!-- <div
-      class="cell arrow-cell"
-      cdkDropList
-      [id]="'drop-top-' + colIndex"
-      [cdkDropListConnectedTo]="connectedIds"
-      #arrowList="cdkDropList"
-      [cdkDropListData]="{ side: 'top', index: colIndex }"
-      (cdkDropListDropped)="onTileDropped($event, Side.Top, colIndex)"
-      (cdkDropListEntered)="onDropListEntered($event)"
-      (cdkDragEnded)="onDropListEnded($event)"
-    >
-      <span class="material-symbols-outlined">
-        {{ getArrowIcon(Side.Top) }}
-      </span>
-    </div> -->
     <div
       class="cell arrow-cell"
       [attr.data-side]="Side.Top"
@@ -79,7 +66,7 @@
 
     <!-- Tiles -->
     @for (cell of row; track cell) {
-    <div class="cell" [ngClass]="tilesCss[cell.row]?.[cell.col]"></div>
+    <div class="cell" [ngClass]="tilesCss[cell.row][cell.col]"></div>
     }
 
     <!-- Right arrow -->
@@ -110,13 +97,17 @@
     <div class="cell placeholder"></div>
   </div>
 
-  <div *ngIf="!executeAnimation" cdkDropList class="z-20">
+  <div
+    *ngIf="!executeAnimation && playerPath?.pathLength === 0"
+    cdkDropList
+    class="z-20"
+  >
     <div
       cdkDrag
       [cdkDragData]="{ type: 'robot' }"
       (cdkDragStarted)="onDragStarted($event)"
       (cdkDragMoved)="onDragMoved($event)"
-      (cdkDragEnded)="onDragEnded()"
+      (cdkDragEnded)="onDragEnded($event)"
       class="draggable-wrapper"
     >
       <!-- Normal image (when not dragging) -->
@@ -145,7 +136,6 @@
             : 'roby-draggable floating-up-animation'
         "
       />
-
       <!-- Placeholder that replaces the original while dragging -->
       <ng-template class="example-custom-placeholder" cdkDragPlaceholder>
         <div></div>

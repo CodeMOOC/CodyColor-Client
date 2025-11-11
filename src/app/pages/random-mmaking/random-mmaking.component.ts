@@ -13,10 +13,11 @@ import { ChatHandlerService } from '../../services/chat.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SpinnerComponent } from '../../components/spinner/spinner.component';
 
 @Component({
   selector: 'app-random-mmaking',
-  imports: [TranslateModule, CommonModule, FormsModule],
+  imports: [TranslateModule, CommonModule, FormsModule, SpinnerComponent],
   standalone: true,
   templateUrl: './random-mmaking.component.html',
   styleUrl: './random-mmaking.component.scss',
@@ -35,6 +36,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     waitingReady: 'waitingReady',
   };
 
+  // matchmakingTimer: interrompe la ricerca della partita nel caso in cui vada troppo per le lunghe
   mmakingTimerValue = 120000;
   enemy: any = {};
   enemyReady = false;
@@ -76,6 +78,10 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
   }
 
   private initMatchmaking(): void {
+    const sub = this.gameData.gameData$.subscribe((data) => {
+      this.enemy = this.gameData.value.enemy;
+    });
+    this.subscriptions.push(sub);
     this.gameData.value.general.gameType = this.gameData.getGameTypes().random;
     this.enemy = this.gameData.value.enemy;
 
@@ -173,6 +179,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     });
   }
 
+  // update timer every second to quit the game if no enemy is found in time
   private startMatchmakingTimer(): void {
     this.clearTimers();
     this.mmakingTimerId = setInterval(() => {
@@ -242,53 +249,5 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
   exitGame(): void {
     this.audio.playSound('menu-click');
     this.exitGameModal = true;
-  }
-
-  continueExitGame(): void {
-    this.audio.playSound('menu-click');
-    this.rabbit.sendPlayerQuitRequest();
-    this.quitGame();
-    this.router.navigate(['/home']);
-  }
-
-  stopExitGame(): void {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = false;
-  }
-
-  continueForceExit(): void {
-    this.audio.playSound('menu-click');
-    this.router.navigate(['/home']);
-  }
-
-  openLanguageModal(): void {
-    this.languageModal = true;
-    this.audio.playSound('menu-click');
-  }
-
-  closeLanguageModal(): void {
-    this.languageModal = false;
-    this.audio.playSound('menu-click');
-  }
-
-  changeLanguage(lang: string): void {
-    this.translation.changeLanguage(lang);
-    this.languageModal = false;
-    this.audio.playSound('menu-click');
-    if (!this.authHandler.loginCompleted()) {
-      this.translation
-        .setTranslation('userNickname', 'NOT_LOGGED')
-        .then((t) => (this.userNickname = t));
-    }
-  }
-
-  toggleBase(): void {
-    this.audio.toggleBase();
-    this.basePlaying = this.audio.isEnabled();
-  }
-
-  mmakingTimerFormatter(ms: number): string {
-    const seconds = Math.floor(ms / 1000);
-    return `${Math.floor(seconds / 60)}:${('0' + (seconds % 60)).slice(-2)}`;
   }
 }

@@ -78,6 +78,7 @@
   "WHEN_START": "When will the match start?",
   "WHEN_TIMER": "All users connected at the end of the countdown will fight:",
   "WHEN_INSTANT": "The match will start when the organiser will click the start button.",
+  "TIME_BATTLE_IS_OVER": "Time to join the battle is over!",
   "INVITE_YOUR_FRIENDS": "Invite your friends",
   "INVITE_DESC": "You can invite other opponents by sending them the code below, to be inserted in the “Battle Royale” screen of the game, or directly via the link. Press one of the two items to copy them to the clipboard.",
   "ABORT_MATCH": "Abort battle",

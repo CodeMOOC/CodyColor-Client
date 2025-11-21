@@ -78,10 +78,5 @@ export class NewMatchComponent implements OnInit {
     });
 
     this.router.navigate(['/custom-mmaking']);
-    // Here you’d call your service or navigation
-    console.log('Creating match with', {
-      nickname: this.nickname,
-      timer: this.timerSettings[this.currentTimerIndex],
-    });
   }
 }

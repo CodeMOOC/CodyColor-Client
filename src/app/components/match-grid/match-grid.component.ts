@@ -202,12 +202,13 @@ export class MatchGridComponent implements OnInit, AfterViewInit {
     //   (this.isPlayerAnimationDone && this.isEnemyAnimationDone) ||
     //   this.isBot
     // ) {
+    this.rabbit.sendEndAnimationMessage();
 
     // Delegate scoring, winner determination, navigation
     this.matchManager.executeEndSequence(playerType, {
       onComplete: () => {
         if (this.isBot) this.router.navigate([this.endRoute]);
-        this.rabbit.sendEndAnimationMessage();
+        // this.rabbit.sendEndAnimationMessage();
       },
     });
     // }

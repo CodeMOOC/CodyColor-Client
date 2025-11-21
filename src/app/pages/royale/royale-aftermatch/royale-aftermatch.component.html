@@ -1,1 +1,186 @@
-<p>royale-aftermatch works!</p>
+<div id="royale-aftermatch" class="page">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <ul class="list">
+        <!-- Match winner -->
+        <li class="list--spaced-element">
+          <h2 class="capitalize" *ngIf="!draw">
+            {{
+              "WINNER"
+                | translate
+                  : { winner: winner, matchCount: aggregated()?.matchCount }
+            }}
+          </h2>
+
+          <h2 *ngIf="draw">
+            {{ "DRAW" | translate }}
+          </h2>
+        </li>
+
+        <!-- Player-Enemy match ranking -->
+        <li class="list--spaced-element">
+          <div class="playerlist-match">
+            <div class="playerlist--header">
+              {{ "MAT_RANKING" | translate }}
+            </div>
+
+            <table class="playerlist-match-table">
+              <tr>
+                <th></th>
+                <th>{{ "NICKNAME" | translate }}</th>
+                <th>{{ "STATS_POINTS_R" | translate }}</th>
+                <th>{{ "STATS_MOVES_R" | translate }}</th>
+                <th>{{ "STATS_TIME_R" | translate }}</th>
+              </tr>
+
+              <tr *ngFor="let player of matchRanking(); index as i">
+                <td>{{ i + 1 }}.</td>
+                <td>{{ player.nickname }}</td>
+                <td>{{ player.points }}</td>
+                <td>{{ player.pathLength }}</td>
+                <td>{{ timeFormatter(player.time) }}</td>
+              </tr>
+
+              <!-- row of dots -->
+              <tr
+                *ngIf="
+                  !(userInMatchPodium() && aggregated()?.connectedPlayers <= 3)
+                "
+              >
+                <td></td>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+              </tr>
+
+              <!-- user row -->
+              <tr *ngIf="!userInMatchPodium()">
+                <td></td>
+                <td>{{ userMatchResult()?.nickname }}</td>
+                <td>{{ userMatchResult()?.points }}</td>
+                <td>{{ userMatchResult()?.pathLength }}</td>
+                <td>{{ timeFormatter(userMatchResult()?.time) }}</td>
+              </tr>
+            </table>
+          </div>
+        </li>
+
+        <!-- Global ranking -->
+        <li class="list--spaced-element">
+          <div class="playerlist-match">
+            <div class="playerlist--header">
+              {{ "GEN_RANKING" | translate }}
+            </div>
+
+            <table class="playerlist-match-table">
+              <tr>
+                <th></th>
+                <th>{{ "NICKNAME" | translate }}</th>
+                <th>{{ "STATS_POINTS_R" | translate }}</th>
+                <th>{{ "STATS_WINS_R" | translate }}</th>
+              </tr>
+
+              <tr *ngFor="let player of globalRanking(); index as i">
+                <td>{{ i + 1 }}.</td>
+                <td>{{ player.nickname }}</td>
+                <td>{{ player.points }}</td>
+                <td>{{ player.wonMatches }}</td>
+              </tr>
+
+              <tr
+                *ngIf="
+                  !(userInGlobalPodium() && aggregated()?.connectedPlayers <= 3)
+                "
+              >
+                <td></td>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+              </tr>
+
+              <tr *ngIf="!userInGlobalPodium()">
+                <td></td>
+                <td>{{ userGlobalResult()?.nickname }}</td>
+                <td>{{ userGlobalResult()?.points }}</td>
+                <td>{{ userGlobalResult()?.wonMatches }}</td>
+              </tr>
+            </table>
+          </div>
+        </li>
+
+        <!-- connected players and ready players -->
+        <li class="list--simple-element">
+          <i class="fas fa-robot"></i>
+          {{
+            "NUM_PLAYERS_AFTERMATCH"
+              | translate : { numPlayers: aggregated()?.connectedPlayers }
+          }}<br />
+
+          <i class="far fa-play-circle"></i>
+          {{
+            "NUM_READY_AFTERMATCH"
+              | translate : { numReady: aggregated()?.readyPlayers }
+          }}
+        </li>
+
+        <!-- Share -->
+        <li class="list--simple-element">
+          <button
+            class="navigation--button flashing-animation"
+            (click)="share()"
+          >
+            {{ "SHARE" | translate }}
+            <i
+              class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"
+            ></i>
+          </button>
+
+          <div class="copyable--copy-text" *ngIf="sharedLegacy()">
+            <i class="far fa-copy copyable--copy-icon"></i>
+            {{ "COPIED" | translate }}
+          </div>
+        </li>
+
+        <!-- New Match -->
+        <li id="aftermatch-options" class="list--spaced-element">
+          <div *ngIf="!newMatchClicked">
+            <button
+              class="navigation--button flashing-animation"
+              (click)="newMatch()"
+            >
+              {{ "PLAY_AGAIN" | translate }}
+              <i
+                class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"
+              ></i>
+            </button>
+          </div>
+
+          <div>
+            {{
+              "MAT_START_COUNTDOWN"
+                | translate
+                  : { countdown: timeFormatterCountdown(newMatchTimerValue) }
+            }}
+          </div>
+
+          <div *ngIf="newMatchClicked">
+            <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
+          </div>
+        </li>
+
+        <div *ngIf="user">
+          <!-- Chat -->
+          <app-chat
+            [playerId]="user.playerId"
+            [chatBubbles]="chatBubbles"
+            [chatHints]="chatHints"
+            (messageSent)="handleMessageSend($event)"
+          />
+        </div>
+      </ul>
+    </div>
+
+    <div class="page--push"></div>
+  </div>
+</div>

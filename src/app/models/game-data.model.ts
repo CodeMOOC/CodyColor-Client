@@ -19,7 +19,7 @@ export interface GameData {
 
 export interface GeneralSettings {
   gameName?: string;
-  startDate?: Date;
+  startDate?: number;
   scheduledStart: boolean;
   gameRoomId: number;
   timerSetting: number;

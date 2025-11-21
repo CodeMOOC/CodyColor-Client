@@ -26,6 +26,7 @@ import { Path } from '../../../models/path.model';
 import { GeneralSettings } from '../../../models/game-data.model';
 import { RabbitService } from '../../../services/rabbit.service';
 import { ChatHandlerService } from '../../../services/chat.service';
+import { ModalService } from '../../../services/modal-service.service';
 
 @Component({
   selector: 'app-arcade-match',
@@ -101,6 +102,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     private gameData: GameDataService,
     private path: PathService,
     private matchManager: MatchManagerService,
+    private modalService: ModalService,
     private rabbit: RabbitService,
     private router: Router,
     private session: SessionService,
@@ -339,23 +341,13 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
           this.matchGrid.executeEndSequence('enemy');
         }
       },
-
       onGameQuit: () => {
-        this.quitGame();
-        this.translate.get('ENEMY_LEFT').subscribe((text) => {
-          this.forceExitText = text;
-          this.forceExitModal = true;
-        });
+        this.handleEnemyQuit('ENEMY_LEFT');
       },
 
       onConnectionLost: () => {
-        this.quitGame();
-        this.translate.get('FORCE_EXIT').subscribe((text) => {
-          this.forceExitText = text;
-          this.forceExitModal = true;
-        });
+        this.handleEnemyQuit('FORCE_EXIT');
       },
-
       onStartAnimation: (message: any) => {
         // this.matchManager.startMatchTimers(
         //   0, // No bot
@@ -431,6 +423,12 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     this.showArrows = false;
     this.draggableRobyImage = 'roby-idle';
     this.calculateAllStartPositionCss(false);
+  }
+
+  private async handleEnemyQuit(message: string) {
+    this.quitGame();
+    await this.modalService.showForceExitModal(message);
+    this.router.navigate(['/home']);
   }
 
   onTileDropped(sideValue: Side, distanceValue: number) {

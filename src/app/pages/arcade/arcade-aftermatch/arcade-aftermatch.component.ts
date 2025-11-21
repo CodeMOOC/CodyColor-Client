@@ -14,16 +14,18 @@ import { VisibilityService } from '../../../services/visibility.service';
 import { AuthService } from '../../../services/auth.service';
 import { PathService } from '../../../services/path.service';
 import { MatchManagerService } from '../../../services/match-manager.service';
+import { ChatComponent } from '../../../components/chat/chat.component';
+import { ModalService } from '../../../services/modal-service.service';
 
 @Component({
   selector: 'app-arcade-aftermatch',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [ChatComponent, CommonModule, TranslateModule],
   templateUrl: './arcade-aftermatch.component.html',
   styleUrls: ['./arcade-aftermatch.component.scss'],
 })
 export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
-  // --- State ---
+  // State
   userLogged = false;
   userNickname = '';
   newMatchTimerValue = 60000;
@@ -35,11 +37,11 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   languageModal = false;
   basePlaying = false;
 
-  // --- Chat ---
+  // Chat
   chatBubbles: any[] = [];
   chatHints: any[] = [];
 
-  // --- Game data ---
+  // Game data
   user: any;
   enemy: any;
   winner: string = '';
@@ -67,6 +69,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     private router: Router,
     private session: SessionService,
     private chat: ChatHandlerService,
+    private modalService: ModalService,
     private translate: TranslateService,
     private path: PathService,
     private matchManager: MatchManagerService,
@@ -105,7 +108,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     this.subs.unsubscribe();
   }
 
-  // --- Helpers ---
+  // Helpers
   private quitGame(): void {
     this.rabbit.quitGame();
     this.gameData.reset();
@@ -193,7 +196,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     );
   }
 
-  // --- Rabbit callbacks ---
+  // Rabbit callbacks
   private registerRabbitCallbacks(): void {
     this.rabbit.setPageCallbacks({
       onReadyMessage: () => {
@@ -210,19 +213,13 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
       },
 
       onGameQuit: () => {
-        this.zone.run(() => {
-          this.quitGame();
-          this.forceExitText = this.translate.instant('ENEMY_LEFT');
-          this.forceExitModal = true;
-        });
+        this.handleEnemyQuit('ENEMY_LEFT');
       },
+
       onConnectionLost: () => {
-        this.zone.run(() => {
-          this.quitGame();
-          this.forceExitText = this.translate.instant('FORCE_EXIT');
-          this.forceExitModal = true;
-        });
+        this.handleEnemyQuit('FORCE_EXIT');
       },
+
       onChatMessage: (message: any) => {
         this.zone.run(() => {
           this.audio.playSound('roby-over');
@@ -236,19 +233,20 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     this.chatHints = this.chat.getChatHintsPreMatch();
   }
 
-  // --- Chat ---
-  getBubbleStyle(chatMessage: any): string {
-    return chatMessage.playerId === this.gameData.value.user.playerId
-      ? 'chat--bubble-player'
-      : 'chat--bubble-enemy';
-  }
+  // Chat
 
   timeFormatter = this.gameData.formatTimeDecimals;
 
-  sendChatMessage(messageBody: string): void {
+  handleMessageSend(messageBody: string): void {
     this.audio.playSound('menu-click');
     const chatMessage = this.rabbit.sendChatMessage(messageBody);
     this.chat.enqueueChatMessage(chatMessage);
     this.chatBubbles = this.chat.getChatMessages();
+  }
+
+  private async handleEnemyQuit(message: string) {
+    this.quitGame();
+    await this.modalService.showForceExitModal(message);
+    this.router.navigate(['/home']);
   }
 }

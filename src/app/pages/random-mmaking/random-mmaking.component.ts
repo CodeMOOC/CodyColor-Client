@@ -14,6 +14,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
+import { ModalService } from '../../services/modal-service.service';
 
 @Component({
   selector: 'app-random-mmaking',
@@ -38,6 +39,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
 
   // matchmakingTimer: interrompe la ricerca della partita nel caso in cui vada troppo per le lunghe
   mmakingTimerValue = 120000;
+  private mmakingTimerId: any;
   enemy: any = {};
   enemyReady = false;
   chatBubbles: any[] = [];
@@ -51,13 +53,14 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
   basePlaying: boolean = false;
 
   randomWaitingPlayers: string = '';
-  private mmakingTimerId: any;
+
   private subscriptions: Subscription[] = [];
 
   constructor(
     private authHandler: AuthService,
     private rabbit: RabbitService,
     private gameData: GameDataService,
+    private modalService: ModalService,
     private router: Router,
     private navigation: NavigationService,
     private audio: AudioService,
@@ -70,6 +73,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initMatchmaking();
+    this.visibility.setDeadlineCallback(() => this.handleDeadline());
   }
 
   ngOnDestroy(): void {
@@ -82,7 +86,10 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
       this.enemy = this.gameData.value.enemy;
     });
     this.subscriptions.push(sub);
-    this.gameData.value.general.gameType = this.gameData.getGameTypes().random;
+    this.gameData.update('general', {
+      gameType: this.gameData.getGameTypes().random,
+    });
+
     this.enemy = this.gameData.value.enemy;
 
     this.navigation.blockBackNavigation();
@@ -91,17 +98,6 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
       this.router.navigate(['/']);
       return;
     }
-
-    this.visibility.setDeadlineCallback(() => {
-      this.rabbit.sendPlayerQuitRequest();
-      this.quitGame();
-      this.translation
-        .setTranslation('forceExitText', 'FORCE_EXIT')
-        .then((translation) => {
-          this.forceExitText = translation;
-          this.forceExitModal = true;
-        });
-    });
 
     this.userLogged = this.authHandler.loginCompleted();
     if (this.userLogged) {
@@ -124,6 +120,18 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     this.chatHints = this.chat.getChatHintsPreMatch();
 
     this.initPageCallbacks();
+  }
+
+  private handleDeadline(): void {
+    // send quit request
+    this.rabbit.sendPlayerQuitRequest();
+
+    // quit the game
+    this.quitGame();
+
+    // show modal and set translation
+    this.translation.setTranslation('forceExitText', 'FORCE_EXIT');
+    this.forceExitModal = true;
   }
 
   private changeScreen(newScreen: string): void {
@@ -169,8 +177,13 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
         });
         this.router.navigate(['/arcade-match']);
       },
-      onGameQuit: () => this.handleForcedExit('ENEMY_LEFT'),
-      onConnectionLost: () => this.handleForcedExit('FORCE_EXIT'),
+      onGameQuit: () => {
+        this.handleEnemyQuit('ENEMY_LEFT');
+      },
+
+      onConnectionLost: () => {
+        this.handleEnemyQuit('FORCE_EXIT');
+      },
       onChatMessage: (message: any) => {
         this.audio.playSound('roby-over');
         this.chat.enqueueChatMessage(message);
@@ -200,6 +213,12 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
       clearInterval(this.mmakingTimerId);
       this.mmakingTimerId = null;
     }
+  }
+
+  private async handleEnemyQuit(message: string) {
+    this.quitGame();
+    await this.modalService.showForceExitModal(message);
+    this.router.navigate(['/home']);
   }
 
   private quitGame(): void {

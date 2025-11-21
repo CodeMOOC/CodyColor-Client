@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../services/language.service';
 import { FormsModule } from '@angular/forms';
 import { PathService } from '../../../services/path.service';
+import { TimerSetting } from '../../../models/timerSetting.model';
 
 @Component({
   selector: 'app-bootmp-mmaking',
@@ -28,7 +29,8 @@ export class BootmpMmakingComponent implements OnInit {
   botSettings: { text: string; value: number }[] = [];
   currentBotSettingIndex = 0;
 
-  timerSettings: { text: string; value: number }[] = [];
+  timerSettings: TimerSetting[] = [];
+
   currentTimerIndex = 1;
 
   exitGameModal = false;

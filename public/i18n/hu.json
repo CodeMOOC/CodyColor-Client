@@ -78,6 +78,7 @@
   "WHEN_START": "Mikor kezdődik a meccs?",
   "WHEN_TIMER": "Minden játékos csatlakozott, a visszaszámlálás után kezdődik a küzdelem:",
   "WHEN_INSTANT": "A játék akkor indul, amikor a szervező megnyomja a start gombot.",
+  "TIME_BATTLE_IS_OVER": "A csata véget ért!",
   "INVITE_YOUR_FRIENDS": "Barátok meghívása",
   "INVITE_DESC": "Meghívhatsz ellenfeleket az alábbi kód elküldésével, amit beírva, beléphetnek a(z) \"Battle Royale\" csatába vagy használhatják a közvetlen linket. Kattints az alábbiak egyikére a vágólapra másolás érdekében.",
   "ABORT_MATCH": "Csata megszakítása",

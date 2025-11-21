@@ -18,7 +18,7 @@
             >
               <span [innerHTML]="'NEW_CUSTOM_MATCH' | translate"></span>
               <span
-                class="material-symbols-outlined inline-block animate-slide-left"
+                class="material-symbols-outlined inline-block animate-slide-left icon-lg"
                 >{{ "keyboard_double_arrow_right" }}</span
               >
             </button>
@@ -60,7 +60,7 @@
               >
                 {{ "JOIN" | translate }}
                 <i
-                  class="material-symbols-outlined inline-block animate-slide-left"
+                  class="material-symbols-outlined inline-block animate-slide-left icon-lg"
                   >{{ "keyboard_double_arrow_right" }}</i
                 >
               </button>
@@ -114,7 +114,7 @@
               >
                 {{ "START" | translate }}
                 <span
-                  class="material-symbols-outlined inline-block animate-slide-left"
+                  class="material-symbols-outlined inline-block animate-slide-left icon-lg"
                   >{{ "keyboard_double_arrow_right" }}</span
                 >
               </button>
@@ -182,7 +182,7 @@
             >
               {{ "START" | translate }}
               <span
-                class="material-symbols-outlined inline-block animate-slide-left"
+                class="material-symbols-outlined inline-block animate-slide-left icon-lg"
                 >{{ "keyboard_double_arrow_right" }}</span
               >
             </button>
@@ -197,38 +197,18 @@
         class="page--component"
         [messageKey]="'ENEMY_WAIT'"
       ></app-spinner>
-
-      <!-- Chat -->
       <div
-        class="chat"
         *ngIf="
           mmakingState === screens.enemyFound ||
           mmakingState === screens.waitingReady
         "
       >
-        <div class="chat--bubbles-container">
-          {{ "CHAT_TITLE" | translate }}
-          <div
-            class="chat--bubbles-sub-container"
-            *ngFor="let bubble of chatBubbles"
-          >
-            <div class="chat--bubble-row">
-              <div [ngClass]="getBubbleStyle(bubble)">
-                <div class="chat--bubble-sender">{{ bubble.sender }}</div>
-                {{ bubble.body | translate }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="chat--hints-container">
-          {{ "CHAT_SEND" | translate }}
-          <div class="chat--hints-sub-container" *ngFor="let hint of chatHints">
-            <button class="chat--hint" (click)="sendChatMessage(hint)">
-              {{ hint | translate }}
-            </button>
-          </div>
-        </div>
+        <app-chat
+          [playerId]="user().playerId"
+          [chatBubbles]="chatBubbles"
+          [chatHints]="chatHints"
+          (messageSent)="handleMessageSend($event)"
+        />
       </div>
     </div>
     <div class="page--push"></div>

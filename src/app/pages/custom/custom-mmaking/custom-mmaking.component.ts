@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { RabbitService } from '../../../services/rabbit.service';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -17,21 +17,26 @@ import { Bubble } from '../../../models/bubble.model';
 import { ChatHandlerService } from '../../../services/chat.service';
 import { ShareService } from '../../../services/share.service';
 import { SpinnerComponent } from '../../../components/spinner/spinner.component';
-
-interface TimerSetting {
-  text: string;
-  value: number;
-}
+import { ChatComponent } from '../../../components/chat/chat.component';
+import { ModalService } from '../../../services/modal-service.service';
+import { TimerSetting } from '../../../models/timerSetting.model';
 
 @Component({
   selector: 'app-custom-mmaking',
-  imports: [CommonModule, FormsModule, TranslateModule, SpinnerComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    SpinnerComponent,
+    ChatComponent,
+  ],
   standalone: true,
   templateUrl: './custom-mmaking.component.html',
   styleUrl: './custom-mmaking.component.scss',
 })
 export class CustomMmakingComponent implements OnInit {
-  user!: Player;
+  user = signal<Player>({} as Player);
+
   enemy!: Player;
 
   userLogged = false;
@@ -88,6 +93,7 @@ export class CustomMmakingComponent implements OnInit {
     private rabbit: RabbitService,
     private router: Router,
     private navigation: NavigationService,
+    private modalService: ModalService,
     private translate: TranslateService,
     private audio: AudioService,
     private session: SessionService,
@@ -147,6 +153,7 @@ export class CustomMmakingComponent implements OnInit {
           this.gameData.update('user', message.user);
           this.gameData.update('enemy', message.enemy);
 
+          this.user.set(message.user);
           this.matchUrl = `${this.baseUrl}/#!?custom=${message.general.code}`;
           this.rabbit.subscribeGameRoom();
 
@@ -166,7 +173,6 @@ export class CustomMmakingComponent implements OnInit {
           }
         }
       },
-
       onPlayerAdded: (message: any) => {
         const user = this.gameData.value.user;
         if (message.addedPlayerId === user.playerId) {
@@ -180,34 +186,22 @@ export class CustomMmakingComponent implements OnInit {
           this.changeScreen(this.screens.enemyFound);
         }
       },
-
       onReadyMessage: () => {
         this.enemyReady = true;
       },
-
       onStartMatch: (message: any) => {
         this.gameData.update('match', {
           tiles: this.gameData.formatMatchTiles(message.tiles),
         });
         this.navigation.goToPage('/arcade-match');
       },
-
       onGameQuit: () => {
-        this.quitGame();
-        this.translate.get('ENEMY_LEFT').subscribe((text) => {
-          this.forceExitText = text;
-          this.forceExitModal = true;
-        });
+        this.handleEnemyQuit('ENEMY_LEFT');
       },
 
       onConnectionLost: () => {
-        this.quitGame();
-        this.translate.get('FORCE_EXIT').subscribe((text) => {
-          this.forceExitText = text;
-          this.forceExitModal = true;
-        });
+        this.handleEnemyQuit('FORCE_EXIT');
       },
-
       onChatMessage: (message: any) => {
         this.audio.playSound('roby-over');
         this.chatService.enqueueChatMessage(message);
@@ -223,16 +217,20 @@ export class CustomMmakingComponent implements OnInit {
     });
   }
 
+  private async handleEnemyQuit(message: string) {
+    this.quitGame();
+    await this.modalService.showForceExitModal(message);
+    this.router.navigate(['/home']);
+  }
+
   private handleInitialGameRequest() {
     const connected = this.rabbit.getBrokerConnectionState();
 
     if (!connected) {
-      console.log('Broker not connected yet, connecting...');
       this.rabbit.connect();
 
       // Wait for connection and then send the request
       this.rabbit.waitForBrokerConnection().then(() => {
-        console.log('Broker connected, sending delayed game request...');
         this.sendGameRequestIfNeeded();
       });
     } else {
@@ -242,13 +240,9 @@ export class CustomMmakingComponent implements OnInit {
 
   private sendGameRequestIfNeeded() {
     const general = this.gameData.value.general;
-    const user = this.gameData.value.user;
+    this.user.set(this.gameData.value.user);
 
-    if (general.code !== '0000' || user.organizer) {
-      console.log(
-        'Sending initial game request... ',
-        this.authHandler.currentUser?.firebaseUser?.uid
-      );
+    if (general.code !== '0000' || this.user().organizer) {
       this.rabbit.sendGameRequest(
         this.authHandler.currentUser?.firebaseUser?.uid || ''
       );
@@ -264,15 +258,8 @@ export class CustomMmakingComponent implements OnInit {
     this.gameData.reset();
   }
 
-  getBubbleStyle(bubble: any) {
-    return bubble.playerId === this.gameData.value.user.playerId
-      ? 'chat--bubble-player'
-      : 'chat--bubble-enemy';
-  }
-
-  sendChatMessage(messageBody: string) {
-    this.audio.playSound('menu-click');
-    const chatMessage = this.rabbit.sendChatMessage(messageBody);
+  handleMessageSend(body: string) {
+    const chatMessage = this.rabbit.sendChatMessage(body);
     this.chatService.enqueueChatMessage(chatMessage);
     this.chatBubbles = this.chatService.getChatMessages();
   }

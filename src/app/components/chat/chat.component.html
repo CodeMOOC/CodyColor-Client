@@ -1,1 +1,23 @@
-<p>chat works!</p>
+<!-- Chat -->
+<div class="chat">
+  <div class="chat--bubbles-container">
+    {{ "CHAT_TITLE" | translate }}
+    <div class="chat--bubbles-sub-container" *ngFor="let bubble of chatBubbles">
+      <div class="chat--bubble-row">
+        <div [ngClass]="getBubbleStyle(bubble)">
+          <div class="chat--bubble-sender">{{ bubble.sender }}</div>
+          {{ bubble.body | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat--hints-container">
+    {{ "CHAT_SEND" | translate }}
+    <div class="chat--hints-sub-container" *ngFor="let hint of chatHints">
+      <button class="chat--hint" (click)="sendChatMessage(hint)">
+        {{ hint | translate }}
+      </button>
+    </div>
+  </div>
+</div>

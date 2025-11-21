@@ -79,6 +79,7 @@
   "WHEN_START": "Quando inizierà la partita?",
   "WHEN_TIMER": "Tutti gli utenti collegati allo scadere del countdown potranno partecipare:",
   "WHEN_INSTANT": "La partita inizierà non appena l'organizzatore deciderà di avviarla.",
+  "TIME_BATTLE_IS_OVER": "Il tempo per unirsi alla Battle è scaduto.",
   "INVITE_YOUR_FRIENDS": "Invita i tuoi amici",
   "INVITE_DESC": "Puoi invitare altri avversari inviando loro il codice sottostante, da inserire nella schermata \"Battle Royale\" del gioco, oppure direttamente tramite il link. Premi una delle due voci per copiarle negli appunti.",
   "ABORT_MATCH": "Annulla battle",

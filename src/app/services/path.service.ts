@@ -56,7 +56,6 @@ export class PathService {
         paths.push(this.calculatePath(position));
       }
     }
-    console.log('Calculated enemy paths:', paths);
     this.enemiesPathsSubject.next(paths);
   }
 

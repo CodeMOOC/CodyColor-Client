@@ -70,7 +70,7 @@ export class HomeComponent {
     this.router.navigate(['/custom-mmaking']);
   }
   goToAMMaking() {
-    this.router.navigate(['/arcade-mmaking']);
+    this.router.navigate(['/royale-mmaking']);
   }
   goToBootcamp() {
     this.router.navigate(['/bootmp-mmaking']);

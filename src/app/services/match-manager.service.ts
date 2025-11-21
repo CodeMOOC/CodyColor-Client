@@ -121,23 +121,28 @@ export class MatchManagerService {
     playerType?: 'player' | 'enemy',
     options?: { onComplete?: () => void }
   ): void {
+    console.log('Executing end sequence for', playerType);
     const current = this.gameData.value;
 
-    // --- Handle animation state ---
+    // Handle animation state
     if (playerType === 'player') this.playerAnimationDone = true;
     if (playerType === 'enemy') {
       this.enemyAnimationDone = true;
     }
 
+    // if playerType is not defined, skip animations
     const skipAnimations = !playerType;
     if (
       !skipAnimations &&
       !(this.playerAnimationDone && this.enemyAnimationDone)
     )
       return;
+
+    // Prevent multiple executions
     if (this.isAnimationReady) return;
     this.isAnimationReady = true;
 
+    // Update the user match result with path information
     const userPath = this.path.value;
     this.gameData.update('userMatchResult', {
       pathLength: userPath.pathLength,
@@ -147,7 +152,7 @@ export class MatchManagerService {
       time: current.match.time,
     });
 
-    // --- Ensure ENEMY match data exists ---
+    // Ensure enemy match data exists
     let enemyPathLength = current.enemyMatchResult?.pathLength ?? 0;
     let enemyTime = current.match.enemyTime;
 
@@ -177,13 +182,14 @@ export class MatchManagerService {
       });
     }
 
-    // --- Increment match count ---
+    // Increment aggregated match count
     this.gameData.update('aggregated', {
       matchCount: current.aggregated.matchCount + 1,
     });
 
-    // --- Determine winner ---
+    // Determine winner
     const winner = this.gameData.getMatchWinner();
+
     this.gameData.update('match', { winnerId: winner.playerId });
 
     // --- Calculate and assign points for BOTH players ---

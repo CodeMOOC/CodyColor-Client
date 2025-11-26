@@ -1,7 +1,10 @@
 SHELL := /bin/bash
 
 DC := docker compose -f docker-compose.yml
-DC_RUN := ${DC} run --rm
+
+# Uncomment one of the following lines to use a specific override file
+DC := $(DC) -f docker-compose.custom.yml
+# DC := $(DC) -f docker-compose.local.yml
 
 .PHONY: cmd
 cmd:
@@ -16,11 +19,12 @@ up:
 	@echo 'CodyColor client service is now up'
 	@echo
 
-# .PHONY: rebuild
-# rebuild:
-# 	${DC} rm -sf server
-# 	${DC} build server
-# 	${DC} up -d --force-recreate
+.PHONY: rebuild
+rebuild:
+	${DC} rm -sf server
+	${DC} build server
+	${DC} up -d --force-recreate
+
 .PHONY: rebuild-full
 rebuild-full:
 	${DC} down -v         # stop and remove containers & volumes

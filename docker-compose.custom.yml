@@ -1,0 +1,12 @@
+# Docker Compose overrides for deployment environment
+
+services:
+  server:
+    labels:
+    - "traefik.enable=true"
+    - "traefik.docker.network=web"
+    - "traefik.protocol=http"
+    - "traefik.port=80"
+    - "traefik.frontend.entryPoints=http,https"
+    - "traefik.frontend.rule=Host:codycolor.codemooc.net"
+    - "traefik.frontend.redirect.entryPoint=https"

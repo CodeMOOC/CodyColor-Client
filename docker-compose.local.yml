@@ -1,0 +1,6 @@
+# Docker Compose overrides for local development environment
+
+services:
+  server:
+    ports:
+      - "8080:80"

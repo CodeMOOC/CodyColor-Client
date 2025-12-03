@@ -173,8 +173,8 @@
           <!-- Chat -->
           <app-chat
             [playerId]="user.playerId"
-            [chatBubbles]="chatBubbles"
-            [chatHints]="chatHints"
+            [chatBubbles]="chatBubbles()"
+            [chatHints]="chatHints()"
             (messageSent)="handleMessageSend($event)"
           />
         </div>

@@ -23,24 +23,85 @@ import { TermsComponent } from './pages/terms/terms.component';
 import { PrivacyComponent } from './pages/privacy/privacy.component';
 import { RankingsComponent } from './pages/rankings/rankings.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
+import { sessionGuard } from './guards/session.guard';
 
 export const routes: Routes = [
   { path: '', component: SplashComponent },
   { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'rules', component: RulesComponent },
-  { path: 'random-mmaking', component: RandomMmakingComponent },
-  { path: 'custom-mmaking', component: CustomMmakingComponent },
-  { path: 'royale-mmaking', component: RoyaleMmakingComponent },
-  { path: 'custom-new-match', component: NewMatchComponent },
-  { path: 'royale-new-match', component: RoyaleNewMatchComponent },
-  { path: 'arcade-match', component: ArcadeMatchComponent },
-  { path: 'arcade-aftermatch', component: ArcadeAftermatchComponent },
-  { path: 'royale-match', component: RoyaleMatchComponent },
-  { path: 'royale-aftermatch', component: RoyaleAftermatchComponent },
-  { path: 'bootmp-mmaking', component: BootmpMmakingComponent },
-  { path: 'bootmp-match', component: BootmpMatchComponent },
-  { path: 'bootmp-aftermatch', component: BootmpAftermatchComponent },
+  {
+    path: 'random-mmaking',
+    component: RandomMmakingComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'random-mmaking' },
+  },
+  {
+    path: 'custom-mmaking',
+    component: CustomMmakingComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'custom-mmaking' },
+  },
+  {
+    path: 'royale-mmaking',
+    component: RoyaleMmakingComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'royale-mmaking' },
+  },
+  {
+    path: 'custom-new-match',
+    component: NewMatchComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'custom-new-match' },
+  },
+  {
+    path: 'royale-new-match',
+    component: RoyaleNewMatchComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'royale-new-matchh' },
+  },
+  {
+    path: 'arcade-match',
+    component: ArcadeMatchComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'arcade-match' },
+  },
+  {
+    path: 'arcade-aftermatch',
+    component: ArcadeAftermatchComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'arcade-aftermatch' },
+  },
+  {
+    path: 'royale-match',
+    component: RoyaleMatchComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'royale-match' },
+  },
+  {
+    path: 'royale-aftermatch',
+    component: RoyaleAftermatchComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'royale-aftermatch' },
+  },
+  {
+    path: 'bootmp-mmaking',
+    component: BootmpMmakingComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'boottmp' },
+  },
+  {
+    path: 'bootmp-match',
+    component: BootmpMatchComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'boottmp' },
+  },
+  {
+    path: 'bootmp-aftermatch',
+    component: BootmpAftermatchComponent,
+    canActivate: [sessionGuard],
+    data: { gameMode: 'boottmp' },
+  },
   { path: 'terms', component: TermsComponent },
   { path: 'privacy', component: PrivacyComponent },
   { path: 'rankings', component: RankingsComponent },

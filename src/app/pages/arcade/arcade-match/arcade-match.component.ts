@@ -27,11 +27,17 @@ import { GeneralSettings } from '../../../models/game-data.model';
 import { RabbitService } from '../../../services/rabbit.service';
 import { ChatHandlerService } from '../../../services/chat.service';
 import { ModalService } from '../../../services/modal-service.service';
+import { CountdownCodyComponent } from '../../../components/countdown-cody/countdown-cody.component';
 
 @Component({
   selector: 'app-arcade-match',
   standalone: true,
-  imports: [CommonModule, MatchGridComponent, TranslateModule],
+  imports: [
+    CommonModule,
+    MatchGridComponent,
+    TranslateModule,
+    CountdownCodyComponent,
+  ],
   templateUrl: './arcade-match.component.html',
   styleUrls: ['./arcade-match.component.scss'],
 })
@@ -59,10 +65,9 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
 
   // UI flags
   countdownInProgress = true;
-  startCountdownText = '';
+
   showDraggableRoby = true;
   showArrows = false;
-  draggableRobyImage = 'roby-idle';
   exitGameModal = false;
   forceExitModal = false;
   languageModal = false;
@@ -147,7 +152,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     this.basePlaying = this.audio.isEnabled();
     this.timerFormatter = this.gameData.formatTimeMatchClock;
 
-    this.startCountdown();
     this.initializeTilesCss();
     this.registerRabbitCallbacks();
   }
@@ -214,28 +218,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     }
   }
 
-  private startCountdown() {
-    let countdownValue = 3;
-    this.countdownInProgress = true;
-    this.startCountdownText = countdownValue.toString();
-    this.audio.playSound('countdown');
-
-    const intervalId = setInterval(() => {
-      countdownValue--;
-      if (countdownValue > 0) {
-        this.startCountdownText = countdownValue.toString();
-        this.audio.playSound('countdown');
-      } else if (countdownValue === 0) {
-        this.startCountdownText = "Let's Cody!";
-        this.audio.playSound('start');
-      } else {
-        clearInterval(intervalId);
-        this.countdownInProgress = false;
-        this.startMatchTimers();
-      }
-    }, 1000);
-  }
-
   // inizializzazione tiles
   private initializeTilesCss(): void {
     const tiles = this.match.tiles;
@@ -292,7 +274,8 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     }
   }
 
-  private startMatchTimers(): void {
+  startMatchTimers(): void {
+    this.countdownInProgress = false;
     this.matchManager.startMatchTimers(
       0, // No bot
       this.general.timerSetting,
@@ -306,9 +289,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   // interrompendo animazioni e connessioni con il server
   private quitGame(): void {
     this.gameData.reset();
-    if (this.startCountdownText !== '') {
-      this.startCountdownText = '';
-    }
 
     if (this.userTimerValue !== 0) {
       this.userTimerValue = 0;
@@ -390,19 +370,16 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   onDragStarted() {
     this.isDragging = true;
     this.audio.playSound('roby-drag');
-    this.draggableRobyImage = 'roby-dragging-trasp';
     this.showArrows = true;
     this.calculateAllStartPositionCss(false);
   }
 
   onRobyOver(side: Side, distance: number) {
     this.audio.playSound('roby-over');
-    this.draggableRobyImage = 'roby-over';
     this.setArrowCss(side, distance, true);
   }
 
   onRobyOut(side: Side, distance: number) {
-    this.draggableRobyImage = 'roby-dragging-trasp';
     this.setArrowCss(side, distance, false);
   }
 
@@ -421,7 +398,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   endDragging() {
     this.audio.playSound('roby-drop');
     this.showArrows = false;
-    this.draggableRobyImage = 'roby-idle';
     this.calculateAllStartPositionCss(false);
   }
 
@@ -434,7 +410,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   onTileDropped(sideValue: Side, distanceValue: number) {
     this.audio.playSound('roby-positioned');
     this.showArrows = false;
-    this.draggableRobyImage = 'roby-idle';
     this.showDraggableRoby = false;
 
     // Update match
@@ -446,7 +421,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
 
     // Compute path
     this.path.computePath(this.gameData.value.match.startPosition);
-
+    this.userTimerAnimation = 'clock--end';
     // notify opponent via Rabbit
     this.rabbit.sendPlayerPositionedMessage();
   }

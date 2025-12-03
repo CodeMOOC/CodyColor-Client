@@ -15,22 +15,26 @@
   >
     <div class="robot-overlay">
       <app-roby-animation
-        *ngIf="executeAnimation && playerPath"
+        *ngIf="playerPath && playerPath.pathLength > 0"
         #playerAnim
+        [executeAnimation]="executeAnimation"
         [path]="playerPath"
         [startPixel]="rectCurrentArrow"
+        [image]="'roby-positioned'"
         (finished)="executeEndSequence('player')"
-        image="roby-positioned"
         class="roby-wrapper"
       ></app-roby-animation>
       @for (enemyPath of enemyPaths; track enemyPath) {
-      <div *ngIf="executeAnimation && enemyPath && botSetting !== 0">
+      <div *ngIf="botSetting !== 0">
         <app-roby-animation
           #enemyAnim
+          *ngIf="enemyPath && enemyPath.pathLength > 0"
+          [executeAnimation]="executeAnimation"
           [isBotOrEnemy]="true"
           [path]="enemyPath"
-          (finished)="executeEndSequence('enemy')"
+          [startPixel]="rectCurrentArrow"
           [image]="'enemy-positioned'"
+          (finished)="executeEndSequence('enemy')"
           class="roby-wrapper"
         ></app-roby-animation>
       </div>

@@ -18,26 +18,4 @@ export class RulesComponent {
   userNickname = 'Guest';
 
   constructor(private router: Router, private translate: TranslateService) {}
-
-  goToHome() {
-    this.router.navigate(['/home']);
-  }
-
-  toggleBase() {
-    this.basePlaying = !this.basePlaying;
-    // toggle audio volume logic
-  }
-
-  openLanguageModal() {
-    this.languageModal = true;
-  }
-
-  closeLanguageModal() {
-    this.languageModal = false;
-  }
-
-  changeLanguage(lang: string) {
-    this.language = lang;
-    // set language via translateService if used
-  }
 }

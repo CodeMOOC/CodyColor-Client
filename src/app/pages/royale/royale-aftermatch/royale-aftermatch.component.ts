@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   DestroyRef,
   inject,
@@ -23,6 +24,8 @@ import { ChatComponent } from '../../../components/chat/chat.component';
 import { Player } from '../../../models/player.model';
 import { Subject, takeUntil } from 'rxjs';
 import { ModalService } from '../../../services/modal-service.service';
+import { PathService } from '../../../services/path.service';
+import { MatchManagerService } from '../../../services/match-manager.service';
 
 @Component({
   selector: 'app-royale-aftermatch',
@@ -31,7 +34,9 @@ import { ModalService } from '../../../services/modal-service.service';
   templateUrl: './royale-aftermatch.component.html',
   styleUrl: './royale-aftermatch.component.scss',
 })
-export class RoyaleAftermatchComponent implements OnInit, OnDestroy {
+export class RoyaleAftermatchComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   private rabbit = inject(RabbitService);
   private gameData = inject(GameDataService);
   private navigation = inject(NavigationService);
@@ -40,8 +45,10 @@ export class RoyaleAftermatchComponent implements OnInit, OnDestroy {
   private chatHandler = inject(ChatHandlerService);
   private modalService = inject(ModalService);
   private translation = inject(LanguageService);
+  private path = inject(PathService);
   private visibility = inject(VisibilityService);
   private auth = inject(AuthService);
+  private matchManager = inject(MatchManagerService);
   private router = inject(Router);
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
@@ -60,8 +67,8 @@ export class RoyaleAftermatchComponent implements OnInit, OnDestroy {
   basePlaying = false;
 
   // --- Chat ---
-  chatBubbles: any[] = [];
-  chatHints: any[] = [];
+  chatBubbles = signal<any[]>([]);
+  chatHints = signal<any[]>([]);
 
   // --- Game data ---
   user: Player | null = null;
@@ -105,12 +112,13 @@ export class RoyaleAftermatchComponent implements OnInit, OnDestroy {
 
     this.userLogin();
     this.initMatchData();
-    this.registerRabbitCallbacks();
     this.startNewMatchCountdown();
 
-    this.registerRabbitCallbacks();
-
     this.basePlaying = this.audio.isEnabled();
+  }
+
+  ngAfterViewInit(): void {
+    this.registerRabbitCallbacks();
   }
 
   ngOnDestroy(): void {
@@ -189,11 +197,21 @@ export class RoyaleAftermatchComponent implements OnInit, OnDestroy {
 
   private registerRabbitCallbacks(): void {
     this.rabbit.setPageCallbacks({
+      // TO DO: capire perché non entra correttamente
       onReadyMessage: () => {
-        this.zone.run(() => (this.enemyRequestNewMatch = true));
+        this.zone.run(() => {
+          const agg = this.aggregated();
+          this.gameData.update('aggregated', {
+            readyPlayers: agg.readyPlayers + 1,
+          });
+
+          console.log('Enemy is ready for new match');
+        });
       },
 
       onStartMatch: (message: any) => {
+        this.gameData.initializeMatchData();
+        this.gameData.update('aggregated', message.aggregated);
         this.gameData.update('match', {
           tiles: this.gameData.formatMatchTiles(message.tiles),
         });
@@ -214,19 +232,19 @@ export class RoyaleAftermatchComponent implements OnInit, OnDestroy {
         this.zone.run(() => {
           this.audio.playSound('roby-over');
           this.chatHandler.enqueueChatMessage(message);
-          this.chatBubbles = this.chatHandler.getChatMessages();
+          this.chatBubbles.set(this.chatHandler.getChatMessages());
         });
       },
     });
 
-    this.chatBubbles = this.chatHandler.getChatMessages();
-    this.chatHints = this.chatHandler.getChatHintsPreMatch();
+    this.chatBubbles.set(this.chatHandler.getChatMessages());
+    this.chatHints.set(this.chatHandler.getChatHintsPreMatch());
   }
 
   handleMessageSend(body: string) {
     const chatMessage = this.rabbit.sendChatMessage(body);
     this.chatHandler.enqueueChatMessage(chatMessage);
-    this.chatBubbles = this.chatHandler.getChatMessages();
+    this.chatBubbles.set(this.chatHandler.getChatMessages());
   }
 
   // Returns true if current user is present in the match ranking
@@ -258,13 +276,18 @@ export class RoyaleAftermatchComponent implements OnInit, OnDestroy {
     this.router.navigate(['/home']);
   }
 
-  newMatch() {
+  newMatch(): void {
+    console.log('User click starting new match');
     this.audio.playSound('menu-click');
     this.gameData.update('aggregated', {
       readyPlayers: this.gameData.value.aggregated.readyPlayers + 1,
     });
 
     this.newMatchClicked = true;
+
+    this.path.reset();
+    this.matchManager.resetMatchState();
+
     this.rabbit.sendReadyMessage();
   }
 

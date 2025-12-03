@@ -82,6 +82,8 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
   }
 
   private initMatchmaking(): void {
+    this.chat.clearChat();
+
     const sub = this.gameData.gameData$.subscribe((data) => {
       this.enemy = this.gameData.value.enemy;
     });
@@ -222,6 +224,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
   }
 
   private quitGame(): void {
+    console.log('Quitting game and resetting data...');
     this.rabbit.quitGame();
     this.gameData.reset();
     this.chat.clearChat();

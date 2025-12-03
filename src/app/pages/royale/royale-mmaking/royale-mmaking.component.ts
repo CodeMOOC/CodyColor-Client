@@ -28,6 +28,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../../../services/language.service';
 import { ModalService } from '../../../services/modal-service.service';
+import { createDefaultPlayer } from '../../../models/player.model';
+import {
+  createDefaultAggregated,
+  createDefaultGeneral,
+} from '../../../models/game-data.model';
+import { PathService } from '../../../services/path.service';
 
 @Component({
   selector: 'app-royale-mmaking',
@@ -74,35 +80,12 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
 
   linkCopied = false;
   codeCopied = false;
-  general: GameDataService['value']['general'] = {
-    code: '0000',
-    gameType: undefined,
-    scheduledStart: false,
-    gameRoomId: 0,
-    timerSetting: 30000,
-    maxPlayersSetting: 2,
-    botSetting: 0,
-  };
-  enemy: GameDataService['value']['enemy'] = {
-    playerId: 0,
-    nickname: '',
-    organizer: false,
-    validated: false,
-  };
 
-  aggregated: GameDataService['value']['aggregated'] = {
-    connectedPlayers: 0,
-    positionedPlayers: 0,
-    readyPlayers: 0,
-    matchCount: 0,
-  };
-
-  user: GameDataService['value']['user'] = {
-    playerId: 0,
-    nickname: '',
-    organizer: false,
-    validated: false,
-  };
+  general: GameDataService['value']['general'] = createDefaultGeneral();
+  enemy: GameDataService['value']['enemy'] = createDefaultPlayer();
+  aggregated: GameDataService['value']['aggregated'] =
+    createDefaultAggregated();
+  user: GameDataService['value']['user'] = createDefaultPlayer();
 
   codeValue: string = '';
 
@@ -121,12 +104,15 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
   private visibility = inject(VisibilityService);
   private modalService = inject(ModalService);
   private auth = inject(AuthService);
+  private path = inject(PathService);
   private settings = inject(SettingsService);
   private navigation = inject(NavigationService);
   private zone = inject(NgZone);
   private translation = inject(LanguageService);
 
   ngOnInit(): void {
+    this.path.reset();
+
     this.gameData.gameData$.subscribe((gameData) => {
       this.general = gameData.general;
       this.enemy = gameData.enemy;
@@ -376,8 +362,8 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
         }
         this.navigation.goToPage('/royale-match');
       },
-      onGameQuit: () => this.quitGameWithMessage('ENEMY_LEFT'),
-      onConnectionLost: () => this.quitGameWithMessage('FORCE_EXIT'),
+      onGameQuit: () => this.handleEnemyQuit('ENEMY_LEFT'),
+      onConnectionLost: () => this.handleEnemyQuit('FORCE_EXIT'),
       onChatMessage: (message: any) => {
         this.audio.playSound('roby-over');
         this.chat.enqueueChatMessage(message);
@@ -394,7 +380,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
       },
       onPlayerRemoved: (message: any) => {
         if (message.removedPlayerId === this.gameData.value.user.playerId) {
-          this.quitGameWithMessage('ENEMY_LEFT');
+          this.handleEnemyQuit('ENEMY_LEFT');
         } else {
           this.gameData.update('aggregated', message.aggregated);
         }
@@ -402,17 +388,11 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     });
   }
 
-  private quitGameWithMessage(messageKey: string): void {
-    this.quitGame();
-    this.translate
-      .get(messageKey)
-      .subscribe((text) => (this.forceExitText = text));
-    this.forceExitModal = true;
-  }
-
   private async handleEnemyQuit(message: string) {
     this.quitGame();
     await this.modalService.showForceExitModal(message);
+    this.forceExitModal = true;
+
     this.router.navigate(['/home']);
   }
 

@@ -1,4 +1,4 @@
-<div class="">
+<div *ngIf="executeAnimation; else placedRoby">
   <div
     class="roby"
     [@move]="{
@@ -19,3 +19,12 @@
     />
   </div>
 </div>
+<ng-template #placedRoby>
+  <div class="roby placed-roby" [ngStyle]="getPlacedRobyStyles()">
+    <img
+      [src]="'assets/img/' + currentImage + '.png'"
+      alt="Roby"
+      class="roby-image"
+    />
+  </div>
+</ng-template>

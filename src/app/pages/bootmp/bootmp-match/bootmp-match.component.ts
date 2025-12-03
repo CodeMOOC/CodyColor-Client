@@ -30,10 +30,17 @@ import { Subject, Subscription, takeUntil } from 'rxjs';
 import { Path } from '../../../models/path.model';
 import { MatchManagerService } from '../../../services/match-manager.service';
 import { MatchGridComponent } from '../../../components/match-grid/match-grid.component';
+import { CountdownCodyComponent } from '../../../components/countdown-cody/countdown-cody.component';
 
 @Component({
   selector: 'app-match',
-  imports: [CommonModule, MatchGridComponent, TranslateModule, DragDropModule],
+  imports: [
+    CommonModule,
+    MatchGridComponent,
+    TranslateModule,
+    DragDropModule,
+    CountdownCodyComponent,
+  ],
   templateUrl: './bootmp-match.component.html',
   styleUrls: ['./bootmp-match.component.scss'],
   standalone: true,
@@ -43,7 +50,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   cols = 5;
 
   countdownInProgress = true;
-  startCountdownText = '';
+
   userLogged = false;
 
   showDraggableRoby = true;
@@ -156,19 +163,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
         ? this.gameData.formatTimeDecimals
         : this.gameData.formatTimeMatchClock;
 
-    if (this.session.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigate(['/']);
-      return;
-    }
-
     this.initializeTilesCss();
-
-    // TO UNCOMMENT AFTER TESTING
-    // this.startCountdown();
-    this.countdownInProgress = false; // TO REMOVE AFTER TESTING
-    // Recupera timer e dati dal servizio
-    this.startMatchTimers();
 
     if (this.botSetting !== 0) {
       this.enemyPath = this.path.calculateBotPath(this.botSetting);
@@ -305,7 +300,8 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   // avvia i timer per visualizzare tempo rimanente di giocatore e avversario; questo timer non utilizza
   // direttamente la funzione setInterval(), ma implementa un procedimento per evitare l'interruzione del tempo
   // a tab inattivo
-  private startMatchTimers(): void {
+  startMatchTimers(): void {
+    this.countdownInProgress = false;
     this.matchManager.startMatchTimers(
       this.general.botSetting,
       this.general.timerSetting,

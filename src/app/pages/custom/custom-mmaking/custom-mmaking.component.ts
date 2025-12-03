@@ -103,6 +103,7 @@ export class CustomMmakingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('Custom MMaking Component Init');
     this.gameData.update('general', {
       gameType: this.gameData.getGameTypes().custom,
     });

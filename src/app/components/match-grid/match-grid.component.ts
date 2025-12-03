@@ -4,9 +4,11 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnChanges,
   OnInit,
   Output,
   QueryList,
+  SimpleChanges,
   ViewChild,
   ViewChildren,
 } from '@angular/core';
@@ -41,7 +43,7 @@ import { RabbitService } from '../../services/rabbit.service';
   templateUrl: './match-grid.component.html',
   styleUrl: './match-grid.component.scss',
 })
-export class MatchGridComponent implements OnInit, AfterViewInit {
+export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() tilesCss: string[][] = [];
   @Input() isBot: boolean = false;
   @Input() grid: Tile[][] = [];
@@ -86,12 +88,53 @@ export class MatchGridComponent implements OnInit, AfterViewInit {
     private router: Router
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    console.log('executeAnimation', this.executeAnimation);
+    console.log('playerPath', this.playerPath);
+  }
 
   ngAfterViewInit(): void {
     const el = this.smallGridRef?.nativeElement as HTMLElement;
     if (el) this.gridRect = el.getBoundingClientRect();
   }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['executeAnimation']) {
+      console.log('executeAnimation changed:', this.executeAnimation);
+      this.handleAnimationState();
+    }
+
+    if (changes['playerPath']) {
+      console.log('playerPath changed:', this.playerPath);
+      this.handlePlayerPathChange();
+    }
+
+    if (changes['enemyPaths']) {
+      console.log('enemyPaths changed:', this.enemyPaths);
+      this.handleEnemyPathChange();
+    }
+  }
+
+  private handleAnimationState() {
+    if (this.executeAnimation && this.playerPath) {
+      console.log('→ READY to run player animation');
+      // optionally start animation or let HTML *ngIf create the component
+    }
+  }
+
+  private handlePlayerPathChange() {
+    if (this.playerPath) {
+      console.log('→ PLAYER PLACED ROBOT');
+      // show robot, compute position, etc.
+    }
+  }
+
+  private handleEnemyPathChange() {
+    if (this.enemyPaths?.length) {
+      console.log('→ ENEMY PATHS RECEIVED');
+    }
+  }
+
   /** --- Drag & Drop handlers --- */
   onDragStarted(event: any): void {
     this.showCompleteGrid = true;
@@ -204,8 +247,9 @@ export class MatchGridComponent implements OnInit, AfterViewInit {
     // ) {
     this.rabbit.sendEndAnimationMessage();
 
+    const isSinglePlayer = this.isBot && this.enemyPaths?.length === 0;
     // Delegate scoring, winner determination, navigation
-    this.matchManager.executeEndSequence(playerType, {
+    this.matchManager.executeEndSequence(playerType, isSinglePlayer, {
       onComplete: () => {
         if (this.isBot) this.router.navigate([this.endRoute]);
         // this.rabbit.sendEndAnimationMessage();

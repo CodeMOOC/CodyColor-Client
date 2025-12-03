@@ -77,6 +77,10 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
   currentMaxPlayersIndex = 1;
   currentStartIndex = 0;
 
+  settingsTimerReady = false;
+  settingsMaxPlayersReady = false;
+  settingsStartReady = false;
+
   ngOnInit(): void {
     // Set game mode in gameData
     this.gameData.update('general', {
@@ -124,6 +128,8 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
     this.loadMaxPlayerSettings();
     this.loadStartSettings();
 
+    console.log('ROYAL NEW MATCH COMPONENT INIT');
+    console.log(this.timerSettings);
     // RABBIT CALLBACKS
     this.rabbit.setPageCallbacks({
       onConnectionLost: () => {
@@ -154,6 +160,8 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
           { text: translations['1_MINUTE'], value: 60000 },
           { text: translations['2_MINUTES'], value: 120000 },
         ];
+
+        this.settingsTimerReady = true;
       });
   }
 
@@ -167,6 +175,8 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
           { text: translations['PLAYERS_40'], value: 40 },
           { text: translations['PLAYERS_60'], value: 60 },
         ];
+
+        this.settingsMaxPlayersReady = true;
       });
   }
 
@@ -176,6 +186,7 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
         { text: translations['IN_DATE'], value: 0 },
         { text: translations['MANUAL'], value: 1 },
       ];
+      this.settingsStartReady = true;
     });
   }
 

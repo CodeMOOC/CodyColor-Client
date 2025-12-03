@@ -26,10 +26,21 @@ import { Cell, EntryPoint, Side, Tile } from '../../../models/cell.model';
 import { Path } from '../../../models/path.model';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal-service.service';
+import {
+  Aggregated,
+  createDefaultAggregated,
+} from '../../../models/game-data.model';
+import { createDefaultPlayer, Player } from '../../../models/player.model';
+import { CountdownCodyComponent } from '../../../components/countdown-cody/countdown-cody.component';
 
 @Component({
   selector: 'app-royale-match',
-  imports: [MatchGridComponent, CommonModule, TranslateModule],
+  imports: [
+    MatchGridComponent,
+    CommonModule,
+    TranslateModule,
+    CountdownCodyComponent,
+  ],
   standalone: true,
   templateUrl: './royale-match.component.html',
   styleUrl: './royale-match.component.scss',
@@ -61,8 +72,8 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   gameTimerValue = signal(0);
   showDraggableRoby = true;
   general: any;
-  aggregated: any;
-  user: any;
+  aggregated: Aggregated = createDefaultAggregated();
+  user: Player = createDefaultPlayer();
   match: any;
   playerPath?: Path;
   enemyPaths?: Path[];
@@ -81,7 +92,6 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   showArrows = false;
   draggableRobyImage = 'roby-idle';
 
-  startCountdownText: string = '3';
   countdownInProgress = true;
 
   exitGameModal = false;
@@ -172,7 +182,6 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
 
     this.setupRabbitCallbacks();
     this.initializeTilesCss();
-    this.startCountdown();
   }
 
   ngOnDestroy(): void {
@@ -310,38 +319,11 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   }
 
   // -------------------------------
-  // COUNTDOWN
-  // -------------------------------
-
-  private startCountdown() {
-    let value = 3;
-    this.audio.playSound('countdown');
-    this.startCountdownText = String(value);
-    this.countdownInProgress = true;
-
-    this.startCountdownTimer = setInterval(() => {
-      value--;
-
-      if (value > 0) {
-        this.audio.playSound('countdown');
-        this.startCountdownText = String(value);
-      } else if (value === 0) {
-        this.audio.playSound('start');
-        this.startCountdownText = "Let's Cody!";
-      } else {
-        clearInterval(this.startCountdownTimer);
-        this.startCountdownTimer = undefined;
-        this.countdownInProgress = false;
-        this.startMatchTimer();
-      }
-    }, 1000);
-  }
-
-  // -------------------------------
   // MATCH TIMER
   // -------------------------------
 
-  private startMatchTimer() {
+  startMatchTimer() {
+    this.countdownInProgress = false;
     const interval = 10;
     let expected = Date.now() + interval;
 
@@ -522,8 +504,6 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       },
 
       onGameQuit: () => {
-        this.quitGame();
-
         this.handleEnemyQuit(this.translate.instant('ENEMY_LEFT'));
       },
 

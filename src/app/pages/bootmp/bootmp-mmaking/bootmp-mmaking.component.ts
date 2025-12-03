@@ -62,12 +62,6 @@ export class BootmpMmakingComponent implements OnInit {
       gameType: this.gameData.getGameTypes().bootmp,
     });
 
-    if (this.session.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigateByUrl('/');
-      return;
-    }
-
     setTimeout(() => {
       this.pageReady = true;
     }, 200);

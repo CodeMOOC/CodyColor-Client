@@ -2,9 +2,11 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import {
   trigger,
@@ -94,8 +96,9 @@ type Step = {
     ]),
   ],
 })
-export class RobyAnimationComponent implements OnInit, OnDestroy {
+export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
   @Input() path!: Path;
+  @Input() executeAnimation = false;
   @Input() image = 'roby-positioned';
   @Input() isBotOrEnemy = false;
   @Input() startPixel: StartPixel = { x: 0, y: 0 };
@@ -110,6 +113,10 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
   moveDuration = 700;
   turnDuration = 700;
 
+  entryX = 0;
+  entryY = 0;
+  entryAngle = 0;
+
   private steps: Step[] = [];
   private stepTimer?: any;
   private turnToggle = false;
@@ -118,17 +125,21 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
   constructor(private elRef: ElementRef, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    if (this.path) {
-      this.play();
-    }
+    this.prepareSteps();
 
     this.finished.subscribe(() => {
-      if (!this.isBotOrEnemy) {
-        this.image = 'roby-positioned';
-      } else {
-        this.image = 'enemy-positioned';
-      }
+      this.image = this.isBotOrEnemy ? 'enemy-positioned' : 'roby-positioned';
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['path'] && this.path && this.path.pathLength > 0) {
+      this.prepareSteps();
+    }
+
+    if (changes['executeAnimation']?.currentValue === true) {
+      this.startRealAnimation();
+    }
   }
 
   ngOnDestroy(): void {
@@ -149,6 +160,10 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
   }
 
   private prepareSteps(): void {
+    if (!this.path?.tilesCoords?.length) {
+      this.steps = [];
+      return;
+    }
     const tileStep = 50 + 5;
 
     const offsetX = 10;
@@ -178,6 +193,10 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
     const dv = dirVecs[firstDir] ?? { dx: 0, dy: 0 };
     const entryX = firstTileX - dv.dx * tileStep;
     const entryY = firstTileY - dv.dy * tileStep;
+
+    this.entryX = entryX;
+    this.entryY = entryY;
+    this.entryAngle = this.getAngle(firstDir);
 
     this.steps.push({
       type: 'move',
@@ -268,41 +287,32 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
       angle: this.getAngle(exitDir),
       duration: this.moveDuration,
     });
+  }
 
-    // DEBUG: print steps to console to inspect them
-    // console.table(this.steps);
+  private startRealAnimation(): void {
+    if (!this.steps?.length) {
+      return;
+    }
 
-    // const lastTile = this.path.tilesCoords[this.path.tilesCoords.length - 1];
-    // const exitDir = this.path.direction[this.path.direction.length - 1];
-    // console.log('path ', this.path);
-    // console.log('last tile ', lastTile);
-    // // se siamo sulla riga e colonna 4 e 4 e usciamo a
-    // console.log('Exit dir:', exitDir);
-    // // one step forward in that direction
-    // let offX = prevX;
-    // let offY = prevY;
-    // switch (exitDir) {
-    //   case 0:
-    //     offY -= tileStep;
-    //     break; // up
-    //   case 1:
-    //     offX += tileStep;
-    //     break; // right
-    //   case 2:
-    //     offY += tileStep;
-    //     break; // down
-    //   case 3:
-    //     offX -= tileStep;
-    //     break; // left
-    // }
+    this.stop();
+    let idx = 0;
 
-    // this.steps.push({
-    //   type: 'move',
-    //   x: offX,
-    //   y: offY,
-    //   angle: this.getAngle(exitDir),
-    //   duration: this.moveDuration,
-    // });
+    // place robot at the step[0] starting location
+    this.currentX = this.steps[0].x;
+    this.currentY = this.steps[0].y;
+    this.currentAngle = this.steps[0].angle;
+    this.state = 'idle';
+
+    // start animation
+    this.runSteps();
+  }
+
+  getPlacedRobyStyles() {
+    if (!this.path || !this.path.tilesCoords?.length) return {};
+
+    return {
+      transform: `translate(${this.entryX}px, ${this.entryY}px) rotate(${this.entryAngle}deg)`,
+    };
   }
 
   /**
@@ -325,7 +335,6 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
     let idx = 0;
     const next = () => {
       if (idx >= this.steps.length) {
-        console.log('All steps completed');
         this.state = 'idle';
         this.finished.emit();
         return;
@@ -359,46 +368,6 @@ export class RobyAnimationComponent implements OnInit, OnDestroy {
 
     next();
   }
-  // private runSteps(): void {
-  //   let idx = 0;
-  //   const next = () => {
-  //     if (idx >= this.steps.length) {
-  //       this.state = 'idle';
-  //       this.finished.emit();
-  //       return;
-  //     }
-  //     const s = this.steps[idx];
-
-  //     if (s.type === 'turn') {
-  //       // keep position, update angle, toggle turn state so angular re-runs animation
-  //       this.currentAngle = s.angle;
-  //       this.state = this.turnToggle ? 'turning' : 'turning2';
-  //       this.turnToggle = !this.turnToggle;
-
-  //       // ensure currentX/currentY remain where we are
-  //       // wait for the turn to finish
-  //       this.stepTimer = setTimeout(() => {
-  //         idx++;
-  //         next();
-  //       }, s.duration ?? this.turnDuration);
-  //     } else {
-  //       // move
-  //       // start walking visual here if needed
-  //       this.currentX = s.x;
-  //       this.currentY = s.y;
-  //       this.currentAngle = s.angle;
-  //       this.state = this.moveToggle ? 'moving' : 'moving2';
-  //       this.moveToggle = !this.moveToggle;
-
-  //       this.stepTimer = setTimeout(() => {
-  //         idx++;
-  //         next();
-  //       }, s.duration ?? this.moveDuration);
-  //     }
-  //   };
-
-  //   next();
-  // }
 
   get currentImage() {
     if (this.isBotOrEnemy) {

@@ -1,24 +1,24 @@
 // force-exit-modal.component.ts
 import { Component, Inject } from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatDialogContent,
-  MatDialogActions,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-force-exit-modal',
   standalone: true,
-  imports: [MatDialogContent, MatDialogActions],
+  imports: [TranslateModule],
   template: `
-    <h2 mat-dialog-title>{{ data.title }}</h2>
-    <mat-dialog-content>
-      <p>{{ data.message }}</p>
-    </mat-dialog-content>
-    <mat-dialog-actions>
-      <button mat-button (click)="close()">OK</button>
-    </mat-dialog-actions>
+    <div class="modal">
+      <div class="modal--content">
+        <!-- <h2 mat-dialog-title>{{ data.title }}</h2> -->
+        <p>{{ data.message }}</p>
+        <div class="modal--buttons-container">
+          <button class="modal--button-primary" (click)="close()">
+            {{ 'OK' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
   `,
 })
 export class ForceExitModalComponent {

@@ -62,13 +62,6 @@ export class BootmpAftermatchComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Safe quit if session invalid
-    if (this.session.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigate(['/']);
-      return;
-    }
-
     this.visibility.setDeadlineCallback(() => {
       this.rabbit.sendPlayerQuitRequest();
       this.quitGame();

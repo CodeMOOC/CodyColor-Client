@@ -52,9 +52,12 @@
               <div class="selector--button" (click)="editTimer(false)">
                 <i class="material-symbols-outlined">remove</i>
               </div>
+              @if (settingsTimerReady) {
               <div class="selector--text">
+                <!-- TO DO: Capire perché da errore text -->
                 {{ timerSettings[currentTimerIndex].text }}
               </div>
+              }
               <div class="selector--button" (click)="editTimer(true)">
                 <i class="material-symbols-outlined">add</i>
               </div>
@@ -70,9 +73,11 @@
               <div class="selector--button" (click)="editMaxPlayers(false)">
                 <i class="material-symbols-outlined">remove</i>
               </div>
+              @if (settingsMaxPlayersReady) {
               <div class="selector--text">
                 {{ maxPlayersSettings[currentMaxPlayersIndex].text }}
               </div>
+              }
               <div class="selector--button" (click)="editMaxPlayers(true)">
                 <i class="material-symbols-outlined">add</i>
               </div>
@@ -88,9 +93,11 @@
               <div class="selector--button" (click)="editStartMode()">
                 <i class="material-symbols-outlined">keyboard_arrow_left</i>
               </div>
+              @if (settingsStartReady) {
               <div class="selector--text">
                 {{ startSettings[currentStartIndex].text }}
               </div>
+              }
               <div class="selector--button" (click)="editStartMode()">
                 <i class="material-symbols-outlined">keyboard_arrow_right</i>
               </div>

@@ -2,9 +2,10 @@
   <div class="page--wrapper">
     <div class="page--body">
       <!-- countdown component -->
-      <!-- <div id="countdown" *ngIf="countdownInProgress" class="page--component">
-        {{ startCountdownText }}
-      </div> -->
+      <app-countdown-cody
+        *ngIf="countdownInProgress"
+        (startMatchTimers)="startMatchTimers()"
+      />
 
       <!-- match component -->
       <div

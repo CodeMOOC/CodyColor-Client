@@ -4,3 +4,10 @@ export interface Player {
   playerId: number;
   validated: boolean;
 }
+
+export const createDefaultPlayer = (): Player => ({
+  nickname: 'Anonymous',
+  validated: false,
+  organizer: false,
+  playerId: -1,
+});

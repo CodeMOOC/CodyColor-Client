@@ -28,6 +28,15 @@ export interface GeneralSettings {
   gameType?: GameType;
   botSetting: number;
 }
+export const createDefaultGeneral = (): GeneralSettings => ({
+  code: '0000',
+  gameType: undefined,
+  scheduledStart: false,
+  gameRoomId: 0,
+  timerSetting: 30000,
+  maxPlayersSetting: 2,
+  botSetting: 0,
+});
 
 export interface Aggregated {
   connectedPlayers: number;
@@ -35,6 +44,13 @@ export interface Aggregated {
   readyPlayers: number;
   matchCount: number;
 }
+
+export const createDefaultAggregated = (): Aggregated => ({
+  connectedPlayers: 0,
+  positionedPlayers: 0,
+  readyPlayers: 0,
+  matchCount: 0,
+});
 
 export interface GlobalResult {
   nickname: string;

@@ -179,8 +179,8 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     this.audio.playSound('menu-click');
     this.newMatchClicked = true;
     this.gameData.initializeMatchData();
-    this.path.reset(); // If Arcade uses a path service
-    this.matchManager.resetMatchState(); // if you have a match manager
+    this.path.reset();
+    this.matchManager.resetMatchState();
 
     this.rabbit.sendReadyMessage();
   }
@@ -200,6 +200,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   private registerRabbitCallbacks(): void {
     this.rabbit.setPageCallbacks({
       onReadyMessage: () => {
+        console.log('Enemy is ready for new match');
         this.zone.run(() => (this.enemyRequestNewMatch = true));
       },
 

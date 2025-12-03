@@ -285,25 +285,10 @@ export class GameDataService {
 
   private emptyGameData(): GameData {
     return {
-      general: {
-        gameName: undefined,
-        startDate: undefined,
-        scheduledStart: false,
-        gameRoomId: -1,
-        timerSetting: 30000,
-        maxPlayersSetting: 20,
-        code: '0000',
-        gameType: undefined,
-        botSetting: -1,
-      },
+      general: this.generateEmptyGeneral(),
       user: this.emptyPlayer(),
       enemy: this.emptyPlayer(),
-      aggregated: {
-        connectedPlayers: 0,
-        positionedPlayers: 0,
-        readyPlayers: 0,
-        matchCount: 0,
-      },
+      aggregated: this.generateEmptyAggregated(),
       match: this.emptyMatch(),
       matchRanking: [],
       globalRanking: [],

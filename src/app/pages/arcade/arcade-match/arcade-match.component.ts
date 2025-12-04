@@ -115,12 +115,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    if (this.session.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigate(['/']);
-      return;
-    }
-
     this.buildGrid();
     this.buildSmallGrid();
     this.buildEntryPoints();
@@ -162,6 +156,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.gameData.stopTimer();
+    this.rabbit.quitGame();
     this.executeAnimation = false;
   }
 

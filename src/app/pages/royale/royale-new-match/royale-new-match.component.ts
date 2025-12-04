@@ -87,13 +87,6 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
       gameType: this.gameData.getGameTypes().royale,
     });
 
-    // SESSION CHECK
-    if (this.session.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigate(['/']);
-      return;
-    }
-
     // VISIBILITY HANDLER - force exit
     this.visibility.setDeadlineCallback(() => {
       this.quitGame();

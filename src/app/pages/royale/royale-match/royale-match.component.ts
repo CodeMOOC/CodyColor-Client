@@ -32,6 +32,7 @@ import {
 } from '../../../models/game-data.model';
 import { createDefaultPlayer, Player } from '../../../models/player.model';
 import { CountdownCodyComponent } from '../../../components/countdown-cody/countdown-cody.component';
+import { MatchManagerService } from '../../../services/match-manager.service';
 
 @Component({
   selector: 'app-royale-match',
@@ -60,6 +61,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   private visibility = inject(VisibilityService);
   private router = inject(Router);
   private zone = inject(NgZone);
+  private matchManager = inject(MatchManagerService);
 
   // Timers
   private startCountdownTimer: any;
@@ -132,17 +134,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
     this.basePlaying = this.audio.isEnabled();
   }
 
-  // -------------------------------
-  // LIFECYCLE
-  // -------------------------------
-
   ngOnInit(): void {
-    if (this.session.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigate(['/']);
-      return;
-    }
-
     this.buildGrid();
     this.buildSmallGrid();
     this.buildEntryPoints();
@@ -186,6 +178,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.quitGame();
+    this.rabbit.quitGame();
   }
 
   // -------------------------------
@@ -523,12 +516,9 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       },
 
       onEndMatch: (msg: any) => {
-        console.log('Received onEndMatch:', msg);
+        // this.matchManager.determineWinner();
         this.gameData.update('aggregated', msg.aggregated);
-        this.gameData.updateMatchRanking(msg.matchRanking);
-
         this.gameData.update('match', { winnerId: msg.winnerId });
-
         this.gameData.update('matchRanking', msg.matchRanking);
         this.gameData.update('globalRanking', msg.globalRanking);
 
@@ -553,7 +543,15 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
         // this.path.quitGame();
 
         if (!this.forceExitModal) {
-          this.router.navigate(['/royale-aftermatch']);
+          this.router.navigate(['/royale-aftermatch'], {
+            state: {
+              matchRanking: msg.matchRanking,
+              globalRanking: msg.globalRanking,
+              userMatchResult: this.gameData.value.userMatchResult,
+              userGlobalResult: this.gameData.value.userGlobalResult,
+              aggregated: msg.aggregated,
+            },
+          });
         }
       },
     });

@@ -80,12 +80,6 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    if (this.session.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigate(['/']);
-      return;
-    }
-
     this.userLogin();
     this.initMatchData();
     this.registerRabbitCallbacks();
@@ -102,9 +96,13 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
     if (!this.preventResetOnDestroy) {
       this.quitGame();
     }
+    this.rabbit.quitGame();
     this.subs.unsubscribe();
   }
 
@@ -138,6 +136,11 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
 
   private initMatchData(): void {
     this.gameData.gameData$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
+      console.log(
+        'ARCADE Aftermatch Received end match message',
+        this.gameData.value
+      );
+
       this.user = data.user;
       this.enemy = data.enemy;
       this.general = data.general;

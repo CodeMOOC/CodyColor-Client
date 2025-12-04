@@ -82,13 +82,13 @@ export class RoyaleAftermatchComponent
   enemyGlobal: any;
   general: any;
 
-  matchRanking = signal<any[]>([]);
-  globalRanking = signal<any[]>([]);
+  matchRanking: any[] = [];
+  globalRanking: any[] = [];
 
-  userMatchResult = signal<any>(null);
-  userGlobalResult = signal<any>(null);
+  userMatchResult: any = null;
+  userGlobalResult: any = null;
 
-  aggregated = signal<any>(null);
+  aggregated: any = null;
 
   sharedLegacy = signal<boolean>(false);
 
@@ -104,60 +104,51 @@ export class RoyaleAftermatchComponent
   constructor() {}
 
   ngOnInit(): void {
-    if (this.session.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigate(['/']);
-      return;
+    const state = history.state;
+
+    if (state) {
+      this.matchRanking = state['matchRanking'] || [];
+      this.globalRanking = state['globalRanking'] || [];
+      this.userMatchResult = state['userMatchResult'] || null;
+      this.userGlobalResult = state['userGlobalResult'] || null;
+      this.aggregated = state['aggregated'] || null;
+    } else {
+      console.warn('Aftermatch - no navigation state received');
     }
 
-    this.userLogin();
     this.initMatchData();
     this.startNewMatchCountdown();
 
     this.basePlaying = this.audio.isEnabled();
-  }
-
-  ngAfterViewInit(): void {
     this.registerRabbitCallbacks();
   }
+
+  ngAfterViewInit(): void {}
 
   ngOnDestroy(): void {
     if (!this.preventResetOnDestroy) {
       this.quitGame();
+      this.rabbit.quitGame();
     }
-  }
-  // initialization
-  userLogin(): void {
-    this.auth.user$.subscribe(() => {
-      const appUser = this.auth.currentUser;
-
-      this.userLogged = !!appUser.firebaseUser && !!appUser.serverData;
-
-      if (this.userLogged && appUser.serverData) {
-        this.userNickname = appUser.serverData.nickname;
-      } else {
-        this.translate.get('NOT_LOGGED').subscribe((res: string) => {
-          this.userNickname = res;
-        });
-      }
-    });
-    this.basePlaying = this.audio.isEnabled();
   }
 
   private initMatchData(): void {
     this.gameData.gameData$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
-      this.user = data.user;
-      this.enemy = data.enemy;
-      this.general = data.general;
-      this.draw = data.match.winnerId === -1;
-      this.winner = data.match.winnerId;
-      this.matchCount = data.aggregated.matchCount;
+      this.zone.run(() => {
+        console.log('Aftermatch - Game data updated', data);
+        this.user = data.user;
+        this.enemy = data.enemy;
+        this.general = data.general;
+        this.draw = data.match.winnerId === -1;
+        this.winner = data.match.winnerId;
+        this.matchCount = data.aggregated.matchCount;
 
-      this.matchRanking.set(data.matchRanking);
-      this.globalRanking.set(data.globalRanking);
-      this.userMatchResult.set(data.userMatchResult);
-      this.userGlobalResult.set(data.userGlobalResult);
-      this.aggregated.set(data.aggregated);
+        // this.matchRanking = data.matchRanking;
+        // this.globalRanking = data.globalRanking;
+        // this.userMatchResult = data.userMatchResult;
+        // this.userGlobalResult = data.userGlobalResult;
+        // this.aggregated = data.aggregated;
+      });
     });
 
     // Play win/lose sounds
@@ -249,7 +240,7 @@ export class RoyaleAftermatchComponent
 
   // Returns true if current user is present in the match ranking
   userInMatchPodium(): boolean {
-    const ranking = this.matchRanking();
+    const ranking = this.matchRanking;
     const me = this.user?.playerId;
     if (!ranking || me === undefined || me === null) return false;
     return ranking.some((player) => player.playerId === me);
@@ -257,7 +248,7 @@ export class RoyaleAftermatchComponent
 
   // Returns true if current user is present in the global ranking
   userInGlobalPodium(): boolean {
-    const ranking = this.globalRanking();
+    const ranking = this.globalRanking;
     const me = this.user?.playerId;
     if (!ranking || me === undefined || me === null) return false;
     return ranking.some((player) => player.playerId === me);

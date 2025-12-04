@@ -188,6 +188,13 @@ export class MatchManagerService {
       matchCount: current.aggregated.matchCount + 1,
     });
 
+    // --- Callback or navigation ---
+    if (options?.onComplete) options.onComplete();
+  }
+
+  determineWinner(): void {
+    const current = this.gameData.value;
+
     // Determine winner
     const winner = this.gameData.getMatchWinner();
 
@@ -222,9 +229,6 @@ export class MatchManagerService {
         wonMatches: current.enemyGlobalResult.wonMatches + 1,
       });
     }
-
-    // --- Callback or navigation ---
-    if (options?.onComplete) options.onComplete();
   }
 
   stopAll() {

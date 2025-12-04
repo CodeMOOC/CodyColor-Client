@@ -67,7 +67,13 @@ angular.module('codyColor').controller('customNewMatchCtrl', ['$scope', 'rabbit'
         });
 
         $scope.creatingMatch = false;
+        $scope.isNicknameShort = false;
         $scope.requestMMaking = function () {
+            if (!$scope.nickname || $scope.nickname.length < 3) {
+                $scope.isNicknameShort = true;
+                return;
+            }
+            $scope.isNicknameShort = false; 
             audioHandler.playSound('menu-click');
             $scope.creatingMatch = true;
             gameData.editGeneral({ code: '0000' });

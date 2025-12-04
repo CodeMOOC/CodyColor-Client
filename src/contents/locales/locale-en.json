@@ -115,6 +115,7 @@
     "CODE_EXAMPLE": "ex. 1234",
     "NICKNAME": "Nickname",
     "NICKNAME_EXAMPLE": "ex. johnAppleSeed96",
+    "NICKNAME_TOO_SHORT": "The nickname must be at least 3 characters long.",
     "LOGIN_DESC": "Login to get detailed statistics on the games played, and to have the chance to compete in the global CodyColor ranking!",
     "LOGIN_SIGNUP":" Sign up / Log in",
     "PROVIDER_REGISTRATION":"The email {{email}} is registered with {{provider}}. \nReset your password to convert your account to an email/password account.",

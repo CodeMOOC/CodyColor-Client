@@ -117,6 +117,7 @@
     "CODE_EXAMPLE": "pl. 1234",
     "NICKNAME": "Becenév",
     "NICKNAME_EXAMPLE": "pl. PistaBela96",
+    "NICKNAME_TOO_SHORT": "A becenévnek legalább 3 karakter hosszúnak kell lennie",
     "LOGIN_DESC": "Lépj be, hogy részletes statisztikákat kapj a meccseidről és versenyezhess a CodyColor világranglistán!",
     "LOGIN_SIGNUP":"Regisztráció / Belépés",
     "PROVIDER_REGISTRATION":"Az {{email}} e-mail cím a {{provider}} szolgáltatónál van regisztrálva.\nÁllítsa vissza a jelszót, hogy fiókját e-mail/jelszó fiókká alakítsa.",

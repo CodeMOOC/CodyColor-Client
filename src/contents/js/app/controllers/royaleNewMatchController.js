@@ -114,7 +114,14 @@ angular.module('codyColor').controller('royaleNewMatchCtrl', ['$scope', 'rabbit'
             }
         });
 
+        $scope.isNicknameShort = false; 
         $scope.requestMMaking = function () {
+            if (!$scope.nickname || $scope.nickname.length < 3) {
+                $scope.isNicknameShort = true;
+                return;
+            }
+            $scope.isNicknameShort = false; 
+
             audioHandler.playSound('menu-click');
             if ($scope.currentStartIndex === 0) {
                 if (matchDateValid($scope.hours, $scope.minutes)) {

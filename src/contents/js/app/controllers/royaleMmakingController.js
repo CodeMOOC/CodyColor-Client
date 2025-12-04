@@ -263,7 +263,14 @@ angular.module('codyColor').controller('royaleMmakingCtrl', ['$scope', 'rabbit',
         };
 
         // associa il nickname al giocatore e trasmettilo alla game room, convalidando la partecipazione alla partita
+        $scope.isNicknameShort = false; 
         $scope.validPlayer = function () {
+            if (!$scope.nickname || $scope.nickname.length < 3) {
+                $scope.isNicknameShort = true;
+                return;
+            }
+            $scope.isNicknameShort = false; 
+            
             audioHandler.playSound('menu-click');
             $scope.playerValidated = true;
             gameData.editUser({ nickname: $scope.nickname });

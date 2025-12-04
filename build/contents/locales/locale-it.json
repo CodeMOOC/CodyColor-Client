@@ -118,6 +118,7 @@
     "GEN_RANKING": "Classifica generale",
     "MAT_RANKING": "Classifica match",
     "NICKNAME_EXAMPLE": "es. marioRossi96",
+    "NICKNAME_TOO_SHORT": "Il nickname deve essere di almeno 3 caratteri",
     "LOGIN_DESC": "Effettua il login per avere dettagliate statistiche sulle partite giocate, e per avere la possibilità di competere nel ranking globale di CodyColor!",
     "LOGIN_SIGNUP":"Accedi / Registrati",
     "PROVIDER_REGISTRATION":"L'indirizzo e-mail {{email}} è registrato presso {{provider}}.\nResetta la password per convertire il tuo account in un account email/password.",

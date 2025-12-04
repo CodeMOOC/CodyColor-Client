@@ -171,6 +171,12 @@ input[type=password].standard-input, input[type=number].standard-input {
     text-align: left;
 }
 
+.error-text {
+    color: rgb(252, 28, 28);
+    font-weight: bold;
+    margin-top: 10px;
+}
+
 @media only screen and (min-width: 310px) {
     input[type=text].standard-input, input[type=email].standard-input,
     input[type=password].standard-input, input[type=number].standard-input {

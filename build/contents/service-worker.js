@@ -58,7 +58,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "css/app.min.css",
-    "revision": "54be335f145c5a987ee6a52d909303d9"
+    "revision": "d6cb3709983b48e5516cac883c1cfe23"
   },
   {
     "url": "favicon.ico",
@@ -242,19 +242,19 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "js/app/app.min.js",
-    "revision": "79a505f265860732392132d904371fc7"
+    "revision": "42dbe1876c8673d663d3a75ddf9bd4ad"
   },
   {
     "url": "locales/locale-en.json",
-    "revision": "8f9fde5ec35163657336768540f2b9cf"
+    "revision": "9a5141f07e412b7c345c64b1be3858e1"
   },
   {
     "url": "locales/locale-hu.json",
-    "revision": "9c1e9c9244d8f84d90004d0719041aae"
+    "revision": "20524bb171f54784eaf4344a768b4c71"
   },
   {
     "url": "locales/locale-it.json",
-    "revision": "a88a6e8a952fa620f23a75ad17f900e6"
+    "revision": "929c6e59c52f8f24e19297e29858d807"
   },
   {
     "url": "manifest.json",
@@ -282,15 +282,15 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/bootmp-mmaking.html",
-    "revision": "933192f59fdc0ff843d37f40bc0eb54e"
+    "revision": "5f117b2f473aeaf7d6268716d020f47e"
   },
   {
     "url": "pages/custom-mmaking.html",
-    "revision": "1da9a3cc0ee3d4b7615e0ac78ab2ead4"
+    "revision": "e9f24e33f1d54d59b4bd7e0015850f88"
   },
   {
     "url": "pages/custom-new-match.html",
-    "revision": "81f228dc46fee644316184627e13ecf1"
+    "revision": "1eaefb19c96c164f7b6f9eb843be8386"
   },
   {
     "url": "pages/home.html",
@@ -306,7 +306,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/random-mmaking.html",
-    "revision": "94fe5107a55e2798df6759368e6c7eed"
+    "revision": "d687be879870a54fbae5af9cd3e9761a"
   },
   {
     "url": "pages/rankings.html",
@@ -322,7 +322,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/royale-mmaking.html",
-    "revision": "bdd4f018cc4cc21ee26f46672e13c1cc"
+    "revision": "47bd85bc49650f745a8b2fde3b6aa6eb"
   },
   {
     "url": "pages/royale-new-match.html",

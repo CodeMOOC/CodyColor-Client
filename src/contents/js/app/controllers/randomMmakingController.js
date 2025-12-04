@@ -179,7 +179,13 @@ angular.module('codyColor').controller('randomMmakingCtrl',['$scope', 'rabbit', 
         };
 
         // una volta che l'utente ha scelto un nickname, invia una richiesta di gioco al server
+        $scope.isNicknameShort = false; 
         $scope.requestMMaking = function () {
+            if (!$scope.nickname || $scope.nickname.length < 3) {
+                $scope.isNicknameShort = true;
+                return;
+            }
+            $scope.isNicknameShort = false; 
             $scope.mmakingRequested = true;
             audioHandler.playSound('menu-click');
             gameData.editUser({ nickname: $scope.nickname });

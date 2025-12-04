@@ -101,8 +101,15 @@ angular.module('codyColor').controller('bootmpMmakingCtrl', ['$scope', 'rabbit',
             gameData.editGeneral({ botSetting: $scope.botSettings[$scope.currentBotSettingIndex].value });
         };
       
+        $scope.isNicknameShort = false;
         // tasto 'inizia partita'
         $scope.createBootcamp = function() {
+            if (!$scope.nickname || $scope.nickname.length < 3) {
+                $scope.isNicknameShort = true;
+                return;
+            }
+            $scope.isNicknameShort = false; 
+
             gameData.editUser({
                 nickname: $scope.nickname,
                 playerId: 0

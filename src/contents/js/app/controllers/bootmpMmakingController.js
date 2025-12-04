@@ -23,15 +23,31 @@ angular.module('codyColor').controller('bootmpMmakingCtrl', ['$scope', 'rabbit',
         }
 
         visibilityHandler.setDeadlineCallback();
-        rabbit.setPageCallbacks({});
+        rabbit.setPageCallbacks({
+            onEditNicknameResponse: function(message) {
+                scopeService.safeApply($scope, function() {
+                    if (message.success) {
+                        $scope.serverUserData.nickname = message.newNickname;
+                        authHandler.setServerUserData($scope.serverUserData);
+                        $scope.nickname = message.newNickname;
+                    } else {
+                        console.log("Error updating nickname");
+                    }
+                });
+            }
+        });
 
+        
         // visualizza user nickname in fondo a dx se disponibile
         $scope.userLogged = authHandler.loginCompleted();
+
         if (authHandler.loginCompleted()) {
+            $scope.serverUserData = authHandler.getServerUserData();
             $scope.userNickname = authHandler.getServerUserData().nickname;
             $scope.nickname = authHandler.getServerUserData().nickname;
         } else {
             translationHandler.setTranslation($scope, 'userNickname', 'NOT_LOGGED');
+            $scope.serverUserData = {};
         }
 
         // carica la pagina con un leggero delay per evitare problemi di flickering
@@ -84,9 +100,16 @@ angular.module('codyColor').controller('bootmpMmakingCtrl', ['$scope', 'rabbit',
             }
             gameData.editGeneral({ botSetting: $scope.botSettings[$scope.currentBotSettingIndex].value });
         };
-
+      
+        $scope.isNicknameShort = false;
         // tasto 'inizia partita'
         $scope.createBootcamp = function() {
+            if (!$scope.nickname || $scope.nickname.length < 3) {
+                $scope.isNicknameShort = true;
+                return;
+            }
+            $scope.isNicknameShort = false; 
+
             gameData.editUser({
                 nickname: $scope.nickname,
                 playerId: 0

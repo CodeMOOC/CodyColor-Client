@@ -38,11 +38,11 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "audio/roby-over.mp3",
-    "revision": "1276b2a2c9a5e20e2b889233639a9add"
+    "revision": "8b21bb5d8995414b67d9ea059595b658"
   },
   {
     "url": "audio/roby-positioned.mp3",
-    "revision": "eb135194c92486ac831fb640fd03b4fd"
+    "revision": "8652cb8077deb4ed06ff3ed2bb45e9e5"
   },
   {
     "url": "audio/start.mp3",
@@ -58,7 +58,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "css/app.min.css",
-    "revision": "14d1d3aa582c0b663ab972fa4a843b18"
+    "revision": "d6cb3709983b48e5516cac883c1cfe23"
   },
   {
     "url": "favicon.ico",
@@ -242,19 +242,19 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "js/app/app.min.js",
-    "revision": "2c49ab98a4c03e73a3e8f0ec8903fe6d"
+    "revision": "42dbe1876c8673d663d3a75ddf9bd4ad"
   },
   {
     "url": "locales/locale-en.json",
-    "revision": "b2fcb253e945c5a53e1df142df7269e8"
+    "revision": "9a5141f07e412b7c345c64b1be3858e1"
   },
   {
     "url": "locales/locale-hu.json",
-    "revision": "9b471f9b498f81e800cb7af09729c100"
+    "revision": "20524bb171f54784eaf4344a768b4c71"
   },
   {
     "url": "locales/locale-it.json",
-    "revision": "5eaa20e5eab747805911e345dea0f81d"
+    "revision": "929c6e59c52f8f24e19297e29858d807"
   },
   {
     "url": "manifest.json",
@@ -282,15 +282,15 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/bootmp-mmaking.html",
-    "revision": "fb9b3dce7a0996cb733c5dcf6ba1169d"
+    "revision": "5f117b2f473aeaf7d6268716d020f47e"
   },
   {
     "url": "pages/custom-mmaking.html",
-    "revision": "ccd5546e1670bee657365eae3b77cf55"
+    "revision": "e9f24e33f1d54d59b4bd7e0015850f88"
   },
   {
     "url": "pages/custom-new-match.html",
-    "revision": "30301350aa49f93f963a69053dca02e2"
+    "revision": "1eaefb19c96c164f7b6f9eb843be8386"
   },
   {
     "url": "pages/home.html",
@@ -298,7 +298,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/login.html",
-    "revision": "3cc4adeea7496ee1dd6e10310c7089a8"
+    "revision": "eeeed1df38fbb7ee06a850ee36235170"
   },
   {
     "url": "pages/privacy.html",
@@ -306,7 +306,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/random-mmaking.html",
-    "revision": "148716f0587d22c6204d99089de5e0e4"
+    "revision": "d687be879870a54fbae5af9cd3e9761a"
   },
   {
     "url": "pages/rankings.html",
@@ -322,11 +322,11 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "pages/royale-mmaking.html",
-    "revision": "8490e06a2a73837a41ea49b074250c51"
+    "revision": "47bd85bc49650f745a8b2fde3b6aa6eb"
   },
   {
     "url": "pages/royale-new-match.html",
-    "revision": "4fff980e40d2136481250bb6a466d22b"
+    "revision": "4e03f8819ee6d1a74d9d7e1ae34a2d91"
   },
   {
     "url": "pages/rules.html",
@@ -362,7 +362,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "static/style.css",
-    "revision": "b5fef6dc6524b84f14a794a7e6f69e90"
+    "revision": "76932225d1124206390c0af84ad15e67"
   },
   {
     "url": "static/terms-of-service/index.html",

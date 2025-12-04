@@ -3,3 +3,4 @@
 src/settings.js
 build/settings.js
 node_modules
+src/contents/bower_components

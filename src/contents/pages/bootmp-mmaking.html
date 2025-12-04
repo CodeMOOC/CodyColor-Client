@@ -14,8 +14,13 @@
                     <li class="list--spaced-element">
                         <input type="text" name="nickname" ng-maxlength="22" ng-model="nickname" id="nickname"
                                placeholder="{{'NICKNAME_EXAMPLE' | translate}}" class="standard-input"
-                               ng-disabled="userLogged" required autofocus/>
+                                required autofocus/>
+                        <div class="error-text" ng-show="isNicknameShort">
+                            {{ 'NICKNAME_TOO_SHORT' | translate }}
+                        </div>
                     </li>
+
+
                     <li class="list--simple-element">
                         {{ 'ENEMY' | translate }}
                     </li>

@@ -2,16 +2,85 @@
     <div class="page--wrapper">
         <div class="page--body">
             <!-- Schermata iniziale, opzioni ins. code e newMatch -->
-            <div ng-show="loginState === screens.login" class="page--component">
-                <ul class="list" ng-hide="pendingRedirect">
-                    <li class="list--spaced-element">
-                       {{'LOGIN_DESC' | translate}}
-                    </li>
+            <div ng-show="loginState === screens.login" >
+                <ul class="auth-desc">
+                  <li>
+                    {{'LOGIN_DESC' | translate}}
+                  </li>
                 </ul>
+              <div class="auth-container">
 
-                <div id="firebaseui-auth-container"></div>
+                
+                <h2 class="auth-title">{{'LOGIN_SIGNUP' | translate}}</h2>
+                <!-- Step Email -->
+                <form ng-if="step === 'email'" ng-submit="checkEmail(email)" class="auth-form">
+                    <label for="login-email" class="auth-label">Email</label>
+                    <input id="login-email" type="email" ng-model="email" placeholder="Enter your email" required />
+                    <button type="submit" class="btn-primary">Next</button>
+                </form>
+              
+                <!-- Step Password -->
+                <form ng-if="step === 'password'" ng-submit="loginWithPassword(email, password)" class="auth-form">
+                    <label for="login-password" class="auth-label">Password</label>
+                    <input id="login-password" type="password" ng-model="password" placeholder="Enter your password" required />
+                    <button type="submit" class="btn-primary">Login</button> 
+                    <p>
+                        <a href="" ng-click="resetPassword(email)" class="auth-link">{{'FORGOT_PASSWORD' | translate}}</a>
+                    </p>
+                </form>
+              
+                <!-- Step Social -->
+                <div ng-if="step === 'social'" class="auth-message">
+                    <p >{{'PROVIDER_REGISTRATION' | translate: {provider: provider, email:email} }}</p>
+                  <button ng-click="resetPassword(email)" class="btn-secondary">
+                    {{'CONVERT_PROVIDER' | translate }}
+                  </button>
+                </div> 
+
+
+                <!-- Step Register -->
+                <div ng-if="step === 'register'" class="auth-message" style="color: #255ed9;">
+                    <p>{{'NO_ACCOUNT_FOUND' | translate: { 'email': email} }}</p>
+                  
+                    <div class="auth-field">
+                      <label for="register-password" class="auth-label">{{'CHOOSE_PASSWORD' | translate}}</label>
+                      <input id="register-password" 
+                             type="password" 
+                             ng-model="registerPassword" 
+                             placeholder="P4ssw0rd!" 
+                             required />
+                    </div>
+                  
+                    <div class="auth-field">
+                      <label for="register-password-confirm" class="auth-label">{{'CONFIRM_PASSWORD' | translate}}</label>
+                      <input id="register-password-confirm"
+                             type="password"
+                             ng-model="registerPasswordConfirm"
+                             placeholder="P4ssw0rd!"
+                             required />
+                    </div>
+                  
+                    <p ng-if="passwordMismatch" class="auth-error">
+                      {{ "PASSWORD_MISMATCH" | translate}}
+                    </p>
+                  
+                    <div class="auth-button-wrapper">
+                      <button type="button" class="btn-primary" 
+                              ng-click="signUpFirebase(email, registerPassword, registerPasswordConfirm)">
+                        {{'REGISTER_BTN'| translate}}
+                      </button>
+                    </div>
+                  </div>
+                  
+
+                  
+                <!-- Messages -->
+                <p ng-if="errorMessage" class="auth-error">{{errorMessage}}</p>
+                <p ng-if="infoMessage" class="auth-info">{{infoMessage}}</p>
+              </div>
             </div>
-
+              
+            
             <!-- Inserimento nickname -->
             <div ng-show="loginState === screens.nicknameSelection" class="page--component">
                 <form name="nickForm">
@@ -41,7 +110,6 @@
                 </form>
             </div>
 
-
             <div ng-show="loginState === screens.profile" class="page--component">
                 <ul class="list">
                     <li class="list--simple-element">
@@ -49,9 +117,46 @@
                         && firebaseUserData.photoURL !== '' && firebaseUserData.photoURL !== null) ?
                             firebaseUserData.photoURL : 'img/user-avatar.png'}}" alt="User Avatar">
                     </li>
-                    <li class="list--spaced-element">
-                        <h2>{{'WELCOME_USER' | translate : { 'user': serverUserData.nickname } }}</h2>
+                    <li class="list--spaced-element user-details">
+                        <div class="profile-row">
+                            <h2 class="profile-text">{{ 'WELCOME_USER' | translate }} <span ng-if="!editMode" style="color: #fff">{{serverUserData.nickname }}</span></h2>
+                            <!-- Normal view -->
+                            <div ng-if="!editMode">
+                              <i class="fas fa-pen navigation--icon-in-text"
+                                 title="Edit nickname"
+                                 ng-click="enterEditMode()"></i>
+                            </div>
+
+                            <!-- Edit mode -->
+                            <div ng-if="editMode" class="nickname-edit-row">
+                                <input type="text"
+                                name="nickname"
+                                ng-model="user.nickname"
+                                ng-model-options="{ updateOn: 'blur keyup', debounce: 0 }"
+                                ng-maxlength="22"
+                                placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+                                class="standard-input"
+                                required
+                                autofocus />
+                            
+
+                              <!-- Confirm -->
+                              <i class="fas fa-check icon-confirm"
+                                 title="Save nickname"
+                                 ng-click="saveNickname()"></i>
+                              <!-- Cancel -->
+                              <i class="fas fa-times icon-cancel"
+                                 title="Cancel"
+                                 ng-click="cancelEdit()"></i>
+                            </div>
+                        </div>
+                        <!-- Email always visible -->
+                         <div class="profile-row">
+                            <p class="profile-text">{{ 'EMAIL_USER' | translate  }}<span style="color: #fff;">{{ firebaseUserData.email }}</span></p>
+                        </div>
                     </li>
+                      
+                      
                     <li class="list--spaced-element">
                         <div class="stats">
                             <span class>{{ 'USER_STATS' | translate }}</span>
@@ -90,6 +195,17 @@
                     </li>
                 </ul>
             </div>
+
+            <!-- Step Verify Email -->
+            <div ng-show="loginState === screens.verifyEmail" class="auth-message" style="color: #188038;">
+                <h2>{{'VERIFY_EMAIL_SENT' | translate}}</h2>
+                <p>{{ 'VERIFY_EMAIL_DESCR_SENT' | translate: {'email': email} }}</p>
+                <div class="auth-button-wrapper">
+                  <button type="button" class="btn-primary" ng-click="goToLogin()">
+                    {{'BACK_TO_LOGIN' | translate}}
+                  </button>
+                </div>
+            </div>
         </div>
 
         <div class="page--push"></div>
@@ -117,7 +233,7 @@
         </span>
         </button>
     </div>
-</div>
+    </div>
 
     <!-- SingleOption modal -->
     <div class="modal" ng-show="singleOptionModal">

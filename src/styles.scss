@@ -191,6 +191,16 @@ button {
   font-family: "Play", sans-serif;
 }
 
+.input-error {
+  color: #ff4d4f;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.standard-input.ng-invalid.ng-touched {
+  border-color: #ff4d4f;
+}
+
 @media only screen and (min-width: 310px) {
   input[type="text"].standard-input,
   input[type="email"].standard-input,

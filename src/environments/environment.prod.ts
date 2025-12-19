@@ -15,5 +15,5 @@ export const environment = {
     vHost: '/',
     socketUrl: 'wss://codycolor.codemooc.net/api/ws',
   },
-  webBaseUrl: 'https://codycolor.codemooc.net',
+  webBaseUrl: 'https://codycolor-beta.codemooc.net',
 };

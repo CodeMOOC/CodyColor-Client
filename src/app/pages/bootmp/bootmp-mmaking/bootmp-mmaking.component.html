@@ -1,7 +1,10 @@
 <div id="bootmp-mmaking" class="page">
   <div class="page--wrapper">
     <div class="page--body" *ngIf="pageReady">
-      <form #customMatchForm="ngForm" (ngSubmit)="createBootcamp()">
+      <form
+        #customMatchForm="ngForm"
+        (ngSubmit)="createBootcamp(customMatchForm)"
+      >
         <ul class="list">
           <li class="list--simple-element">
             <h2>{{ "BOOT_CAMP" | translate }}</h2>
@@ -18,6 +21,7 @@
               type="text"
               name="nickname"
               maxlength="22"
+              minlength="3"
               [(ngModel)]="nickname"
               id="nickname"
               [placeholder]="'NICKNAME_EXAMPLE' | translate"
@@ -27,6 +31,15 @@
               #nicknameModel="ngModel"
             />
           </li>
+          <div
+            class="input-error"
+            *ngIf="
+              nicknameModel.invalid &&
+              (nicknameModel.touched || customMatchForm.submitted)
+            "
+          >
+            {{ "NICKNAME_REQUIRED" | translate }}
+          </div>
 
           <li class="list--simple-element">{{ "ENEMY" | translate }}</li>
           <li class="list--spaced-element">
@@ -67,11 +80,7 @@
           </li>
 
           <li class="list--spaced-element">
-            <button
-              class="navigation--button flashing-animation"
-              type="submit"
-              [disabled]="nicknameModel.invalid"
-            >
+            <button class="navigation--button flashing-animation" type="submit">
               {{ "CREATE_MATCH" | translate }}
               <span
                 class="material-symbols-outlined inline-block animate-slide-left icon-lg"

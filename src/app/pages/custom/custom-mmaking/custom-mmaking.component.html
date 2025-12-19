@@ -101,11 +101,19 @@
                 class="standard-input"
                 [(ngModel)]="nickname"
                 placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+                #nicknameModel="ngModel"
+                minlength="3"
                 maxlength="22"
                 required
                 autofocus
               />
             </li>
+            <div
+              class="input-error"
+              *ngIf="nicknameModel.errors?.['minlength'] && nicknameModel.touched"
+            >
+              {{ "NICKNAME_REQUIRED" | translate }}
+            </div>
             <li class="list--spaced-element">
               <button
                 class="navigation--button flashing-animation"

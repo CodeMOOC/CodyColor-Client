@@ -117,6 +117,7 @@
   "CODE_EXAMPLE": "ex. 1234",
   "NICKNAME": "Nickname",
   "NICKNAME_EXAMPLE": "ex. johnAppleSeed96",
+  "NICKNAME_REQUIRED": "The nickname must be at least 3 characters long.",
   "LOGIN_DESC": "Login to get detailed statistics on the games played, and to have the chance to compete in the global CodyColor ranking!",
   "LOGIN_SIGNUP": "Login / Signup",
   "INSERT_EMAIL": "Enter your email",

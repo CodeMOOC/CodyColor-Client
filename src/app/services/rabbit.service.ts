@@ -235,10 +235,10 @@ export class RabbitService {
       );
     }
 
-    if (this.lastMsgId === message.msgId) {
-      console.log('Received duplicate message. Ignored.');
-      return;
-    }
+    // if (this.lastMsgId === message.msgId) {
+    //   console.log('Received duplicate message. Ignored.');
+    //   return;
+    // }
     this.lastMsgId = message.msgId;
 
     const cb = this.pageCallbacks;

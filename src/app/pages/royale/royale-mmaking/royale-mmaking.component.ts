@@ -157,11 +157,15 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     this.chatBubbles = this.chat.getChatMessages();
     this.chatHints = this.chat.getChatHintsPreMatch();
 
-    // try connecting to Rabbit broker
-    let requiredDelayedGameRequest = false;
+    const requiredDelayedGameRequest = !this.rabbit.getBrokerConnectionState();
+
+    // Register callbacks first
+    this.registerRabbitCallbacks(requiredDelayedGameRequest);
+
+    // connect to rabbit
     if (!this.rabbit.getBrokerConnectionState()) {
       this.rabbit.connect();
-      requiredDelayedGameRequest = true;
+      // requiredDelayedGameRequest = true;
     } else if (
       this.gameData.value.general.code !== '0000' ||
       this.gameData.value.user.organizer
@@ -175,7 +179,6 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
         .subscribe((text) => (this.joinMessage = text));
     }
 
-    this.registerRabbitCallbacks(requiredDelayedGameRequest);
     this.basePlaying = this.audio.isEnabled();
   }
 
@@ -286,6 +289,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
         }
       },
       onConnected: () => {
+        this.rabbit.subscribeGameRoom();
         if (requiredDelayedGameRequest) {
           if (
             this.gameData.value.general.code !== '0000' ||
@@ -351,6 +355,10 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
         }
       },
       onStartMatch: (message: any) => {
+        setTimeout(() => {
+          console.log('forcing zone tick');
+        }, 0);
+
         this.gameData.update('aggregated', message.aggregated);
         this.gameData.update('match', {
           tiles: this.gameData.formatMatchTiles(message.tiles),
@@ -360,6 +368,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
           clearInterval(this.startMatchTimer);
           this.startMatchTimer = undefined;
         }
+
         this.navigation.goToPage('/royale-match');
       },
       onGameQuit: () => this.handleEnemyQuit('ENEMY_LEFT'),

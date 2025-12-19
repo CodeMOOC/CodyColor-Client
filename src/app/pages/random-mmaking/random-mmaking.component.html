@@ -24,6 +24,7 @@
                 id="nickname"
                 [(ngModel)]="nickname"
                 maxlength="22"
+                minlength="3"
                 [placeholder]="'NICKNAME_EXAMPLE' | translate"
                 class="standard-input"
                 required
@@ -31,6 +32,12 @@
                 #nicknameModel="ngModel"
               />
             </li>
+            <div
+              class="input-error"
+              *ngIf="nicknameModel.errors?.['minlength'] && nicknameModel.touched"
+            >
+              {{ "NICKNAME_REQUIRED" | translate }}
+            </div>
             <li class="list--spaced-element flex justify-center">
               <button
                 class="navigation--button flashing-animation flex items-end gap-4"

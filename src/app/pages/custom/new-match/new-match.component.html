@@ -22,13 +22,21 @@
               id="nickname"
               name="nickname"
               maxlength="22"
+              minlength="3"
               [(ngModel)]="nickname"
               placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
               class="standard-input"
               required
               autofocus
+              #nicknameModel="ngModel"
             />
           </li>
+          <div
+            class="input-error"
+            *ngIf="nicknameModel.errors?.['minlength'] && nicknameModel.touched"
+          >
+            {{ "NICKNAME_REQUIRED" | translate }}
+          </div>
 
           <li class="list--simple-element">
             {{ "MATCH_TIME" | translate }}

@@ -9,7 +9,7 @@ import { SessionService } from '../../../services/session.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../services/language.service';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { PathService } from '../../../services/path.service';
 import { TimerSetting } from '../../../models/timerSetting.model';
 
@@ -109,7 +109,11 @@ export class BootmpMmakingComponent implements OnInit {
     });
   }
 
-  createBootcamp(): void {
+  createBootcamp(form: NgForm): void {
+    if (form.invalid) {
+      form.control.markAllAsTouched();
+      return;
+    }
     this.path.reset();
 
     this.gameData.update('user', { nickname: this.nickname, playerId: 0 });

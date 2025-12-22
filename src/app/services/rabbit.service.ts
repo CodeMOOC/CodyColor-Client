@@ -394,11 +394,6 @@ export class RabbitService {
   }
 
   sendEditNicknameAndWait(userId: string, newNickname: string): Promise<any> {
-    console.log(
-      'Sending edit nickname request for userId:',
-      userId,
-      newNickname
-    );
     return new Promise((resolve, reject) => {
       const correlationId = this.sessionHandler.getSessionId();
 
@@ -485,6 +480,7 @@ export class RabbitService {
 
   // notifica all'avversario la volontà di skippare l'animazione
   sendEndAnimationMessage(): void {
+    console.log('Sending end animation message');
     this.sendInGameRoomTopic({
       msgType: this.messageTypes.c_endAnimation,
       gameRoomId: this.gameDataService.value.general.gameRoomId,

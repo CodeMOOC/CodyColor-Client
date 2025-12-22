@@ -43,7 +43,7 @@ import { RabbitService } from '../../services/rabbit.service';
   templateUrl: './match-grid.component.html',
   styleUrl: './match-grid.component.scss',
 })
-export class MatchGridComponent implements OnInit, AfterViewInit {
+export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() tilesCss: string[][] = [];
   @Input() isBot: boolean = false;
   @Input() grid: Tile[][] = [];
@@ -53,6 +53,7 @@ export class MatchGridComponent implements OnInit, AfterViewInit {
   @Input() botSetting = 0;
   @Input() Side = Side;
   @Input() endRoute: string = '';
+  @Input() skipAnimation = false;
 
   /** Outputs */
   @Output() tileDropped = new EventEmitter<{ side: Side; distance: number }>();
@@ -93,6 +94,12 @@ export class MatchGridComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     const el = this.smallGridRef?.nativeElement as HTMLElement;
     if (el) this.gridRect = el.getBoundingClientRect();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.skipAnimation) {
+      this.executeEndSequence();
+    }
   }
 
   /** --- Drag & Drop handlers --- */
@@ -205,10 +212,7 @@ export class MatchGridComponent implements OnInit, AfterViewInit {
 
     this.matchManager.executeEndSequence(playerType, isSinglePlayer, {
       onComplete: () => {
-        console.log('→ End sequence complete');
-
         if (this.isBot) {
-          console.log('Navigating to', this.endRoute);
           this.router.navigate([this.endRoute]);
         }
         this.rabbit.sendEndAnimationMessage();

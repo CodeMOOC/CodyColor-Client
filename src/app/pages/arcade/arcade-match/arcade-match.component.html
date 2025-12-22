@@ -78,6 +78,7 @@
             [botSetting]="general.botSetting || 0"
             [isBot]="false"
             [Side]="Side"
+            [skipAnimation]="askedForSkip"
             [endRoute]="'/arcade-aftermatch'"
             (tileDropped)="onTileDropped($event.side, $event.distance)"
             (dragStarted)="onDragStarted()"
@@ -104,8 +105,9 @@
           </div>
 
           <!-- SKIP BUTTON -->
-          <div class="centered-container" *ngIf="startAnimation">
+          <div class="centered-container" *ngIf="executeAnimation">
             <button
+              *ngIf="!askedForSkip"
               class="navigation--button flashing-animation"
               (click)="skip()"
             >
@@ -116,6 +118,10 @@
                 keyboard_double_arrow_right
               </span>
             </button>
+            <!-- Wait enemy skip-->
+            <div class="flashing-animation" *ngIf="askedForSkip">
+              {{ "WAIT_SKIP" | translate }}
+            </div>
           </div>
         </div>
       </div>

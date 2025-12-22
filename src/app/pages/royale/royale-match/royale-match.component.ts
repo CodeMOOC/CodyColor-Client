@@ -82,6 +82,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
 
   timerFormatter: any;
   finalTimeFormatter: any;
+
   playerRoby: any;
   enemiesRoby: any;
   clockAnimation: string = '';
@@ -115,7 +116,6 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   Side = Side; // expose enum to template
 
   // Timers
-  userTimerValue = 0;
   enemyTimerValue = 0;
   userTimerAnimation = '';
   enemyTimerAnimation = '';
@@ -146,10 +146,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
         this.aggregated = this.gameData.value.aggregated;
         this.user = this.gameData.value.user;
         this.match = this.gameData.value.match;
-
-        this.gameTimerValue.set(this.general.timerSetting);
-        this.nextGameTimerValue = this.general.timerSetting;
-
+        this.gameTimerValue.set(this.nextGameTimerValue);
         this.timerFormatter = this.gameData.formatTimeMatchClock;
         this.finalTimeFormatter = this.gameData.formatTimeDecimals;
 
@@ -177,7 +174,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.quitGame();
+    // this.quitGame();
     this.rabbit.quitGame();
   }
 
@@ -316,6 +313,10 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   // -------------------------------
 
   startMatchTimer() {
+    if (!this.nextGameTimerValue) {
+      this.nextGameTimerValue = this.general.timerSetting;
+    }
+
     this.countdownInProgress = false;
     const interval = 10;
     let expected = Date.now() + interval;
@@ -467,7 +468,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
     // Update match
     this.gameData.update('match', {
       positioned: true,
-      time: this.userTimerValue,
+      time: this.nextGameTimerValue,
       startPosition: { side: sideValue, distance: distanceValue },
     });
 
@@ -485,8 +486,9 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
         this.gameData.update('aggregated', {
           positionedPlayers: this.aggregated.positionedPlayers + 1,
         });
+        this.aggregated.positionedPlayers =
+          this.aggregated.positionedPlayers + 1;
       },
-
       onPlayerRemoved: (msg: any) => {
         if (msg.removedPlayerId === this.user.playerId) {
           this.quitGame();
@@ -508,7 +510,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       onStartAnimation: (msg: any) => {
         this.startAnimation = true;
         this.clockAnimation = 'clock--end';
-        this.gameTimerValue.set(msg.matchTime);
+        // this.gameTimerValue.set(msg.matchTime);
         this.gameData.update('aggregated', msg.aggregated);
         this.executeAnimation = true;
 
@@ -558,10 +560,8 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   }
 
   skip() {
+    this.askedForSkip = true;
     this.audio.playSound('menu-click');
-    this.quitGame();
-    // wait for the enemy animation to end or skip it
-    this.rabbit.sendEndAnimationMessage();
   }
 
   private async handleEnemyQuit(message: string) {
@@ -571,6 +571,6 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   }
 
   formattedStartTimer = computed(() =>
-    this.gameData.formatTimeSeconds(this.gameTimerValue())
+    this.gameData.formatTimeDecimals(this.gameTimerValue())
   );
 }

@@ -135,7 +135,6 @@ export class RoyaleAftermatchComponent
   private initMatchData(): void {
     this.gameData.gameData$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
       this.zone.run(() => {
-        console.log('Aftermatch - Game data updated', data);
         this.user = data.user;
         this.enemy = data.enemy;
         this.general = data.general;
@@ -195,8 +194,6 @@ export class RoyaleAftermatchComponent
           this.gameData.update('aggregated', {
             readyPlayers: agg.readyPlayers + 1,
           });
-
-          console.log('Enemy is ready for new match');
         });
       },
 

@@ -121,8 +121,6 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
     this.loadMaxPlayerSettings();
     this.loadStartSettings();
 
-    console.log('ROYAL NEW MATCH COMPONENT INIT');
-    console.log(this.timerSettings);
     // RABBIT CALLBACKS
     this.rabbit.setPageCallbacks({
       onConnectionLost: () => {

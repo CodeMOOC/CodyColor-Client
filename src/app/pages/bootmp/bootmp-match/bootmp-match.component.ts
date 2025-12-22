@@ -31,6 +31,7 @@ import { Path } from '../../../models/path.model';
 import { MatchManagerService } from '../../../services/match-manager.service';
 import { MatchGridComponent } from '../../../components/match-grid/match-grid.component';
 import { CountdownCodyComponent } from '../../../components/countdown-cody/countdown-cody.component';
+import { RabbitService } from '../../../services/rabbit.service';
 
 @Component({
   selector: 'app-match',
@@ -123,6 +124,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
     private gameData: GameDataService,
     private path: PathService,
     private matchManager: MatchManagerService,
+    private rabbit: RabbitService,
     private router: Router,
     private session: SessionService
   ) {}
@@ -345,6 +347,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
     this.audio.playSound('roby-positioned');
 
     if (!this.isAnimationReady) {
+      this.isAnimationReady = true;
       const finalUserTime = this.gameData.getUserFinalTime();
       // aggiorna i dati della partita
       this.gameData.update('match', {
@@ -394,7 +397,13 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
 
   skip(): void {
     this.audio.playSound('menu-click');
-    this.quitGame();
-    this.router.navigate(['/bootmp-aftermatch']);
+    this.matchManager.executeEndSequence('player', this.botSetting === 0, {
+      onComplete: () => {
+        this.router.navigate(['/bootmp-aftermatch']);
+        this.rabbit.sendEndAnimationMessage();
+        if (!this.router.url.includes('royale'))
+          this.matchManager.determineWinner();
+      },
+    });
   }
 }

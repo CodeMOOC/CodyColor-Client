@@ -87,6 +87,8 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   timerFormatter: (time: number) => string = (t) => t.toString();
 
   startAnimation = false;
+  askedForSkip = false;
+
   currentSide: Side | null = null;
   currentIndex: number | null = null;
   isOverArrow = false;
@@ -294,7 +296,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     }
 
     this.rabbit.quitGame();
-    // this.path.quitGame();
     this.chat.clearChat();
     this.gameData.initializeMatchData();
   }
@@ -422,10 +423,9 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   }
 
   skip() {
+    console.log('Skip animation');
+    this.askedForSkip = true;
     this.audio.playSound('menu-click');
-    this.quitGame();
-    // wait for the enemy animation to end or skip it
-    this.rabbit.sendEndAnimationMessage();
   }
 
   exitGame() {

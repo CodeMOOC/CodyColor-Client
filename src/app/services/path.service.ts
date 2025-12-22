@@ -199,7 +199,15 @@ export class PathService {
   }
 
   public reset(): void {
+    // Reset player path to empty state
     this.pathSubject.next(this.emptyPath());
+
+    // Reset enemy paths to an empty array
+    this.enemiesPathsSubject.next([]);
+
+    // Reset positioning status
+    this.enemiesPositioned$.next(false);
+    this.playerPositioned$.next(false);
   }
 
   private mod(n: number, m: number): number {

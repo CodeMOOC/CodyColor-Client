@@ -423,7 +423,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   }
 
   skip() {
-    console.log('Skip animation');
     this.askedForSkip = true;
     this.audio.playSound('menu-click');
   }

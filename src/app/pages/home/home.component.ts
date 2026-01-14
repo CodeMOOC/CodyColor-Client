@@ -55,11 +55,6 @@ export class HomeComponent {
     this.rabbit.connect();
   }
 
-  sendPing(): void {
-    // This will send a message to the server queue
-    this.rabbit.sendRankingsRequest();
-  }
-
   goToRules() {
     this.router.navigate(['/rules']);
   }

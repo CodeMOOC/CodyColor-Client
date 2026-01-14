@@ -12,6 +12,7 @@ export interface ServerUserData {
   totalPoints: number;
   wonMatches: number;
   avgPoints: number;
+  totalMatches: number;
   bestMatch: { points: number; pathLength: number; time: number };
   correlationId: string;
   msgId: string;

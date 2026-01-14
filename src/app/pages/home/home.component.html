@@ -37,11 +37,7 @@
             {{ "RANKINGS" | translate }}
           </button>
         </li>
-        <li class="menu-element list--simple-element">
-          <button class="navigation--button" (click)="goToLoginProfile()">
-            {{ loginOrProfile }}
-          </button>
-        </li>
+  
 
         <li class="list--simple-element" *ngIf="brokerConnected">
           <div [ngClass]="brokerConnected ? 'flashing-animation' : ''">

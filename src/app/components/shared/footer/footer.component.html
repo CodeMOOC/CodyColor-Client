@@ -17,9 +17,15 @@
       class="page--footer-button material-symbols-outlined"
       (click)="openLanguageModal()"
     >
-      <span class="page--footer-icons fas">
-        {{ language === "it" ? "🇮🇹" : language === "hu" ? "🇭🇺" : "🇬🇧" }}
-      </span>
+    <span class="page--footer-icons">
+      <img
+      [src]="'assets/img/flags/' + language + '.svg'"
+      alt=""
+      width="30"
+      height="24"
+    />
+    </span>
+    
     </button>
   </div>
 

@@ -45,59 +45,62 @@ export class AuthService {
   ) {}
 
   initializeAuth() {
-    if (!this.initialized) {
-      initializeApp(environment.firebaseConfig);
+    if (this.initialized) return;
 
-      onAuthStateChanged(this.auth, async (user: User | null) => {
-        if (user) {
-          // Restore server data from cookie if available
-          const cookie = this.cookieService.get('serverUserData');
-          if (cookie) {
-            const serverUserData = JSON.parse(cookie);
+    initializeApp(environment.firebaseConfig);
 
-            this.userSubject.next({
-              firebaseUser: user,
-              serverData: serverUserData,
-            });
-            // this.firebaseUserSubject.next(user);
-          } else {
-            // Ask backend (via Rabbit) for server-side info using Firebase UID
-            this.rabbitService.sendLogInRequest(user.uid);
-
-            const loginResponseSub =
-              this.rabbitService.loginResponse$.subscribe((msg) => {
-                if (
-                  msg?.msgType ===
-                  this.rabbitService.messageTypes.s_authResponse
-                ) {
-                  if (msg.success && msg.nickname) {
-                    this.setServerUserData(msg);
-
-                    // User already has a nickname, proceed to profile
-                    this.userSubject.next({
-                      firebaseUser: user,
-                      serverData: msg,
-                    });
-                  } else if (msg.success && !msg.nickname) {
-                    // User exists in backend but has no nickname yet
-                    this.userSubject.next({
-                      firebaseUser: user,
-                      serverData: null, // allow setting nickname
-                    });
-                  } else {
-                    // Real login failure
-                    console.warn('[Auth] Server login failed. Logging out.');
-                    this.logout();
-                  }
-                }
-              });
-          }
-        }
+    onAuthStateChanged(this.auth, async (user: User | null) => {
+      if (!user) {
+        // No user logged in
+        this.userSubject.next({ firebaseUser: null, serverData: null });
         this.authReadySubject.next(true);
+        return;
+      }
+
+      // Optional: immediately restore cookie so UI has something to display
+      const cookie = this.cookieService.get('serverUserData');
+      if (cookie) {
+        try {
+          const serverUserData = JSON.parse(cookie);
+          this.userSubject.next({
+            firebaseUser: user,
+            serverData: serverUserData,
+          });
+        } catch (err) {
+          console.warn('[Auth] Failed to parse serverUserData cookie', err);
+        }
+      }
+      console.log('Refresh always data');
+      // Always fetch fresh data from backend
+      // Ask backend (via Rabbit) for server-side info using Firebase UID
+      this.rabbitService.sendLogInRequest(user.uid);
+
+      const sub = this.rabbitService.loginResponse$.subscribe((msg) => {
+        if (msg?.msgType !== this.rabbitService.messageTypes.s_authResponse)
+          return;
+
+        if (msg.success && msg.nickname) {
+          // Update cookie with latest backend data
+          this.setServerUserData(msg);
+
+          // Update userSubject so profile view reflects backend
+          this.userSubject.next({ firebaseUser: user, serverData: msg });
+        } else if (msg.success && !msg.nickname) {
+          // Backend user exists but has no nickname yet
+          this.userSubject.next({ firebaseUser: user, serverData: null });
+        } else {
+          console.warn('[Auth] Server login failed. Logging out.');
+          this.logout();
+        }
+
+        // Unsubscribe after first valid response to avoid memory leaks
+        sub.unsubscribe();
       });
 
-      this.initialized = true;
-    }
+      this.authReadySubject.next(true);
+    });
+
+    this.initialized = true;
   }
 
   get currentUser(): AppUser {

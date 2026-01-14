@@ -83,6 +83,11 @@
           <span class="stats--player-text">{{ serverUser.avgPoints }}</span>
         </p>
 
+        <p class="stats--line">
+          {{ "TOT_MATCHES" | translate }}
+          <span class="stats--player-text">{{ serverUser.totalMatches }}</span>
+        </p>
+
         <!-- Best match shown only if present -->
         <p class="stats--line" *ngIf="serverUser.bestMatch">
           {{ "BEST_MATCH" | translate }}

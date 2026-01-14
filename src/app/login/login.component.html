@@ -14,10 +14,6 @@
                 : ("LOGIN_TITLE" | translate)
             }}
           </h2>
-          <p class="auth-subtitle">
-            {{ isSignUp ? "Sign up to get started" : "Log in to continue" }}
-          </p>
-
           <form
             [formGroup]="authForm"
             (ngSubmit)="submitAuth()"
@@ -36,26 +32,77 @@
 
             <div class="form-group">
               <label for="password">{{ "INSERT_PASSWORD" | translate }}</label>
-              <input
-                id="password"
-                type="password"
-                formControlName="password"
-                placeholder="••••••••"
-                required
-              />
+              <div class="password-wrapper">
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="••••••••"
+                  required
+                />
+
+                <span
+                  class="material-symbols-outlined eye-icon"
+                  (click)="togglePassword()"
+                >
+                  {{ showPassword ? "visibility_off" : "visibility" }}
+                </span>
+              </div>
+            </div>
+            <div
+              class="error-text"
+              *ngIf="
+                authForm.get('password')?.touched &&
+                authForm.get('password')?.invalid
+              "
+            >
+              <small
+                *ngIf="authForm.get('password')?.errors?.['required'] || authForm.get('password')?.errors?.['pattern']"
+              >
+                {{ "PASSWORD_REQUIRED" | translate }}
+              </small>
+            </div>
+            <!-- Forgot password -->
+            <div class="form-group text-right" *ngIf="!isSignUp">
+              <button
+                type="button"
+                class="btn-link forgot-password"
+                (click)="onForgotPassword()"
+              >
+                {{ "FORGOT_PASSWORD" | translate }}
+              </button>
             </div>
 
             <div class="form-group" *ngIf="isSignUp">
               <label for="repeatPassword">{{
                 "CONFIRM_PASSWORD" | translate
               }}</label>
-              <input
-                id="repeatPassword"
-                type="password"
-                formControlName="repeatPassword"
-                placeholder="••••••••"
-                required
-              />
+              <div class="password-wrapper">
+                <input
+                  id="repeatPassword"
+                  [type]="showRepeatPassword ? 'text' : 'password'"
+                  formControlName="repeatPassword"
+                  placeholder="••••••••"
+                  required
+                />
+                <span
+                  class="material-symbols-outlined eye-icon"
+                  (click)="toggleRepeatPassword()"
+                >
+                  {{ showRepeatPassword ? "visibility_off" : "visibility" }}
+                </span>
+              </div>
+            </div>
+
+            <div
+              class="error-text"
+              *ngIf="
+   isSignUp &&
+   authForm.errors?.['passwordMismatch'] &&
+   authForm.get('repeatPassword')?.touched
+ "
+            >
+              <small> {{ "PASSWORD_MISMATCH" | translate }} </small>
             </div>
 
             <div class="form-group relative" *ngIf="isSignUp">

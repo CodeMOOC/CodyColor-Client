@@ -17,6 +17,7 @@ import { SingleOptionModalComponent } from '../components/single-option-modal/si
 import { ProfileViewComponent } from '../components/profile-view/profile-view.component';
 import { NicknameFormComponent } from '../components/nickname-form/nickname-form.component';
 import { RabbitService } from '../services/rabbit.service';
+import { Auth, sendPasswordResetEmail } from '@angular/fire/auth';
 
 enum ScreenState {
   Loading = 'loadingScreen',
@@ -66,6 +67,9 @@ export class LoginComponent {
 
   authForm!: FormGroup;
 
+  showPassword = false;
+  showRepeatPassword = false;
+
   isSubmissionInProgress = false;
 
   private subs: Subscription[] = [];
@@ -76,6 +80,7 @@ export class LoginComponent {
     private fb: FormBuilder,
     private translate: TranslateService,
     private auth: AuthService,
+    private firebaseAuth: Auth,
     private rabbit: RabbitService,
     private audio: AudioService
   ) {}
@@ -147,6 +152,25 @@ export class LoginComponent {
     });
   }
 
+  onForgotPassword(): void {
+    const email = this.authForm.get('email')?.value;
+
+    if (!email) {
+      this.singleOptionText = 'Please enter your email first';
+      this.singleOptionModal = true;
+      return;
+    }
+    sendPasswordResetEmail(this.firebaseAuth, email)
+      .then(() => {
+        this.singleOptionText = 'Password reset email sent';
+        this.singleOptionModal = true;
+      })
+      .catch(() => {
+        this.singleOptionText = 'Failed to send reset email';
+        this.singleOptionModal = true;
+      });
+  }
+
   // helpers
   private showSingleOption(key: string) {
     this.audio.playSound('menu-click');
@@ -183,6 +207,13 @@ export class LoginComponent {
     }, 300);
   }
 
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleRepeatPassword(): void {
+    this.showRepeatPassword = !this.showRepeatPassword;
+  }
   showInfo() {
     this.infoVisible = true;
     clearTimeout(this.infoTimeout);
@@ -210,7 +241,10 @@ export class LoginComponent {
   }
 
   async submitAuth() {
-    if (this.authForm.invalid) return;
+    if (this.authForm.invalid) {
+      this.authForm.markAllAsTouched();
+      return;
+    }
 
     const { email, password, repeatPassword, name, surname } =
       this.authForm.value;
@@ -219,7 +253,7 @@ export class LoginComponent {
     try {
       if (this.isSignUp) {
         if (password !== repeatPassword) {
-          this.showSingleOption('Passwords do not match');
+          this.showSingleOption(this.translate.instant('PASSWORD_MISMATCH'));
           return;
         }
         await this.auth.signUpWithEmail(email!, password!, { name, surname });

@@ -30,11 +30,17 @@ export class RankingsComponent implements OnInit {
     top10PointsDaily: 2,
     top10PointsGlobal: 3,
   };
+
+  myGlobalMatchRank: any | null = null;
+  myGlobalPointsRank: any | null = null;
+
   rankingTitles: string[] = [];
   rankingSubTitles: string[] = [];
   rankings: RankingsData = {};
   languageModal = false;
   basePlaying = false;
+
+  isLoading = true;
 
   constructor(
     private translate: TranslateService,
@@ -69,23 +75,43 @@ export class RankingsComponent implements OnInit {
 
     this.rabbit.setPageCallbacks({
       onRankingsResponse: (message: any) => {
+        const top10PointsGlobal = message.success
+          ? JSON.parse(message.top10PointsGlobal)
+          : [];
+    
+        const top10PointsDaily = message.success
+          ? JSON.parse(message.top10PointsDaily)
+          : [];
+    
+        const top10MatchGlobal = message.success
+          ? JSON.parse(message.top10MatchGlobal)
+          : [];
+    
+        const top10MatchDaily = message.success
+          ? JSON.parse(message.top10MatchDaily)
+          : [];
+    
+        const myGlobalMatchRank = message.myGlobalMatchRank ?? null;
+        const myGlobalPointsRank = message.myGlobalPointsRank ?? null;
+    
         this.rankingsHandler.updateRankings({
-          top10MatchDaily: message.success
-            ? JSON.parse(message.top10MatchDaily)
-            : [],
-          top10MatchGlobal: message.success
-            ? JSON.parse(message.top10MatchGlobal)
-            : [],
-          top10PointsDaily: message.success
-            ? JSON.parse(message.top10PointsDaily)
-            : [],
-          top10PointsGlobal: message.success
-            ? JSON.parse(message.top10PointsGlobal)
-            : [],
+          top10MatchDaily,
+          top10MatchGlobal,
+          top10PointsDaily,
+          top10PointsGlobal,
+          myGlobalMatchRank,
+          myGlobalPointsRank,
         });
+    
         this.rankings = this.rankingsHandler.getRankings();
+    
+        this.myGlobalMatchRank = myGlobalMatchRank;
+        this.myGlobalPointsRank = myGlobalPointsRank;
+    
+        this.isLoading = false;
       },
     });
+    
 
     this.basePlaying = this.audio.isEnabled();
   }
@@ -126,9 +152,13 @@ export class RankingsComponent implements OnInit {
 
   private initRankings(): void {
     if (this.rankingsHandler.updateNeeded()) {
+      this.isLoading = true;
       this.rankings = {};
-      this.rabbit.sendRankingsRequest();
+      this.rabbit.sendRankingsRequest(
+        this.auth.currentUser?.firebaseUser?.uid ?? ''
+      );
     } else {
+      this.isLoading = false;
       this.rankings = this.rankingsHandler.getRankings();
     }
   }
@@ -142,4 +172,8 @@ export class RankingsComponent implements OnInit {
   }
 
   formatTime = (value: number) => this.gameData.formatTimeDecimals(value);
+
+  isCurrentUser(nickname: string): boolean {
+    return this.userLogged && nickname === this.userNickname;
+  }
 }

@@ -1,124 +1,176 @@
-<div id="rankings" class="page">
-  <div class="page--wrapper">
-    <div class="page--body">
-      <!-- Title + navigation arrows -->
-      <div class="ranktitle">
-        <div class="ranktitle--button" (click)="scrollRanking(false)">
-          <i class="fas fa-chevron-left"></i>
-        </div>
-        <div class="ranktitle--text">
-          <h2>{{ rankingTitles[rankIndex] }}</h2>
-        </div>
-        <div class="ranktitle--button" (click)="scrollRanking(true)">
-          <i class="fas fa-chevron-right"></i>
-        </div>
-      </div>
+<!-- Loading -->
+<div class="loading" *ngIf="isLoading">
+  <div class="spinner"></div>
+  <p>{{ "LOADING" | translate }}</p>
+</div>
 
-      <!-- Subtitle -->
-      <div class="ranksubtitle">
-        {{ rankingSubTitles[rankIndex] }}
-      </div>
+<div *ngIf="!isLoading">
+  <div id="rankings" class="page">
+    <div class="page--wrapper">
+      <div class="page--body">
+        <!-- Title + navigation arrows -->
+        <div class="ranktitle">
+          <div class="ranktitle--button" (click)="scrollRanking(false)">
+            <i class="material-symbols-outlined">keyboard_arrow_left</i>
+          </div>
+          <div class="ranktitle--text">
+            <h2>{{ rankingTitles[rankIndex] }}</h2>
+          </div>
+          <div class="ranktitle--button" (click)="scrollRanking(true)">
+            <i class="material-symbols-outlined">keyboard_arrow_right</i>
+          </div>
+        </div>
 
-      <!-- Top 10 Match Daily -->
-      <div *ngIf="rankIndex === indexes.top10MatchDaily">
-        <table
-          class="playerlist-match-table"
-          *ngIf="rankings.top10MatchDaily?.length"
-        >
-          <tr>
-            <th></th>
-            <th>{{ "NICKNAME" | translate }}</th>
-            <th>{{ "STATS_POINTS_R" | translate }}</th>
-            <th>{{ "STATS_MOVES_R" | translate }}</th>
-            <th>{{ "STATS_TIME_R" | translate }}</th>
-          </tr>
-          <tr *ngFor="let match of rankings.top10MatchDaily; index as i">
-            <td>{{ i + 1 }}.</td>
-            <td>{{ match.nickname }}</td>
-            <td>{{ match.points }}</td>
-            <td>{{ match.pathLength }}</td>
-            <td>{{ formatTime(match.time) }}</td>
-          </tr>
-        </table>
-        <div *ngIf="!rankings.top10MatchDaily?.length">
-          {{ "NO_RANKING" | translate }}
+        <!-- Subtitle -->
+        <div class="ranksubtitle">
+          {{ rankingSubTitles[rankIndex] }}
+        </div>
+
+        <!-- Top 10 Match Daily -->
+        <div *ngIf="rankIndex === indexes.top10MatchDaily">
+          <table
+            class="playerlist-match-table"
+            *ngIf="!isLoading && !rankings.top10MatchDaily?.length"
+          >
+            >
+            <tr>
+              <th></th>
+              <th>{{ "NICKNAME" | translate }}</th>
+              <th>{{ "STATS_POINTS_R" | translate }}</th>
+              <th>{{ "STATS_MOVES_R" | translate }}</th>
+              <th>{{ "STATS_TIME_R" | translate }}</th>
+            </tr>
+            <tr *ngFor="let match of rankings.top10MatchDaily; index as i">
+              <td>{{ i + 1 }}.</td>
+              <td>{{ match.nickname }}</td>
+              <td>{{ match.points }}</td>
+              <td>{{ match.pathLength }}</td>
+              <td>{{ formatTime(match.time) }}</td>
+            </tr>
+          </table>
+
+          <div *ngIf="!rankings.top10MatchDaily?.length">
+            {{ "NO_RANKING" | translate }}
+          </div>
+        </div>
+
+        <!-- Top 10 Match Global -->
+        <div *ngIf="rankIndex === indexes.top10MatchGlobal">
+          <table
+            class="playerlist-match-table"
+            *ngIf="rankings.top10MatchGlobal?.length"
+          >
+            <tr>
+              <th></th>
+              <th>{{ "NICKNAME" | translate }}</th>
+              <th>{{ "STATS_POINTS_R" | translate }}</th>
+              <th>{{ "STATS_MOVES_R" | translate }}</th>
+              <th>{{ "STATS_TIME_R" | translate }}</th>
+            </tr>
+            <tr
+              *ngFor="let match of rankings.top10MatchGlobal; index as i"
+              [class.highlight]="isCurrentUser(match.nickname)"
+            >
+              <td>{{ i + 1 }}.</td>
+              <td>{{ match.nickname }}</td>
+              <td>{{ match.points }}</td>
+              <td>{{ match.pathLength }}</td>
+              <td>{{ formatTime(match.time) }}</td>
+            </tr>
+          </table>
+          <div *ngIf="!rankings.top10MatchGlobal?.length">
+            {{ "NO_RANKING" | translate }}
+          </div>
+
+          <!-- My global match rank (if not in top 10) -->
+          <div
+            class="my-rank"
+            *ngIf="myGlobalMatchRank && !myGlobalMatchRank.inTop10"
+          >
+            <hr />
+            <div class="my-rank--title">
+              {{ "YOUR_RANK" | translate }}
+            </div>
+
+            <div class="my-rank--row">
+              <span>#{{ myGlobalMatchRank.position }}</span>
+              <span>{{ userNickname }}</span>
+              <span>{{ myGlobalMatchRank.points }}</span>
+              <span>{{ myGlobalMatchRank.pathLength }}</span>
+              <span>{{ formatTime(myGlobalMatchRank.time) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 10 Points Daily -->
+        <div *ngIf="rankIndex === indexes.top10PointsDaily">
+          <table
+            class="playerlist-match-table"
+            *ngIf="rankings.top10PointsDaily?.length"
+          >
+            <tr>
+              <th></th>
+              <th>{{ "NICKNAME" | translate }}</th>
+              <th>{{ "STATS_POINTS_R" | translate }}</th>
+              <th>{{ "STATS_WINS_R" | translate }}</th>
+            </tr>
+            <tr *ngFor="let player of rankings.top10PointsDaily; index as i">
+              <td>{{ i + 1 }}.</td>
+              <td>{{ player.nickname }}</td>
+              <td>{{ player.points }}</td>
+              <td>{{ player.wonMatches }}</td>
+            </tr>
+          </table>
+          <div *ngIf="!rankings.top10PointsDaily?.length">
+            {{ "NO_RANKING" | translate }}
+          </div>
+        </div>
+
+        <!-- Top 10 Points Global -->
+        <div *ngIf="rankIndex === indexes.top10PointsGlobal">
+          <table
+            class="playerlist-match-table"
+            *ngIf="rankings.top10PointsGlobal?.length"
+          >
+            <tr>
+              <th></th>
+              <th>{{ "NICKNAME" | translate }}</th>
+              <th>{{ "STATS_POINTS_R" | translate }}</th>
+              <th>{{ "STATS_WINS_R" | translate }}</th>
+            </tr>
+            <tr
+              *ngFor="let player of rankings.top10PointsGlobal; index as i"
+              [class.highlight]="isCurrentUser(player.nickname)"
+            >
+              <td>{{ i + 1 }}.</td>
+              <td>{{ player.nickname }}</td>
+              <td>{{ player.points }}</td>
+              <td>{{ player.wonMatches }}</td>
+            </tr>
+          </table>
+          <div *ngIf="!rankings.top10PointsGlobal?.length">
+            {{ "NO_RANKING" | translate }}
+          </div>
+          <!-- My global points rank (if not in top 10) -->
+          <div
+            class="my-rank"
+            *ngIf="myGlobalPointsRank && !myGlobalPointsRank.inTop10"
+          >
+            <hr />
+            <div class="my-rank--title">
+              {{ "YOUR_RANK" | translate }}
+            </div>
+
+            <div class="my-rank--row">
+              <span>#{{ myGlobalPointsRank.position }}</span>
+              <span>{{ userNickname }}</span>
+              <span>{{ myGlobalPointsRank.points }}</span>
+              <span>{{ myGlobalPointsRank.wonMatches }}</span>
+            </div>
+          </div>
         </div>
       </div>
-
-      <!-- Top 10 Match Global -->
-      <div *ngIf="rankIndex === indexes.top10MatchGlobal">
-        <table
-          class="playerlist-match-table"
-          *ngIf="rankings.top10MatchGlobal?.length"
-        >
-          <tr>
-            <th></th>
-            <th>{{ "NICKNAME" | translate }}</th>
-            <th>{{ "STATS_POINTS_R" | translate }}</th>
-            <th>{{ "STATS_MOVES_R" | translate }}</th>
-            <th>{{ "STATS_TIME_R" | translate }}</th>
-          </tr>
-          <tr *ngFor="let match of rankings.top10MatchGlobal; index as i">
-            <td>{{ i + 1 }}.</td>
-            <td>{{ match.nickname }}</td>
-            <td>{{ match.points }}</td>
-            <td>{{ match.pathLength }}</td>
-            <td>{{ formatTime(match.time) }}</td>
-          </tr>
-        </table>
-        <div *ngIf="!rankings.top10MatchGlobal?.length">
-          {{ "NO_RANKING" | translate }}
-        </div>
-      </div>
-
-      <!-- Top 10 Points Daily -->
-      <div *ngIf="rankIndex === indexes.top10PointsDaily">
-        <table
-          class="playerlist-match-table"
-          *ngIf="rankings.top10PointsDaily?.length"
-        >
-          <tr>
-            <th></th>
-            <th>{{ "NICKNAME" | translate }}</th>
-            <th>{{ "STATS_POINTS_R" | translate }}</th>
-            <th>{{ "STATS_WINS_R" | translate }}</th>
-          </tr>
-          <tr *ngFor="let player of rankings.top10PointsDaily; index as i">
-            <td>{{ i + 1 }}.</td>
-            <td>{{ player.nickname }}</td>
-            <td>{{ player.points }}</td>
-            <td>{{ player.wonMatches }}</td>
-          </tr>
-        </table>
-        <div *ngIf="!rankings.top10PointsDaily?.length">
-          {{ "NO_RANKING" | translate }}
-        </div>
-      </div>
-
-      <!-- Top 10 Points Global -->
-      <div *ngIf="rankIndex === indexes.top10PointsGlobal">
-        <table
-          class="playerlist-match-table"
-          *ngIf="rankings.top10PointsGlobal?.length"
-        >
-          <tr>
-            <th></th>
-            <th>{{ "NICKNAME" | translate }}</th>
-            <th>{{ "STATS_POINTS_R" | translate }}</th>
-            <th>{{ "STATS_WINS_R" | translate }}</th>
-          </tr>
-          <tr *ngFor="let player of rankings.top10PointsGlobal; index as i">
-            <td>{{ i + 1 }}.</td>
-            <td>{{ player.nickname }}</td>
-            <td>{{ player.points }}</td>
-            <td>{{ player.wonMatches }}</td>
-          </tr>
-        </table>
-        <div *ngIf="!rankings.top10PointsGlobal?.length">
-          {{ "NO_RANKING" | translate }}
-        </div>
-      </div>
+      <div class="page--push"></div>
     </div>
-    <div class="page--push"></div>
   </div>
 </div>

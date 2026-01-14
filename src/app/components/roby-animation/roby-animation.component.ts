@@ -98,6 +98,7 @@ type Step = {
 })
 export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
   @Input() path!: Path;
+  @Input() isBot = false;
   @Input() executeAnimation = false;
   @Input() image = 'roby-positioned';
   @Input() isBotOrEnemy = false;
@@ -109,9 +110,8 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
   currentAngle = 0;
   state: AnimState = 'idle';
 
-  // durations (customize)
-  moveDuration = 700;
-  turnDuration = 700;
+  tileDuration = 1000; // total time per tile
+  turnRatio = 0.3; // 30% of time spent turning
 
   entryX = 0;
   entryY = 0;
@@ -150,6 +150,15 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
     this.stop();
     this.prepareSteps();
     this.runSteps();
+  }
+
+  // durations
+  get turnDuration() {
+    return this.tileDuration * this.turnRatio;
+  }
+
+  get moveDuration() {
+    return this.tileDuration * (1 - this.turnRatio);
   }
 
   private stop(): void {
@@ -226,7 +235,13 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
       const x = tile.col * tileStep + offsetX;
       const y = tile.row * tileStep + offsetY;
 
-      const angle = this.getAngle(dir);
+      const targetAngle = this.getAngle(dir);
+      const angle = this.normalizeAngle(
+        targetAngle,
+        this.steps.length
+          ? this.steps[this.steps.length - 1].angle
+          : this.entryAngle
+      );
 
       if (dir !== prevDir) {
         // turn in place (stay at prevX, prevY)
@@ -238,13 +253,21 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
           duration: this.turnDuration,
         });
       }
+
+      let moveDur = this.moveDuration;
+
+      // if no turn is needed, extend move duration to full tile
+      if (dir === prevDir) {
+        moveDur = this.tileDuration; // straight moves take full time
+      }
+
       // then move to the next tile
       this.steps.push({
         type: 'move',
         x,
         y,
         angle,
-        duration: this.moveDuration,
+        duration: moveDur,
       });
 
       prevDir = dir;
@@ -386,5 +409,17 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
 
   private getAngle(direction: number): number {
     return [0, 90, 180, -90][direction] ?? 0;
+  }
+
+  private normalizeAngle(target: number, current: number): number {
+    let diff = target - current;
+
+    diff = ((diff + 180) % 360) - 180;
+
+    // force -90, 0, +90
+    if (diff > 90) diff = 90;
+    if (diff < -90) diff = -90;
+
+    return current + diff;
   }
 }

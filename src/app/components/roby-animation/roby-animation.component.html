@@ -20,6 +20,7 @@
   </div>
 </div>
 <ng-template #placedRoby>
+  <div *ngIf="!isBot">
   <div class="roby placed-roby" [ngStyle]="getPlacedRobyStyles()">
     <img
       [src]="'assets/img/' + currentImage + '.png'"
@@ -27,4 +28,5 @@
       class="roby-image"
     />
   </div>
+</div>
 </ng-template>

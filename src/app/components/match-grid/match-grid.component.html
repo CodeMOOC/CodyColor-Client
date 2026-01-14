@@ -30,6 +30,7 @@
           #enemyAnim
           *ngIf="enemyPath && enemyPath.pathLength > 0"
           [executeAnimation]="executeAnimation"
+          [isBot]="isBot"
           [isBotOrEnemy]="true"
           [path]="enemyPath"
           [startPixel]="rectCurrentArrow"

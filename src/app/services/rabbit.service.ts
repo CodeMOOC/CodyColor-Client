@@ -386,10 +386,11 @@ export class RabbitService {
     });
   }
 
-  sendRankingsRequest(): void {
+  sendRankingsRequest(userId?: string): void {
     this.sendInServerControlQueue({
       msgType: this.messageTypes.c_rankingsRequest,
       correlationId: this.sessionHandler.getSessionId(),
+      userId: userId,
     });
   }
 

@@ -6,8 +6,6 @@ import {
   StompSubscription,
 } from '@stomp/stompjs';
 
-import { SettingsService } from './settings.service';
-
 import { SessionService } from './session.service';
 import { GameDataService } from './game-data.service';
 import { environment } from '../../environments/environment';
@@ -80,8 +78,7 @@ export class RabbitService {
 
   constructor(
     private gameDataService: GameDataService,
-    private sessionHandler: SessionService,
-    private settings: SettingsService
+    private sessionHandler: SessionService
   ) {
     this.debug =
       environment.rabbit.socketUrl !== 'wss://codycolor.codemooc.net/api/ws';

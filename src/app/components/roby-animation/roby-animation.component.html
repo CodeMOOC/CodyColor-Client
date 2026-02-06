@@ -21,12 +21,12 @@
 </div>
 <ng-template #placedRoby>
   <div *ngIf="!isBot">
-  <div class="roby placed-roby" [ngStyle]="getPlacedRobyStyles()">
-    <img
-      [src]="'assets/img/' + currentImage + '.png'"
-      alt="Roby"
-      class="roby-image"
-    />
+    <div class="roby placed-roby" [ngStyle]="getPlacedRobyStyles()">
+      <img
+        [src]="'assets/img/' + currentImage + '.png'"
+        alt="Roby"
+        class="roby-image"
+      />
+    </div>
   </div>
-</div>
 </ng-template>

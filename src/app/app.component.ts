@@ -22,7 +22,6 @@ export class AppComponent implements OnInit {
 
   // firestore and auth instances
   firestore: Firestore = inject(Firestore);
-  private auth: Auth = inject(Auth);
 
   constructor(private authService: AuthService, private router: Router) {
     this.router.events

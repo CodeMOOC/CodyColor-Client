@@ -17,8 +17,6 @@ import { Path } from '../../models/path.model';
 import {
   CdkDrag,
   DragDropModule,
-  CdkDropList,
-  CdkDropListGroup,
   CdkDragMove,
   CdkDragEnd,
 } from '@angular/cdk/drag-drop';
@@ -34,9 +32,7 @@ import { RabbitService } from '../../services/rabbit.service';
   imports: [
     CommonModule,
     CdkDrag,
-    CdkDropList,
     TranslateModule,
-    CdkDropListGroup,
     DragDropModule,
     RobyAnimationComponent,
   ],
@@ -83,6 +79,10 @@ export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
   isPlayerAnimationDone = false;
   isEnemyAnimationDone = false;
 
+  // Track which arrow is hovered
+  hoveredArrow: { [key: string]: boolean } = {};
+
+
   constructor(
     private matchManager: MatchManagerService,
     private rabbit: RabbitService,
@@ -109,7 +109,16 @@ export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
     this.dragStarted.emit();
   }
 
+  get isOverAnyArrow(): boolean {
+    return Object.values(this.hoveredArrow).some(Boolean);
+  }
+
   onDragMoved(event: CdkDragMove): void {
+    const pointer = event.pointerPosition;
+
+    // Fake condition for demo
+    this.isOverArrow = pointer.x > 300;
+
     const pointerX = event.pointerPosition.x;
     const pointerY = event.pointerPosition.y;
 

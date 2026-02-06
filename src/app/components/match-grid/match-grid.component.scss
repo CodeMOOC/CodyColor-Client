@@ -56,3 +56,134 @@
   z-index: 5; /* below robot's z-index */
   pointer-events: none; /* allow robot to be clickable */
 }
+
+.roby-drag-preview {
+  /* The container follows the cursor (CDK handles this) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px; /* same as your image width */
+  height: 30px; /* same as your image height */
+}
+
+/* proprietà del Roby trascinabile della schermata di gioco */
+.roby-draggable {
+  width: 100px;
+  height: 100px;
+  max-width: 100px;
+  max-height: 100px;
+}
+
+.floating-up-animation {
+  transform: translateX(0px);
+  animation: float-top 4s ease-in-out infinite;
+}
+
+@keyframes float-top {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.over-arrow {
+  background-color: rgba(217, 217, 202, 0.483);
+  border-radius: 50%;
+  transition-duration: 150ms;
+}
+
+.roby-drag-preview img {
+  /* Center the image inside the container so cursor is in the center */
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  pointer-events: none; /* prevent hover issues */
+}
+
+.preview-container {
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+}
+
+.preview-image {
+  width: 30px;
+  height: 30px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.draggable-wrapper {
+  position: relative;
+}
+
+.robot-drag {
+  width: 247px;
+  height: 315px;
+  user-select: none;
+}
+
+/* Arm animation base */
+#arm-left,
+#arm-right {
+  transform-box: fill-box;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#arm-left {
+  transform-origin: right top;
+}
+
+#arm-right {
+  transform-origin: left top;
+}
+
+/* Rest */
+.robot-drag:not(.dragging) #arm-left {
+  transform: rotate(-8deg);
+}
+
+.robot-drag:not(.dragging) #arm-right {
+  transform: rotate(8deg);
+}
+
+/* ORIGINAL while dragging (optional) */
+.robot-drag.dragging #arm-left {
+  transform: rotate(120deg) translateY(-10px);
+}
+
+.robot-drag.dragging #arm-right {
+  transform: rotate(-120deg) translateY(-10px);
+}
+
+/* PREVIEW while dragging (THIS FIXES IT) */
+.cdk-drag-preview .robot-drag #arm-left {
+  transform: rotate(120deg) translateY(-10px);
+}
+
+.cdk-drag-preview .robot-drag #arm-right {
+  transform: rotate(-120deg) translateY(-10px);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-preview {
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.robot-drag-wrapper {
+  display: inline-block;
+  cursor: grab;
+}
+
+.robot-drag-wrapper.cdk-drag-dragging {
+  cursor: grabbing;
+}

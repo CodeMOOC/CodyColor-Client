@@ -48,8 +48,15 @@
       class="cell arrow-cell"
       [attr.data-side]="Side.Top"
       [attr.data-index]="colIndex"
+      (mouseenter)="hoveredArrow[Side.Top + '-' + colIndex] = true"
+      (mouseleave)="hoveredArrow[Side.Top + '-' + colIndex] = false"
     >
-      <span class="material-symbols-outlined">
+      <span
+        class="material-symbols-outlined"
+        [ngClass]="{
+          'over-arrow': hoveredArrow[Side.Top + '-' + colIndex]
+        }"
+      >
         {{ getArrowIcon(Side.Top) }}
       </span>
     </div>
@@ -63,8 +70,15 @@
       class="cell arrow-cell"
       [attr.data-side]="Side.Left"
       [attr.data-index]="rowIndex"
+      (mouseenter)="hoveredArrow[Side.Left + '-' + rowIndex] = true"
+      (mouseleave)="hoveredArrow[Side.Left + '-' + rowIndex] = false"
     >
-      <span class="material-symbols-outlined">
+      <span
+        class="material-symbols-outlined"
+        [ngClass]="{
+          'over-arrow': hoveredArrow[Side.Left + '-' + rowIndex]
+        }"
+      >
         {{ getArrowIcon(Side.Left) }}
       </span>
     </div>
@@ -79,8 +93,15 @@
       class="cell arrow-cell"
       [attr.data-side]="Side.Right"
       [attr.data-index]="rowIndex"
+      (mouseenter)="hoveredArrow[Side.Right + '-' + rowIndex] = true"
+      (mouseleave)="hoveredArrow[Side.Right + '-' + rowIndex] = false"
     >
-      <span class="material-symbols-outlined">
+      <span
+        class="material-symbols-outlined"
+        [ngClass]="{
+          'over-arrow': hoveredArrow[Side.Right + '-' + rowIndex]
+        }"
+      >
         {{ getArrowIcon(Side.Right) }}
       </span>
     </div>
@@ -93,11 +114,19 @@
       class="cell arrow-cell"
       [attr.data-side]="Side.Bottom"
       [attr.data-index]="colIndex"
+      (mouseenter)="hoveredArrow[Side.Bottom + '-' + colIndex] = true"
+      (mouseleave)="hoveredArrow[Side.Bottom + '-' + colIndex] = false"
     >
-      <span class="material-symbols-outlined">
+      <span
+        class="material-symbols-outlined"
+        [ngClass]="{
+          'over-arrow': hoveredArrow[Side.Bottom + '-' + colIndex]
+        }"
+      >
         {{ getArrowIcon(Side.Bottom) }}
       </span>
     </div>
+
     }
     <div class="cell placeholder"></div>
   </div>
@@ -113,12 +142,13 @@
       (cdkDragStarted)="onDragStarted($event)"
       (cdkDragMoved)="onDragMoved($event)"
       (cdkDragEnded)="onDragEnded($event)"
-      class="draggable-wrapper"
+      class="draggable-wrapper example-box"
     >
       <!-- Normal image (when not dragging) -->
       <img
         [src]="'assets/img/roby-idle.png'"
         alt="idle Roby"
+        class="example-custom-placeholder"
         [ngClass]="
           showCompleteGrid
             ? 'roby-draggable'
@@ -127,20 +157,7 @@
       />
 
       <!-- Preview that follows the cursor -->
-      <img
-        [src]="
-          isOverArrow
-            ? 'assets/img/roby-over.png'
-            : 'assets/img/roby-dragging-trasp.png'
-        "
-        *cdkDragPreview
-        alt="dragging Roby"
-        [ngClass]="
-          showCompleteGrid
-            ? 'roby-draggable'
-            : 'roby-draggable floating-up-animation'
-        "
-      />
+
       <!-- Placeholder that replaces the original while dragging -->
       <ng-template class="example-custom-placeholder" cdkDragPlaceholder>
         <div></div>

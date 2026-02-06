@@ -20,7 +20,6 @@ import { ChatHandlerService } from '../../../services/chat.service';
 import { ShareService } from '../../../services/share.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { AuthService } from '../../../services/auth.service';
-import { SettingsService } from '../../../services/settings.service';
 import { NavigationService } from '../../../services/navigation.service';
 import { TimerSetting } from '../../../models/timerSetting.model';
 import { environment } from '../../../../environments/environment';
@@ -105,7 +104,6 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
   private modalService = inject(ModalService);
   private auth = inject(AuthService);
   private path = inject(PathService);
-  private settings = inject(SettingsService);
   private navigation = inject(NavigationService);
   private zone = inject(NgZone);
   private translation = inject(LanguageService);

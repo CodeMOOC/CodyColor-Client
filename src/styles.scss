@@ -1312,14 +1312,6 @@ table.playerlist-match-table {
   color: white;
 }
 
-/* proprietà del Roby trascinabile della schermata di gioco */
-.roby-draggable {
-  width: 100px;
-  height: 100px;
-  max-width: 100px;
-  max-height: 100px;
-}
-
 /* proprietà dei Roby che si muovono nella griglia */
 .roby-automove {
   width: 36px;
@@ -1338,23 +1330,6 @@ table.playerlist-match-table {
 /* -------------------------------------------------------------------------
  * Animazioni ed effetti
  * ------------------------------------------------------------------------- */
-
-.floating-up-animation {
-  transform: translateX(0px);
-  animation: float-top 4s ease-in-out infinite;
-}
-
-@keyframes float-top {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
-}
 
 .floating-right-animation {
   transform: translateY(0px);

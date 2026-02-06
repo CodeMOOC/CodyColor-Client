@@ -70,7 +70,6 @@ export class AuthService {
           console.warn('[Auth] Failed to parse serverUserData cookie', err);
         }
       }
-      console.log('Refresh always data');
       // Always fetch fresh data from backend
       // Ask backend (via Rabbit) for server-side info using Firebase UID
       this.rabbitService.sendLogInRequest(user.uid);

@@ -1,7 +1,9 @@
+
 export const environment = {
   production: false,
   firebaseConfig: {
-    apiKey: 'AIzaSyCJoAvdMagPFHTG--zurc3RjBekWLJzvxo',
+    apiKey: 'AIzaSyBSFxbzE8YMo6a6mr40j_OywsHKqy4xHyw',
+    // apiKey: 'AIzaSyCJoAvdMagPFHTG--zurc3RjBekWLJzvxo',
     authDomain: 'codycolor-f2519.firebaseapp.com',
     databaseURL: 'https://codycolor-f2519.firebaseio.com',
     projectId: 'codycolor-f2519',
@@ -13,8 +15,10 @@ export const environment = {
     username: 'guest',
     password: 'guest',
     vHost: '/',
-    socketUrl: 'wss://codycolor.codemooc.net/api/ws',
-    // socketUrl: 'ws://localhost:15674/ws',
+    // socketUrl: 'wss://codycolor.codemooc.net/api/ws',
+    socketUrl: 'wss://codycolor-beta.codemooc.net/api/ws',
+    // socketUrl: 'ws://rabbit-1:15674/ws',
   },
-  webBaseUrl: 'https://codycolor-beta.codemooc.net',
+  // webBaseUrl: 'https://codycolor.codemooc.net',
+  webBaseUrl: 'http://localhost:4200/',
 };

@@ -142,13 +142,12 @@
       (cdkDragStarted)="onDragStarted($event)"
       (cdkDragMoved)="onDragMoved($event)"
       (cdkDragEnded)="onDragEnded($event)"
-      class="draggable-wrapper example-box"
+      class="draggable-wrapper"
     >
       <!-- Normal image (when not dragging) -->
       <img
         [src]="'assets/img/roby-idle.png'"
         alt="idle Roby"
-        class="example-custom-placeholder"
         [ngClass]="
           showCompleteGrid
             ? 'roby-draggable'

@@ -64,41 +64,41 @@
     </li>
 
     <!-- Stats -->
-    <li class="list--spaced-element">
+    <li class="list--spaced-element" *ngIf="serverUser?.stats as stats">
       <div class="stats">
         <span>{{ "USER_STATS" | translate }}</span>
 
         <p class="stats--line">
           {{ "TOTAL_POINTS" | translate }}
-          <span class="stats--player-text">{{ serverUser.totalPoints }}</span>
+          <span class="stats--player-text">{{ stats.totalPoints }}</span>
         </p>
 
         <p class="stats--line">
           {{ "TOTAL_WINS" | translate }}
-          <span class="stats--player-text">{{ serverUser.wonMatches }}</span>
+          <span class="stats--player-text">{{ stats.wonMatches }}</span>
         </p>
 
         <p class="stats--line">
           {{ "AVG_MATCH" | translate }}
-          <span class="stats--player-text">{{ serverUser.avgPoints }}</span>
+          <span class="stats--player-text">{{ stats.avgPoints }}</span>
         </p>
 
         <p class="stats--line">
           {{ "TOT_MATCHES" | translate }}
-          <span class="stats--player-text">{{ serverUser.totalMatches }}</span>
+          <span class="stats--player-text">{{ stats.totalMatches }}</span>
         </p>
 
         <!-- Best match shown only if present -->
-        <p class="stats--line" *ngIf="serverUser.bestMatch">
+        <p class="stats--line" *ngIf="stats.bestMatch">
           {{ "BEST_MATCH" | translate }}
           <span class="stats--player-text">
             {{
               "BEST_MATCH_DESC"
                 | translate
                   : {
-                      points: serverUser.bestMatch.points,
-                      pathLength: serverUser.bestMatch.pathLength,
-                      time: serverUser.bestMatch.time | number : "1.0-2"
+                      points: stats.bestMatch.points,
+                      pathLength: stats.bestMatch.pathLength,
+                      time: stats.bestMatch.time | number : "1.0-2"
                     }
             }}
           </span>

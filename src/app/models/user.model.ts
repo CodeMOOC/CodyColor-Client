@@ -6,14 +6,20 @@ export interface AppUser {
 }
 
 export interface ServerUserData {
+  nickname: string;
+  name?: string;
+  surname?: string;
+  stats?: UserStats;
   msgType: string;
   success: boolean;
-  nickname: string;
+  correlationId: string;
+  msgId: string;
+}
+
+export interface UserStats {
   totalPoints: number;
   wonMatches: number;
   avgPoints: number;
   totalMatches: number;
   bestMatch: { points: number; pathLength: number; time: number };
-  correlationId: string;
-  msgId: string;
 }

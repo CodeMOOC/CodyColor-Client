@@ -3,5 +3,9 @@
 src/settings.js
 build/settings.js
 node_modules
+src/environments/environment.prod.ts
+src/environments/environment.ts
+src/environments/environment.development.ts
 \.angular
 dist/
+.DS_Store

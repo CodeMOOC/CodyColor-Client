@@ -414,12 +414,16 @@ ul.list {
 
 /* spaziatura piccola: standard */
 li.list--simple-element {
+  display: flex;
+  justify-content: center;
   list-style-type: none;
   margin-bottom: 10px;
 }
 
 /* spaziatura più ampia */
 li.list--spaced-element {
+  display: flex;
+  justify-content: center;
   list-style-type: none;
   margin-bottom: 20px;
 }
@@ -1284,8 +1288,8 @@ table.playerlist-match-table {
 
 /* centra un div all'interno di un contenitore */
 .centered-container {
-  margin: 0 auto;
-  text-align: center;
+  display: flex;
+  justify-content: center;
 }
 
 /* trasforma la prima lettera in maiuscola */
@@ -1383,6 +1387,9 @@ table.playerlist-match-table {
 }
 
 .flashing-animation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   animation: flash 2s ease-in-out infinite;
 }
 

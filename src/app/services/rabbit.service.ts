@@ -66,9 +66,6 @@ export class RabbitService {
     c_logInRequest: 'c_logInRequest', // richiedi nickname utente con uid
     s_authResponse: 's_authResponse', // fornisci il nickname utente - o messaggio error
 
-    c_getUserStats: 'c_getUserStats', // richiedi le statistiche di un utente
-    s_getUserStats: 's_getUserStats', // restituisci le statistiche di un utente
-
     c_editNicknameRequest: 'c_editNicknameRequest', // richiedi la modifica del nickname
     s_editNicknameResponse: 's_editNicknameResponse', // conferma la modifica del nickname - o messaggio error
 
@@ -252,9 +249,6 @@ export class RabbitService {
       case this.messageTypes.s_authResponse:
         cb?.onLogInResponse?.(message);
         break;
-      case this.messageTypes.s_getUserStats:
-        cb?.onGetUserStatsResponse?.(message);
-        break;
       case this.messageTypes.s_editNicknameResponse:
         cb?.onEditNicknameResponse?.(message);
         break;
@@ -387,33 +381,6 @@ export class RabbitService {
       correlationId: this.sessionHandler.getSessionId(),
       userId: userId,
     });
-  }
-
-  sendGetUserStatsRequestAndWait(userId: string): Promise<any>{
-    return new Promise((resolve, reject) => {
-      const correlationId = this.sessionHandler.getSessionId();
-      const sub = this.loginResponse$.subscribe((msg) => {
-        if (!msg) return;
-        if (
-          msg.msgType === this.messageTypes.s_getUserStats &&
-          msg.correlationId === correlationId
-        ) {
-          sub.unsubscribe();
-          if (msg.success) resolve(msg);
-          else reject(new Error('Stats get error'));
-        }
-      });
-
-      this.sendGetUserStatsRequest(userId);
-    });
-  }
-
-  sendGetUserStatsRequest(userId: string): void {
-    this.sendInServerControlQueue({
-      msgType: this.messageTypes.c_getUserStats,
-      correlationId: this.sessionHandler.getSessionId(),
-      userId: userId,
-    })
   }
 
   sendRankingsRequest(userId?: string): void {

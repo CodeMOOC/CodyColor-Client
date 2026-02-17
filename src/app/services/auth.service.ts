@@ -57,7 +57,7 @@ export class AuthService {
         return;
       }
 
-      // restore cookie so UI has something to display
+      // Optional: immediately restore cookie so UI has something to display
       const cookie = this.cookieService.get('serverUserData');
       if (cookie) {
         try {
@@ -74,24 +74,16 @@ export class AuthService {
       // Ask backend (via Rabbit) for server-side info using Firebase UID
       this.rabbitService.sendLogInRequest(user.uid);
 
-      const sub = this.rabbitService.loginResponse$.subscribe(async (msg) => {
+      const sub = this.rabbitService.loginResponse$.subscribe((msg) => {
         if (msg?.msgType !== this.rabbitService.messageTypes.s_authResponse)
           return;
 
         if (msg.success && msg.nickname) {
-          const current = this.userSubject.value;
-
-          const newServerData = {
-            ...current.serverData,   
-            ...msg                   
-          };
-
           // Update cookie with latest backend data
-          this.setServerUserData(newServerData);
+          this.setServerUserData(msg);
 
           // Update userSubject so profile view reflects backend
-          this.userSubject.next({ firebaseUser: user, serverData: newServerData });
-          await this.refreshUserStats();
+          this.userSubject.next({ firebaseUser: user, serverData: msg });
         } else if (msg.success && !msg.nickname) {
           // Backend user exists but has no nickname yet
           this.userSubject.next({ firebaseUser: user, serverData: null });
@@ -108,27 +100,6 @@ export class AuthService {
     });
 
     this.initialized = true;
-  }
-
-  async refreshUserStats(): Promise<void> {
-    const current = this.userSubject.value;
-    if (!current.firebaseUser || !current.serverData) return;
-  
-    try {
-      const stats = await this.rabbitService.sendGetUserStatsRequestAndWait(
-        current.firebaseUser.uid
-      );
-  
-      this.userSubject.next({
-        firebaseUser: current.firebaseUser,
-        serverData: {
-          ...current.serverData,
-          stats
-        }
-      });
-    } catch (err) {
-      console.warn('[Auth] Failed to refresh stats', err);
-    }
   }
 
   get currentUser(): AppUser {

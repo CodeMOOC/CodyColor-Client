@@ -29,9 +29,7 @@ export class ProfileViewComponent implements OnInit {
     private rabbitService: RabbitService
   ) {}
 
-  ngOnInit(): void {
-    this.auth.refreshUserStats();
-  }
+  ngOnInit(): void {}
 
   // Default avatar if Firebase photoURL is missing
   get avatarUrl(): string {

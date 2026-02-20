@@ -72,7 +72,7 @@ export class AuthService {
       }
       // Always fetch fresh data from backend
       // Ask backend (via Rabbit) for server-side info using Firebase UID
-      this.rabbitService.sendLogInRequest(user.uid);
+      // this.rabbitService.sendLogInRequest(user.uid);
 
       const sub = this.rabbitService.loginResponse$.subscribe((msg) => {
         if (msg?.msgType !== this.rabbitService.messageTypes.s_authResponse)
@@ -102,11 +102,45 @@ export class AuthService {
     this.initialized = true;
   }
 
+  async refreshUserStats(): Promise<void> {
+    const current = this.userSubject.value;
+    console.log('[Auth] Refreshing user stats for', current);
+    if (!current.firebaseUser || !current.serverData) return;
+
+    try {
+      const stats = await this.rabbitService.sendGetUserStatsRequest(
+        current.firebaseUser.uid
+      );
+
+      console.log('[Auth] Refreshed user stats:', stats);
+      this.userSubject.next({
+        firebaseUser: current.firebaseUser,
+        serverData: {
+          ...current.serverData,
+          // stats
+        },
+      });
+    } catch (err) {
+      console.warn('[Auth] Failed to refresh stats', err);
+    }
+  }
+
   get currentUser(): AppUser {
     return this.userSubject.value;
   }
 
   setServerUserData(serverUser: ServerUserData) {
+    const current = this.userSubject.value;
+
+    const updatedUser: AppUser = {
+      firebaseUser: current.firebaseUser,
+      serverData: serverUser,
+    };
+  
+    // update reactive state
+    this.userSubject.next(updatedUser);
+  
+    // persist to cookie
     this.cookieService.set('serverUserData', JSON.stringify(serverUser));
   }
 

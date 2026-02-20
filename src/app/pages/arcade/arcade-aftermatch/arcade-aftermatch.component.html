@@ -3,12 +3,24 @@
     <div class="page--body">
       <ul class="list">
         <!-- Player-Enemy total points -->
+        <div class="points-row">
+          <div class="flex flex-col">
+            <div class="big-text ellipsize">{{ userGlobal.points }}</div>
+            <div class="centered-columns--column">
+              {{ user.nickname }}
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <div class="big-text ellipsize">{{ enemyGlobal.points }}</div>
+            <div class="centered-columns--column">
+              {{ enemy.nickname }}
+            </div>
+          </div>
+        </div>
         <li class="list--spaced-element">
-          <div class="centered-columns">
+          <!-- <div class="centered-columns">
             <div class="centered-columns--pair">
-              <div class="centered-columns--column">
-                <div class="big-text ellipsize">{{ userGlobal.points }}</div>
-              </div>
+              <div class="centered-columns--column"></div>
               <div class="centered-columns--column">
                 <div class="big-text ellipsize">{{ enemyGlobal.points }}</div>
               </div>
@@ -16,13 +28,10 @@
 
             <div class="centered-columns--pair">
               <div class="centered-columns--column ellipsize">
-                {{ user.nickname }}
-              </div>
-              <div class="centered-columns--column ellipsize">
                 {{ enemy.nickname }}
               </div>
             </div>
-          </div>
+          </div> -->
         </li>
 
         <!-- Match winner -->

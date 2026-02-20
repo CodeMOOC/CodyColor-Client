@@ -29,6 +29,14 @@ export const routes: Routes = [
   { path: '', component: SplashComponent },
   { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./pages/profile/profile.component').then(
+        (m) => m.ProfileComponent
+      ),
+    canActivate: [sessionGuard],
+  },
   { path: 'rules', component: RulesComponent },
   {
     path: 'random-mmaking',

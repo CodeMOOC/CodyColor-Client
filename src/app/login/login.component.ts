@@ -18,6 +18,7 @@ import { ProfileViewComponent } from '../components/profile-view/profile-view.co
 import { NicknameFormComponent } from '../components/nickname-form/nickname-form.component';
 import { RabbitService } from '../services/rabbit.service';
 import { Auth, sendPasswordResetEmail } from '@angular/fire/auth';
+import { Router } from '@angular/router';
 
 enum ScreenState {
   Loading = 'loadingScreen',
@@ -82,7 +83,8 @@ export class LoginComponent {
     private auth: AuthService,
     private firebaseAuth: Auth,
     private rabbit: RabbitService,
-    private audio: AudioService
+    private audio: AudioService,
+    private router: Router
   ) {}
 
   timeFormatter = this.gameData.formatTimeDecimals;
@@ -112,10 +114,12 @@ export class LoginComponent {
           this.screen = ScreenState.Loading;
         }
         if (user?.firebaseUser && user?.serverData) {
-          this.serverUserData = user.serverData;
-          this.firebaseUserData = user.firebaseUser;
-          this.screen = ScreenState.Profile;
-          this.userNickname = user.serverData.nickname;
+          this.router.navigate(['/profile']);
+          return;
+          // this.serverUserData = user.serverData;
+          // this.firebaseUserData = user.firebaseUser;
+          // this.screen = ScreenState.Profile;
+          // this.userNickname = user.serverData.nickname;
         } else if (user?.firebaseUser) {
           this.screen = ScreenState.Nickname;
         } else {
@@ -260,6 +264,7 @@ export class LoginComponent {
         this.screen = ScreenState.Nickname;
       } else {
         await this.auth.signInWithEmail(email!, password!);
+        this.router.navigate(['/profile']);
       }
     } catch (err: any) {
       const errorMessage = this.auth.getFirebaseErrorMessage(err);

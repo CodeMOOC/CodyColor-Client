@@ -52,13 +52,11 @@ export class FooterComponent implements OnInit {
   }
 
   userLogin(): void {
-    this.auth.user$.subscribe(() => {
-      const appUser = this.auth.currentUser;
+    this.auth.user$.subscribe((user) => {
+      this.userLogged = !!user.firebaseUser && !!user.serverData;
 
-      this.userLogged = !!appUser.firebaseUser && !!appUser.serverData;
-
-      if (this.userLogged && appUser.serverData) {
-        this.userNickname = appUser.serverData.nickname;
+      if (this.userLogged && user.serverData) {
+        this.userNickname = user.serverData.nickname;
       } else {
         this.translate.get('NOT_LOGGED').subscribe((res: string) => {
           this.userNickname = res;
@@ -72,6 +70,7 @@ export class FooterComponent implements OnInit {
     if (
       currentUrl === '/login' ||
       currentUrl === '/rules' ||
+      currentUrl === '/profile' ||
       currentUrl === '/rankings'
     ) {
       this.goToHome();

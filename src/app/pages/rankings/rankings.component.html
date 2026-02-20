@@ -82,6 +82,7 @@
           </div>
 
           <!-- My global match rank (if not in top 10) -->
+
           <div
             class="my-rank"
             *ngIf="myGlobalMatchRank && !myGlobalMatchRank.inTop10"
@@ -91,13 +92,15 @@
               {{ "YOUR_RANK" | translate }}
             </div>
 
-            <div class="my-rank--row">
-              <span>#{{ myGlobalMatchRank.position }}</span>
-              <span>{{ userNickname }}</span>
-              <span>{{ myGlobalMatchRank.points }}</span>
-              <span>{{ myGlobalMatchRank.pathLength }}</span>
-              <span>{{ formatTime(myGlobalMatchRank.time) }}</span>
-            </div>
+            <table class="playerlist-match-table my-rank-table">
+              <tr class="highlight">
+                <td>#{{ myGlobalMatchRank.position }}.</td>
+                <td>{{ userNickname }}</td>
+                <td>{{ myGlobalMatchRank.points }}</td>
+                <td>{{ myGlobalMatchRank.pathLength }}</td>
+                <td>{{ formatTime(myGlobalMatchRank.time) }}</td>
+              </tr>
+            </table>
           </div>
         </div>
 

@@ -26,6 +26,7 @@ export class RabbitService {
   private debug: boolean;
   private loginResponseSubject = new BehaviorSubject<any>(null);
   loginResponse$: Observable<any> = this.loginResponseSubject.asObservable();
+  private userStatsResponse$ = new BehaviorSubject<any>(null);
 
   private readonly endpoints = {
     serverControlQueue: '/queue/serverControl',
@@ -66,6 +67,9 @@ export class RabbitService {
     c_logInRequest: 'c_logInRequest', // richiedi nickname utente con uid
     s_authResponse: 's_authResponse', // fornisci il nickname utente - o messaggio error
 
+    c_getUserStatsRequest: 'c_getUserStatsRequest', // richiedi le statistiche di un utente
+    s_getUserStatsResponse: 's_getUserStatsResponse', // restituisci le statistiche di un utente
+
     c_editNicknameRequest: 'c_editNicknameRequest', // richiedi la modifica del nickname
     s_editNicknameResponse: 's_editNicknameResponse', // conferma la modifica del nickname - o messaggio error
 
@@ -80,8 +84,8 @@ export class RabbitService {
     private gameDataService: GameDataService,
     private sessionHandler: SessionService
   ) {
-    this.debug =
-      environment.rabbit.socketUrl !== 'wss://codycolor.codemooc.net/api/ws';
+    this.debug = false;
+    // environment.rabbit.socketUrl !== 'wss://codycolor.codemooc.net/api/ws';
   }
 
   connect(): void {
@@ -105,16 +109,18 @@ export class RabbitService {
   }
 
   async waitForBrokerConnection(): Promise<void> {
-    if (this.connectedToBroker) return;
+    if (this.client?.connected) return;
+
     return new Promise((resolve) => {
       const check = setInterval(() => {
-        if (this.connectedToBroker) {
+        if (this.client?.connected) {
           clearInterval(check);
           resolve();
         }
       }, 100);
     });
   }
+
   setPageCallbacks(callbacks: any): void {
     this.pageCallbacks = callbacks;
   }
@@ -248,6 +254,11 @@ export class RabbitService {
         break;
       case this.messageTypes.s_authResponse:
         cb?.onLogInResponse?.(message);
+        break;
+      case this.messageTypes.s_getUserStatsResponse:
+        this.userStatsResponse$.next(message);
+        console.log('Received user stats response:', message);
+        cb?.onGetUserStatsResponse?.(message);
         break;
       case this.messageTypes.s_editNicknameResponse:
         cb?.onEditNicknameResponse?.(message);
@@ -383,6 +394,35 @@ export class RabbitService {
     });
   }
 
+  sendGetUserStatsRequestAndWait(userId: string): Promise<any> {
+    console.log('Requesting user stats for userId:', userId);
+    return new Promise((resolve, reject) => {
+      console.log('Subscribing to userStatsResponse$ for user stats response');
+      const correlationId = this.sessionHandler.getSessionId();
+      const sub = this.userStatsResponse$.subscribe((msg) => {
+        if (!msg) return;
+        if (
+          msg.msgType === this.messageTypes.s_getUserStatsResponse &&
+          msg.correlationId === correlationId
+        ) {
+          sub.unsubscribe();
+          if (msg.success) resolve(msg);
+          else reject(new Error('Stats get error'));
+        }
+      });
+
+      this.sendGetUserStatsRequest(userId);
+    });
+  }
+
+  sendGetUserStatsRequest(userId: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_getUserStatsRequest,
+      correlationId: this.sessionHandler.getSessionId(),
+      userId: userId,
+    });
+  }
+
   sendRankingsRequest(userId?: string): void {
     this.sendInServerControlQueue({
       msgType: this.messageTypes.c_rankingsRequest,
@@ -453,8 +493,6 @@ export class RabbitService {
 
   // notifica all'avversario l'avvenuto posizionamento di roby
   sendPlayerPositionedMessage(): void {
-    console.log('Sending player positioned message');
-    console.log('Game data:', this.gameDataService.value);
     this.sendInGameRoomTopic({
       msgType: this.messageTypes.c_positioned,
       gameRoomId: this.gameDataService.value.general.gameRoomId,
@@ -478,7 +516,6 @@ export class RabbitService {
 
   // notifica all'avversario la volontà di skippare l'animazione
   sendEndAnimationMessage(): void {
-    console.log('Sending end animation message');
     this.sendInGameRoomTopic({
       msgType: this.messageTypes.c_endAnimation,
       gameRoomId: this.gameDataService.value.general.gameRoomId,

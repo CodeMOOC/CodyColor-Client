@@ -61,14 +61,11 @@ export class RankingsComponent implements OnInit {
       return;
     }
 
-    this.userLogged = this.auth.loginCompleted();
-    if (this.userLogged && this.auth.currentUser?.serverData) {
-      this.userNickname = this.auth.currentUser.serverData.nickname;
-    } else {
-      this.translate.get('NOT_LOGGED').subscribe((res: string) => {
-        this.userNickname = res;
-      });
-    }
+    this.auth.user$.subscribe((user) => {
+      this.userLogged = !!user.firebaseUser && !!user.serverData;
+      if (!this.userLogged) return;
+      this.userNickname = user.serverData?.nickname ?? '';
+    });
 
     this.loadTranslations();
     this.initRankings();
@@ -78,22 +75,22 @@ export class RankingsComponent implements OnInit {
         const top10PointsGlobal = message.success
           ? JSON.parse(message.top10PointsGlobal)
           : [];
-    
+
         const top10PointsDaily = message.success
           ? JSON.parse(message.top10PointsDaily)
           : [];
-    
+
         const top10MatchGlobal = message.success
           ? JSON.parse(message.top10MatchGlobal)
           : [];
-    
+
         const top10MatchDaily = message.success
           ? JSON.parse(message.top10MatchDaily)
           : [];
-    
+
         const myGlobalMatchRank = message.myGlobalMatchRank ?? null;
         const myGlobalPointsRank = message.myGlobalPointsRank ?? null;
-    
+
         this.rankingsHandler.updateRankings({
           top10MatchDaily,
           top10MatchGlobal,
@@ -102,16 +99,15 @@ export class RankingsComponent implements OnInit {
           myGlobalMatchRank,
           myGlobalPointsRank,
         });
-    
+
         this.rankings = this.rankingsHandler.getRankings();
-    
+
         this.myGlobalMatchRank = myGlobalMatchRank;
         this.myGlobalPointsRank = myGlobalPointsRank;
-    
+
         this.isLoading = false;
       },
     });
-    
 
     this.basePlaying = this.audio.isEnabled();
   }

@@ -235,9 +235,8 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
       const x = tile.col * tileStep + offsetX;
       const y = tile.row * tileStep + offsetY;
 
-      const targetAngle = this.getAngle(dir);
-      const angle = this.getAngle(dir); 
-
+      const rawAngle = this.getAngle(dir);
+      const angle = this.normalizeAngle(rawAngle, this.getAngle(prevDir));
       if (dir !== prevDir) {
         // turn in place (stay at prevX, prevY)
         this.steps.push({
@@ -377,7 +376,6 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
         this.state = this.moveToggle ? 'moving' : 'moving2';
         this.moveToggle = !this.moveToggle;
 
-        console.log("current angle", this.currentAngle);
         this.stepTimer = setTimeout(() => {
           idx++;
           next();
@@ -404,7 +402,14 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private getAngle(direction: number): number {
-    console.log("getAngle for direction", direction);
     return [0, 90, 180, -90][direction] ?? 0;
+  }
+
+  private normalizeAngle(target: number, current: number): number {
+    let diff = target - current;
+
+    diff = ((((diff + 180) % 360) + 360) % 360) - 180;
+
+    return current + diff;
   }
 }

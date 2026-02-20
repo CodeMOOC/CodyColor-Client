@@ -101,8 +101,9 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
 
     if (!this.preventResetOnDestroy) {
       this.quitGame();
+      this.rabbit.quitGame();
     }
-    this.rabbit.quitGame();
+
     this.subs.unsubscribe();
   }
 

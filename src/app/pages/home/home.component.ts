@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AudioService } from '../../services/audio.service';
@@ -12,7 +12,7 @@ import { RabbitService } from '../../services/rabbit.service';
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent {
+export class HomeComponent implements OnDestroy {
   loginOrProfile = 'LOGIN'; // or 'PROFILE', depending on auth state
   userNickname = 'Guest';
   userLogged = false;
@@ -53,6 +53,15 @@ export class HomeComponent {
 
     // Start the connection
     this.rabbit.connect();
+  }
+
+  ngOnDestroy(): void {
+    this.rabbit.clearPageCallbacks();
+  }
+
+  sendPing(): void {
+    // This will send a message to the server queue
+    this.rabbit.sendRankingsRequest();
   }
 
   goToRules() {

@@ -130,6 +130,7 @@ export class RoyaleAftermatchComponent
       this.quitGame();
       this.rabbit.quitGame();
     }
+    this.rabbit.clearPageCallbacks();
   }
 
   private initMatchData(): void {

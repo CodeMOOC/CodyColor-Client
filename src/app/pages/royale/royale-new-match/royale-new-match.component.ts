@@ -136,6 +136,7 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subs.forEach((s) => s.unsubscribe());
+    this.rabbit.clearPageCallbacks();
   }
 
   // -------------------------------------------------------

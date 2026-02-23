@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { NavigationService } from '../../services/navigation.service';
@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   styleUrls: ['./rankings.component.scss'],
 })
-export class RankingsComponent implements OnInit {
+export class RankingsComponent implements OnInit, OnDestroy {
   userLogged = false;
   userNickname = '';
   rankIndex = 0;
@@ -112,6 +112,9 @@ export class RankingsComponent implements OnInit {
     this.basePlaying = this.audio.isEnabled();
   }
 
+  ngOnDestroy(): void {
+    this.rabbit.clearPageCallbacks();
+  }
   private loadTranslations(): void {
     this.translate
       .get([

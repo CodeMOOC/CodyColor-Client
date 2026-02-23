@@ -1,0 +1,141 @@
+/* -------------------------------------------------------------------------
+ * Modulo chat: comprende i componenti che permettono di instaurare una chat
+ * tra due giocatori nelle schermate di matchmaking e aftermatch
+ * ------------------------------------------------------------------------- */
+
+.chat {
+  margin: 20px auto 0 auto;
+  overflow: auto;
+  display: flex;
+}
+
+#aftermatch .chat {
+  margin: 0 auto;
+}
+
+.chat--hints-container,
+.chat--bubbles-container {
+  width: 100%;
+  height: 40vh;
+  margin: 10px 0;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 8px;
+  border-color: White;
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.11);
+  overflow: scroll;
+}
+
+@media only screen and (min-width: 716px) {
+  .chat--hints-container,
+  .chat--bubbles-container {
+    margin: 10px;
+  }
+}
+
+.chat--hints-container {
+  padding: 10px 10px 0 10px;
+}
+
+.chat--bubbles-container {
+  padding: 10px 0;
+}
+
+.chat--bubbles-sub-container,
+.chat--hints-sub-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button.chat--hint {
+  margin: 10px;
+  float: left;
+  padding: 10px;
+  background-color: white;
+  box-sizing: border-box;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+button.chat--hint:hover {
+  background-color: #818387;
+}
+
+.chat--bubble-row {
+  overflow: auto;
+  margin: 10px auto 0 auto;
+}
+
+.chat--bubble-player,
+.chat--bubble-enemy {
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 10px;
+  border-radius: 8px;
+  color: white;
+  padding: 10px 20px;
+  position: relative;
+}
+
+.chat--bubble-sender {
+  box-sizing: border-box;
+  font-size: small;
+  text-align: inherit;
+}
+
+.chat--bubble-player {
+  float: left;
+  text-align: left;
+  margin-left: 20px;
+  background-color: #48af9b;
+}
+
+.chat--bubble-enemy {
+  float: right;
+  text-align: right;
+  margin-right: 20px;
+  background-color: #ba793a;
+}
+
+.chat--bubble-enemy:before {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-left: 15px solid #ba793a;
+  border-right: 15px solid transparent;
+  border-top: 15px solid #ba793a;
+  border-bottom: 15px solid transparent;
+  right: -16px;
+  top: 0;
+}
+
+.chat--bubble-player:before {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-left: 15px solid transparent;
+  border-right: 15px solid #48af9b;
+  border-top: 15px solid #48af9b;
+  border-bottom: 15px solid transparent;
+  left: -16px;
+  top: 0;
+}
+
+.chat.ng-hide-remove {
+  animation: fadein 0.2s both ease-in;
+}
+
+.chat.ng-hide-add {
+  animation: fadeout 0.2s both ease-in;
+}
+
+@media screen and (max-width: 716px) {
+  .chat {
+    flex-direction: column;
+  }
+}

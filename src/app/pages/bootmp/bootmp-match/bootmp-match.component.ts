@@ -174,16 +174,10 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.matchManager.stopAll();
     this.subs.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
     this.gameData.stopTimer();
-  }
-
-  private quitGame(): void {
-    // this.path.quitGame();
-    this.gameData.reset();
   }
 
   private buildGrid() {
@@ -309,7 +303,10 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
       this.general.timerSetting,
       (ms) => this.updateUserTimer(ms),
       (ms) => this.updateEnemyTimer(ms),
-      () => this.matchManager.handleUserTimeout(this.user)
+      () => {
+        this.router.navigate(['/bootmp-aftermatch']);
+        // this.matchManager.handleUserTimeout(this.user);
+      }
     );
   }
 

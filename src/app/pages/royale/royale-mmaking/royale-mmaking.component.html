@@ -201,37 +201,12 @@
           </li>
 
           <!-- Chat -->
-          <li class="list--simple-element">
-            <h2>{{ "CHAT_TITLE" | translate }}</h2>
-          </li>
-          <li class="list--simple-element">
-            <div class="chat">
-              <div class="chat--bubbles-container">
-                <div
-                  class="chat--bubbles-sub-container"
-                  *ngFor="let bubble of chatBubbles"
-                >
-                  <div class="chat--bubble-row">
-                    <div [ngClass]="getBubbleStyle(bubble)">
-                      <div class="chat--bubble-sender">{{ bubble.sender }}</div>
-                      {{ bubble.body | translate }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="chat--hints-container">
-                <div
-                  class="chat--hints-sub-container"
-                  *ngFor="let hint of chatHints"
-                >
-                  <button class="chat--hint" (click)="sendChatMessage(hint)">
-                    {{ hint | translate }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </li>
+          <app-chat
+            [playerId]="user.playerId"
+            [chatBubbles]="chatBubbles"
+            [chatHints]="chatHints"
+            (messageSent)="handleMessageSend($event)"
+          />
         </ul>
       </div>
     </div>

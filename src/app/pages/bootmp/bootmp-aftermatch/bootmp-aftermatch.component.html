@@ -65,7 +65,7 @@
               <span class="material-symbols-outlined">{{ "schedule" }}</span>
               {{ "STATS_TIME" | translate }}
               <span class="stats--player-text">{{
-                timeFormatter(userMatch?.time)
+                userMatch?.time >= 0 ? timeFormatter(userMatch?.time) : "00:00"
               }}</span>
               <span *ngIf="general?.botSetting !== 0">-</span>
               <span

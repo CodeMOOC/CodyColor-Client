@@ -70,10 +70,6 @@ export class BootmpMmakingComponent implements OnInit {
     this.loadBotSettings();
   }
 
-  private quitGame(): void {
-    this.gameData.reset();
-  }
-
   editTimer(increment: boolean): void {
     this.audio.playSound('menu-click');
 

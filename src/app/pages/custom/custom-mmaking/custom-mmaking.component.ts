@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { RabbitService } from '../../../services/rabbit.service';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -34,7 +34,7 @@ import { TimerSetting } from '../../../models/timerSetting.model';
   templateUrl: './custom-mmaking.component.html',
   styleUrl: './custom-mmaking.component.scss',
 })
-export class CustomMmakingComponent implements OnInit {
+export class CustomMmakingComponent implements OnInit, OnDestroy {
   user = signal<Player>({} as Player);
 
   enemy!: Player;
@@ -103,7 +103,6 @@ export class CustomMmakingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('Custom MMaking Component Init');
     this.gameData.update('general', {
       gameType: this.gameData.getGameTypes().custom,
     });
@@ -218,6 +217,10 @@ export class CustomMmakingComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.rabbit.clearPageCallbacks();
+  }
+
   private async handleEnemyQuit(message: string) {
     this.quitGame();
     await this.modalService.showForceExitModal(message);
@@ -255,6 +258,7 @@ export class CustomMmakingComponent implements OnInit {
   }
 
   private quitGame() {
+    this.chatService.clearChat();
     this.rabbit.quitGame();
     this.gameData.reset();
   }

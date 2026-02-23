@@ -60,7 +60,13 @@
                 <td>{{ userMatchResult?.nickname }}</td>
                 <td>{{ userMatchResult?.points }}</td>
                 <td>{{ userMatchResult?.pathLength }}</td>
-                <td>{{ timeFormatter(userMatchResult?.time) }}</td>
+                <td>
+                  {{
+                    userMatchResult?.time >= 0
+                      ? timeFormatter(userMatch?.time)
+                      : "00:00"
+                  }}
+                </td>
               </tr>
             </table>
           </div>

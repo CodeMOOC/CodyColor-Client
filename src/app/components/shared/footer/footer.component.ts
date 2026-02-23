@@ -13,6 +13,7 @@ import { AuthService } from '../../../services/auth.service';
 import { RabbitService } from '../../../services/rabbit.service';
 import { Match } from '../../../models/match.model';
 import { MatchManagerService } from '../../../services/match-manager.service';
+import { ChatHandlerService } from '../../../services/chat.service';
 
 @Component({
   selector: 'app-footer',
@@ -33,6 +34,7 @@ export class FooterComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private audio: AudioService,
+    private chat: ChatHandlerService,
     private dialog: MatDialog,
     private gameData: GameDataService,
     private matchManager: MatchManagerService,
@@ -96,6 +98,7 @@ export class FooterComponent implements OnInit {
 
   private quitGame(): void {
     // this.pathService.quitGame();
+    this.chat.clearChat();
     this.gameData.reset();
     this.matchManager.resetMatchState();
   }

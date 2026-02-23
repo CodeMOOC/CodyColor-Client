@@ -61,11 +61,11 @@
               <i class="material-symbols-outlined">schedule</i>
               {{ "STATS_TIME" | translate }}
               <span class="stats--player-text">{{
-                timeFormatter(userMatch.time)
+                userMatch?.time >= 0 ? timeFormatter(userMatch?.time) : "00:00"
               }}</span>
               -
               <span class="stats--enemy-text">{{
-                timeFormatter(enemyMatch.time)
+                userMatch?.time >= 0 ? timeFormatter(enemyMatch?.time) : "00:00"
               }}</span>
             </p>
             <p class="stats--line">

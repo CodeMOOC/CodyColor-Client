@@ -33,12 +33,13 @@ import {
   createDefaultGeneral,
 } from '../../../models/game-data.model';
 import { PathService } from '../../../services/path.service';
+import { ChatComponent } from '../../../components/chat/chat.component';
 
 @Component({
   selector: 'app-royale-mmaking',
   templateUrl: './royale-mmaking.component.html',
   styleUrls: ['./royale-mmaking.component.scss'],
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, ChatComponent],
   standalone: true,
 })
 export class RoyaleMmakingComponent implements OnInit, OnDestroy {
@@ -172,9 +173,11 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
         this.authHandler.currentUser?.firebaseUser?.uid ?? ''
       );
 
-      this.translate
-        .get('SEARCH_MATCH_INFO')
-        .subscribe((text) => (this.joinMessage = text));
+      this.translate.onLangChange.subscribe(() => {
+        if (this.joinMessage) {
+          this.setJoinMessage('SEARCH_MATCH_INFO');
+        }
+      });
     }
 
     this.basePlaying = this.audio.isEnabled();
@@ -183,6 +186,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.startMatchTimer) clearInterval(this.startMatchTimer);
     this.subs.unsubscribe();
+    this.rabbit.clearPageCallbacks();
   }
 
   private quitGame(): void {
@@ -248,7 +252,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     this.audio.splashStartBase();
   }
 
-  sendChatMessage(messageBody: string): void {
+  handleMessageSend(messageBody: string): void {
     this.audio.playSound('menu-click');
     const chatMessage = this.rabbit.sendChatMessage(messageBody);
     this.chat.enqueueChatMessage(chatMessage);
@@ -342,7 +346,9 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
               if (remaining <= 0 && this.startMatchTimer) {
                 clearInterval(this.startMatchTimer);
                 this.startMatchTimer = undefined;
-                // this.handleEnemyQuit(this.translate.instant('TIME_BATTLE_IS_OVER'));
+                if (this.aggregated.connectedPlayers <= 1) {
+                  this.translate.instant('TIME_BATTLE_IS_OVER');
+                }
               }
             }, 1000);
           }
@@ -401,6 +407,12 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     this.forceExitModal = true;
 
     this.router.navigate(['/home']);
+  }
+
+  private setJoinMessage(key: string) {
+    this.translate.get(key).subscribe((text) => {
+      this.joinMessage = text;
+    });
   }
 
   formattedStartTimer = computed(() =>

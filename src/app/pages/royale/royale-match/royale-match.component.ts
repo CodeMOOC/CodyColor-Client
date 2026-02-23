@@ -176,6 +176,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // this.quitGame();
     this.rabbit.quitGame();
+    this.rabbit.clearPageCallbacks();
   }
 
   // -------------------------------
@@ -342,6 +343,15 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       } else {
         this.gameTimerValue.set(0);
         this.clockAnimation = 'clock--end';
+        this.router.navigate(['/royale-aftermatch'], {
+          state: {
+            matchRanking: this.gameData.value.matchRanking,
+            globalRanking: this.gameData.value.globalRanking,
+            userMatchResult: this.gameData.value.userMatchResult,
+            userGlobalResult: this.gameData.value.userGlobalResult,
+            aggregated: this.gameData.value.aggregated,
+          },
+        });
 
         if (!this.gameData.value.match.positioned) {
           this.gameData.update('match', {

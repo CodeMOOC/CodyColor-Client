@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { LanguageService } from '../../services/language.service';
 import { Router } from '@angular/router';
 import { RabbitService } from '../../services/rabbit.service';
@@ -15,15 +15,25 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { ModalService } from '../../services/modal-service.service';
+import { ChatComponent } from '../../components/chat/chat.component';
+import { AppUser } from '../../models/user.model';
+import { Player } from '../../models/player.model';
 
 @Component({
   selector: 'app-random-mmaking',
-  imports: [TranslateModule, CommonModule, FormsModule, SpinnerComponent],
+  imports: [
+    TranslateModule,
+    CommonModule,
+    FormsModule,
+    SpinnerComponent,
+    ChatComponent,
+  ],
   standalone: true,
   templateUrl: './random-mmaking.component.html',
   styleUrl: './random-mmaking.component.scss',
 })
 export class RandomMmakingComponent implements OnInit, OnDestroy {
+  user!: Player;
   nickname: string = '';
   userNickname: string = '';
   userLogged: boolean = false;
@@ -79,12 +89,14 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.clearTimers();
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.rabbit.clearPageCallbacks();
   }
 
   private initMatchmaking(): void {
     this.chat.clearChat();
 
     const sub = this.gameData.gameData$.subscribe((data) => {
+      this.user = this.gameData.value.user;
       this.enemy = this.gameData.value.enemy;
     });
     this.subscriptions.push(sub);
@@ -101,18 +113,18 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.userLogged = this.authHandler.loginCompleted();
-    if (this.userLogged) {
-      const user = this.authHandler.currentUser?.serverData;
-
-      this.nickname = this.userNickname = user?.nickname ? user.nickname : '';
-    } else {
-      this.translation
-        .setTranslation('userNickname', 'NOT_LOGGED')
-        .then((t) => {
-          this.userNickname = t;
+    this.authHandler.user$.subscribe((user) => {
+      this.userLogged = !!user.firebaseUser && !!user.serverData;
+      if (this.userLogged && user.serverData) {
+        this.nickname = this.userNickname = user?.serverData.nickname
+          ? user.serverData.nickname
+          : '';
+      } else {
+        this.translate.get('NOT_LOGGED').subscribe((res: string) => {
+          this.userNickname = res;
         });
-    }
+      }
+    });
 
     this.changeScreen(this.screens.nicknameSelection);
     this.randomWaitingPlayers = this.sessionHandler
@@ -245,10 +257,10 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
       : 'chat--bubble-enemy';
   }
 
-  sendChatMessage(message: string): void {
+  handleMessageSend(messageBody: string): void {
     this.audio.playSound('menu-click');
-    const chatMsg = this.rabbit.sendChatMessage(message);
-    this.chat.enqueueChatMessage(chatMsg);
+    const chatMessage = this.rabbit.sendChatMessage(messageBody);
+    this.chat.enqueueChatMessage(chatMessage);
     this.chatBubbles = this.chat.getChatMessages();
   }
 

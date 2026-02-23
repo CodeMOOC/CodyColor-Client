@@ -125,6 +125,10 @@ export class RabbitService {
     this.pageCallbacks = callbacks;
   }
 
+  clearPageCallbacks() {
+    this.pageCallbacks = {};
+  }
+
   getBrokerConnectionState(): boolean {
     return this.connectedToBroker;
   }
@@ -135,18 +139,22 @@ export class RabbitService {
 
   subscribeGameRoom(): void {
     const endpoint = this.getGameRoomEndpoint();
+
     this.subscriptions['gameRoom'] = this.client.subscribe(endpoint, (msg) =>
       this.handleIncomingMessage(msg)
     );
 
-    this.heartbeatTimer = setInterval(() => {
-      this.sendInServerControlQueue({
-        msgType: this.messageTypes.c_heartbeat,
-        gameRoomId: this.gameDataService.value.general.gameRoomId,
-        playerId: this.gameDataService.value.user.playerId,
-        gameType: this.gameDataService.value.general.gameType,
-      });
-    }, 5000);
+    // Prevent duplicate heartbeat
+    if (!this.heartbeatTimer) {
+      this.heartbeatTimer = setInterval(() => {
+        this.sendInServerControlQueue({
+          msgType: this.messageTypes.c_heartbeat,
+          gameRoomId: this.gameDataService.value.general.gameRoomId,
+          playerId: this.gameDataService.value.user.playerId,
+          gameType: this.gameDataService.value.general.gameType,
+        });
+      }, 5000);
+    }
   }
 
   quitGame(): void {

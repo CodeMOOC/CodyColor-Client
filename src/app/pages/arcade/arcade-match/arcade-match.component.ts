@@ -160,6 +160,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     this.gameData.stopTimer();
     this.rabbit.quitGame();
     this.executeAnimation = false;
+    this.rabbit.clearPageCallbacks();
   }
 
   private buildGrid() {
@@ -278,7 +279,10 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
       this.general.timerSetting,
       (ms) => this.updateUserTimer(ms),
       (ms) => this.updateEnemyTimer(ms),
-      () => this.matchManager.handleUserTimeout(this.user)
+      () => {
+        this.matchManager.stopAll();
+        this.router.navigate(['/arcade-aftermatch']);
+      }
     );
   }
 

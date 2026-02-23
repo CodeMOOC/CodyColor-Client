@@ -16,6 +16,7 @@ import { PathService } from '../../../services/path.service';
 import { MatchManagerService } from '../../../services/match-manager.service';
 import { ChatComponent } from '../../../components/chat/chat.component';
 import { ModalService } from '../../../services/modal-service.service';
+import { Player } from '../../../models/player.model';
 
 @Component({
   selector: 'app-arcade-aftermatch',
@@ -42,8 +43,8 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   chatHints: any[] = [];
 
   // Game data
-  user: any;
-  enemy: any;
+  user: Player = {} as Player;
+  enemy: Player = {} as Player;
   winner: string = '';
   draw = false;
   matchCount = 0;
@@ -105,6 +106,8 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     }
 
     this.subs.unsubscribe();
+
+    this.rabbit.clearPageCallbacks();
   }
 
   // Helpers
@@ -235,8 +238,6 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     this.chatBubbles = this.chat.getChatMessages();
     this.chatHints = this.chat.getChatHintsPreMatch();
   }
-
-  // Chat
 
   timeFormatter = this.gameData.formatTimeDecimals;
 

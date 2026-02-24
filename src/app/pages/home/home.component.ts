@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
+import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AudioService } from '../../services/audio.service';
 import { RabbitService } from '../../services/rabbit.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -17,9 +18,6 @@ export class HomeComponent implements OnDestroy {
   userNickname = 'Guest';
   userLogged = false;
 
-  totalMatches = 0;
-  connectedPlayers = 0;
-
   basePlaying = false;
   language = 'en';
 
@@ -27,29 +25,39 @@ export class HomeComponent implements OnDestroy {
   noOnlineModal = false;
   noOnlineModalText = '';
 
-  brokerConnected = false;
   serverConnected = false;
+
+  brokerConnected = false;
+  totalMatches = 0;
+  connectedPlayers = 0;
+  private subs: Subscription[] = [];
 
   constructor(
     private rabbit: RabbitService,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private zone: NgZone
   ) {
-    // Register callbacks for events you care about
-    this.rabbit.setPageCallbacks({
-      onConnected: () => {
-        this.brokerConnected = true;
-      },
-      onConnectionLost: () => {
-        this.brokerConnected = false;
-        this.serverConnected = false;
-      },
-      onGeneralInfoMessage: (msg: any) => {
-        this.serverConnected = true;
-        this.totalMatches = msg.totalMatches;
-        this.connectedPlayers = msg.connectedPlayers;
-      },
-    });
+    this.subs.push(
+      this.rabbit.brokerConnected$.subscribe((connected) => {
+        this.zone.run(() => (this.brokerConnected = connected));
+      })
+    );
+
+    this.subs.push(
+      this.rabbit.serverInfo$.subscribe((info) => {
+        this.zone.run(() => {
+          this.totalMatches = info.totalMatches;
+          this.connectedPlayers = info.connectedPlayers;
+        });
+      })
+    );
+
+    const connected = this.rabbit.getBrokerConnectionState();
+
+    if (!connected) {
+      this.rabbit.connect();
+    }
   }
 
   ngOnDestroy(): void {

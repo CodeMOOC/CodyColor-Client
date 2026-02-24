@@ -2,9 +2,15 @@
 .nickname-edit-row {
   display: flex;
   align-items: center;
-  gap: 8px; /* spacing between text and icons */
+  gap: 8px;
+  justify-content: center;
 }
 
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* spacing between name and email */
+}
 .navigation--icon-in-text,
 .icon-confirm,
 .icon-cancel {

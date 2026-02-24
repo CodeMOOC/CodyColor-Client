@@ -175,7 +175,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     // this.quitGame();
-    this.rabbit.quitGame();
+
     this.rabbit.clearPageCallbacks();
   }
 

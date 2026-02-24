@@ -90,6 +90,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     this.clearTimers();
     this.subscriptions.forEach((sub) => sub.unsubscribe());
     this.rabbit.clearPageCallbacks();
+    this.visibility.setDeadlineCallback(() => {});
   }
 
   private initMatchmaking(): void {
@@ -112,19 +113,18 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
       this.router.navigate(['/']);
       return;
     }
-
-    this.authHandler.user$.subscribe((user) => {
-      this.userLogged = !!user.firebaseUser && !!user.serverData;
-      if (this.userLogged && user.serverData) {
-        this.nickname = this.userNickname = user?.serverData.nickname
-          ? user.serverData.nickname
-          : '';
-      } else {
-        this.translate.get('NOT_LOGGED').subscribe((res: string) => {
-          this.userNickname = res;
-        });
-      }
-    });
+    this.subscriptions.push(
+      this.authHandler.user$.subscribe((user) => {
+        this.userLogged = !!user.firebaseUser && !!user.serverData;
+        if (this.userLogged && user.serverData) {
+          this.nickname = this.userNickname = user?.serverData.nickname
+            ? user.serverData.nickname
+            : '';
+        } else {
+          this.userNickname = this.translate.instant('NOT_LOGGED');
+        }
+      })
+    );
 
     this.changeScreen(this.screens.nicknameSelection);
     this.randomWaitingPlayers = this.sessionHandler

@@ -126,6 +126,8 @@ export class RoyaleAftermatchComponent
   ngAfterViewInit(): void {}
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (!this.preventResetOnDestroy) {
       this.quitGame();
     }
@@ -189,11 +191,10 @@ export class RoyaleAftermatchComponent
     this.rabbit.setPageCallbacks({
       // TO DO: capire perché non entra correttamente
       onReadyMessage: () => {
-        this.zone.run(() => {
+        this.zone.run((message: any) => {
           const agg = this.aggregated();
-          this.gameData.update('aggregated', {
-            readyPlayers: agg.readyPlayers + 1,
-          });
+
+          this.gameData.update('aggregated', message.aggregated);
         });
       },
 
@@ -282,7 +283,7 @@ export class RoyaleAftermatchComponent
     this.audio.playSound('menu-click');
 
     const text = `I took ${
-      this.userMatchResult().pathLength
+      this.userMatchResult.pathLength
     } steps with my Roby in a ${this.general().gameType} match!`;
 
     if (navigator.share) {

@@ -68,10 +68,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
 
   showDraggableRoby = true;
   showArrows = false;
-  exitGameModal = false;
-  forceExitModal = false;
-  languageModal = false;
-  basePlaying = false;
 
   isAnimationReady = false;
 
@@ -145,7 +141,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
       })
     );
 
-    this.basePlaying = this.audio.isEnabled();
     this.timerFormatter = this.gameData.formatTimeMatchClock;
 
     this.initializeTilesCss();
@@ -158,8 +153,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.gameData.stopTimer();
-    this.rabbit.quitGame();
-    this.executeAnimation = false;
     this.rabbit.clearPageCallbacks();
   }
 
@@ -347,9 +340,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
         this.gameData.updateMatchRanking(message.matchRanking);
         this.gameData.updateGlobalRanking(message.globalRanking);
 
-        if (!this.forceExitModal) {
-          this.router.navigate(['/arcade-aftermatch']);
-        }
+        this.router.navigate(['/arcade-aftermatch']);
       },
     });
   }
@@ -429,21 +420,5 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   skip() {
     this.askedForSkip = true;
     this.audio.playSound('menu-click');
-  }
-
-  exitGame() {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = true;
-  }
-
-  continueExitGame() {
-    this.audio.playSound('menu-click');
-    this.quitGame();
-    this.router.navigate(['/home']);
-  }
-
-  stopExitGame() {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = false;
   }
 }

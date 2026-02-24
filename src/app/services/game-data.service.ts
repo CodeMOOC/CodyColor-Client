@@ -105,6 +105,7 @@ export class GameDataService {
   }
 
   updateMatchRanking(newRanking: MatchResult[]): void {
+    console.log('Updating match ranking with new data:', newRanking);
     const current = this.value;
     const type = current.general.gameType;
 

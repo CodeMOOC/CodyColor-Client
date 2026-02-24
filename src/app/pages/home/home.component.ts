@@ -50,9 +50,6 @@ export class HomeComponent implements OnDestroy {
         this.connectedPlayers = msg.connectedPlayers;
       },
     });
-
-    // Start the connection
-    this.rabbit.connect();
   }
 
   ngOnDestroy(): void {

@@ -62,7 +62,6 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   private gameData = inject(GameDataService);
 
   private newMatchTimer?: any;
-  private subs = new Subscription();
 
   constructor(
     private rabbit: RabbitService,
@@ -102,11 +101,9 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
 
     if (!this.preventResetOnDestroy) {
       this.quitGame();
-      this.rabbit.quitGame();
     }
 
-    this.subs.unsubscribe();
-
+    this.visibility.setDeadlineCallback(() => {});
     this.rabbit.clearPageCallbacks();
   }
 
@@ -122,15 +119,13 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   }
 
   userLogin(): void {
-    this.auth.user$.subscribe((user) => {
+    this.auth.user$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
       this.userLogged = !!user.firebaseUser && !!user.serverData;
 
       if (this.userLogged && user.serverData) {
         this.userNickname = user.serverData.nickname;
       } else {
-        this.translate.get('NOT_LOGGED').subscribe((res: string) => {
-          this.userNickname = res;
-        });
+        this.userNickname = this.translate.instant('NOT_LOGGED');
       }
     });
     this.basePlaying = this.audio.isEnabled();
@@ -138,11 +133,6 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
 
   private initMatchData(): void {
     this.gameData.gameData$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
-      console.log(
-        'ARCADE Aftermatch Received end match message',
-        this.gameData.value
-      );
-
       this.user = data.user;
       this.enemy = data.enemy;
       this.general = data.general;
@@ -181,9 +171,10 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   }
 
   newMatch(): void {
+    this.preventResetOnDestroy = true;
+
     this.audio.playSound('menu-click');
     this.newMatchClicked = true;
-    this.gameData.initializeMatchData();
     this.path.reset();
     this.matchManager.resetMatchState();
 
@@ -205,15 +196,15 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   private registerRabbitCallbacks(): void {
     this.rabbit.setPageCallbacks({
       onReadyMessage: () => {
-        console.log('Enemy is ready for new match');
         this.zone.run(() => (this.enemyRequestNewMatch = true));
       },
 
       onStartMatch: (message: any) => {
+        this.gameData.initializeMatchData();
+
         this.gameData.update('match', {
           tiles: this.gameData.formatMatchTiles(message.tiles),
         });
-        this.preventResetOnDestroy = true;
 
         this.router.navigate(['/arcade-match']);
       },

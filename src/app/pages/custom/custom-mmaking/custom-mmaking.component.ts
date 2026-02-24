@@ -231,8 +231,6 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
     const connected = this.rabbit.getBrokerConnectionState();
 
     if (!connected) {
-      this.rabbit.connect();
-
       // Wait for connection and then send the request
       this.rabbit.waitForBrokerConnection().then(() => {
         this.sendGameRequestIfNeeded();

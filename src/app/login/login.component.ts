@@ -90,7 +90,6 @@ export class LoginComponent {
   timeFormatter = this.gameData.formatTimeDecimals;
 
   ngOnInit(): void {
-    this.rabbit.connect();
     this.authForm = this.fb.group({
       name: [''],
       surname: [''],

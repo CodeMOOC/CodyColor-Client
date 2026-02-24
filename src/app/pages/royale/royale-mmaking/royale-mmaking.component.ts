@@ -112,12 +112,14 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.path.reset();
 
-    this.gameData.gameData$.subscribe((gameData) => {
-      this.general = gameData.general;
-      this.enemy = gameData.enemy;
-      this.aggregated = gameData.aggregated;
-      this.user = gameData.user;
-    });
+    this.subs.add(
+      this.gameData.gameData$.subscribe((gameData) => {
+        this.general = gameData.general;
+        this.enemy = gameData.enemy;
+        this.aggregated = gameData.aggregated;
+        this.user = gameData.user;
+      })
+    );
 
     // set game type
     this.gameData.update('general', {
@@ -125,29 +127,31 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     });
 
     // session validation
-    this.auth.authReady$.subscribe((ready) => {
-      if (ready) {
-        this.auth.user$.subscribe((appUser) => {
-          this.userLogged = !!appUser.firebaseUser && !!appUser.serverData;
-          this.userNickname = appUser.serverData?.nickname || '';
-          this.nickname = this.userNickname;
-        });
-      } else {
-        this.translate
-          .get('NOT_LOGGED')
-          .subscribe((text) => (this.userNickname = text));
-      }
-    });
+    this.subs.add(
+      this.auth.authReady$.subscribe((ready) => {
+        if (ready) {
+          this.auth.user$.subscribe((appUser) => {
+            this.userLogged = !!appUser.firebaseUser && !!appUser.serverData;
+            this.userNickname = appUser.serverData?.nickname || '';
+            this.nickname = this.userNickname;
+          });
+        } else {
+          this.translate
+            .get('NOT_LOGGED')
+            .subscribe((text) => (this.userNickname = text));
+        }
+      })
+    );
 
     this.loadTimerSettings();
 
     // visibility callback
-    this.visibility.setDeadlineCallback(() => {
-      this.rabbit.sendPlayerQuitRequest();
-      this.quitGame();
-      this.forceExitText = this.translate.instant('FORCE_EXIT');
-      this.forceExitModal = true;
-    });
+    // this.visibility.setDeadlineCallback(() => {
+    //   this.rabbit.sendPlayerQuitRequest();
+    //   this.quitGame();
+    //   this.forceExitText = this.translate.instant('FORCE_EXIT');
+    //   this.forceExitModal = true;
+    // });
 
     // initial screen
     this.changeScreen(this.screens.joinMatch);
@@ -163,7 +167,6 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
 
     // connect to rabbit
     if (!this.rabbit.getBrokerConnectionState()) {
-      this.rabbit.connect();
       // requiredDelayedGameRequest = true;
     } else if (
       this.gameData.value.general.code !== '0000' ||

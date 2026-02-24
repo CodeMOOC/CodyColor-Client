@@ -8,6 +8,7 @@ import { Firestore } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
 import { AuthService } from './services/auth.service';
 import { TranslateService } from '@ngx-translate/core';
+import { RabbitService } from './services/rabbit.service';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +26,8 @@ export class AppComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private rabbit: RabbitService
   ) {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -46,6 +48,7 @@ export class AppComponent implements OnInit {
       browserLang && ['it', 'en'].includes(browserLang) ? browserLang : 'it';
 
     this.translate.use(langToUse);
+    this.rabbit.connect();
 
     // If the page was reloaded, navigate to slashash to avoid issues with the app state
     const navigationEntry = performance.getEntriesByType(

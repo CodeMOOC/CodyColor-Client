@@ -104,7 +104,7 @@ export class AuthService {
 
   async refreshUserStats(): Promise<void> {
     const current = this.userSubject.value;
-    console.log('[Auth] Refreshing user stats for', current);
+
     if (!current.firebaseUser || !current.serverData) return;
 
     try {
@@ -112,7 +112,6 @@ export class AuthService {
         current.firebaseUser.uid
       );
 
-      console.log('[Auth] Refreshed user stats:', stats);
       this.userSubject.next({
         firebaseUser: current.firebaseUser,
         serverData: {
@@ -136,10 +135,10 @@ export class AuthService {
       firebaseUser: current.firebaseUser,
       serverData: serverUser,
     };
-  
+
     // update reactive state
     this.userSubject.next(updatedUser);
-  
+
     // persist to cookie
     this.cookieService.set('serverUserData', JSON.stringify(serverUser));
   }

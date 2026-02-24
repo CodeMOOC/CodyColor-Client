@@ -236,7 +236,6 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
   }
 
   private quitGame(): void {
-    console.log('Quitting game and resetting data...');
     this.rabbit.quitGame();
     this.gameData.reset();
     this.chat.clearChat();

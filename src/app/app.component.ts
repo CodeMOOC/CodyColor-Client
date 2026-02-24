@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, NgZone, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { FooterComponent } from './components/shared/footer/footer.component';
 import { filter } from 'rxjs';
@@ -27,7 +27,8 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private translate: TranslateService,
-    private rabbit: RabbitService
+    private rabbit: RabbitService,
+    private zone: NgZone
   ) {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -37,6 +38,28 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.rabbit.setPageCallbacks({
+      onConnected: () => {
+        this.zone.run(() => {
+          this.rabbit.setBrokerConnected(true); // <-- push update to service
+        });
+      },
+      onConnectionLost: () => {
+        this.zone.run(() => {
+          this.rabbit.setBrokerConnected(false);
+          this.rabbit.setServerInfo({ totalMatches: 0, connectedPlayers: 0 });
+        });
+      },
+      onGeneralInfoMessage: (msg: any) => {
+        this.zone.run(() => {
+          this.rabbit.setServerInfo({
+            totalMatches: msg.totalMatches,
+            connectedPlayers: msg.connectedPlayers,
+          });
+        });
+      },
+    });
+
     this.authService.initializeAuth();
 
     // lang init

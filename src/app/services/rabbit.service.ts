@@ -28,6 +28,15 @@ export class RabbitService {
   loginResponse$: Observable<any> = this.loginResponseSubject.asObservable();
   private userStatsResponse$ = new BehaviorSubject<any>(null);
 
+  private _brokerConnected$ = new BehaviorSubject<boolean>(false);
+  private _serverInfo$ = new BehaviorSubject<{
+    totalMatches: number;
+    connectedPlayers: number;
+  }>({ totalMatches: 0, connectedPlayers: 0 });
+
+  brokerConnected$ = this._brokerConnected$.asObservable();
+  serverInfo$ = this._serverInfo$.asObservable();
+
   private readonly endpoints = {
     serverControlQueue: '/queue/serverControl',
     clientControlTopic: '/topic/clientsControl',
@@ -102,6 +111,8 @@ export class RabbitService {
       heartbeatIncoming: 5000,
       heartbeatOutgoing: 5000,
     });
+
+    this._brokerConnected$.next(true);
 
     this.client.onConnect = () => this.onConnected();
     this.client.onWebSocketClose = () => this.onConnectionLost();
@@ -190,6 +201,14 @@ export class RabbitService {
     this.connectedToBroker = false;
     this.connectedToServer = false;
     this.pageCallbacks?.onConnectionLost?.();
+  }
+
+  setBrokerConnected(value: boolean) {
+    this._brokerConnected$.next(value);
+  }
+
+  setServerInfo(info: { totalMatches: number; connectedPlayers: number }) {
+    this._serverInfo$.next(info);
   }
 
   private sendInServerControlQueue(message: any): void {

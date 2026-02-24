@@ -3,28 +3,22 @@
     <div class="page--body">
       <ul class="list">
         <!-- Header -->
-        <li class="list--spaced-element">
+        <li class="flex justify-center">
           <!-- Two columns header with user and bot data -->
-          <div class="centered-columns" *ngIf="general?.botSetting !== 0">
-            <div class="centered-columns--pair">
+          <div class="points-row" *ngIf="general?.botSetting !== 0">
+            <div class="flex flex-col">
+              <div class="big-text ellipsize">{{ userGlobal.points }}</div>
               <div class="centered-columns--column">
-                <div class="big-text ellipsize">{{ userGlobal?.points }}</div>
-              </div>
-              <div class="centered-columns--column">
-                <div class="big-text ellipsize">{{ enemyGlobal?.points }}</div>
+                {{ user.nickname }}
               </div>
             </div>
-
-            <div class="centered-columns--pair">
-              <div class="centered-columns--column ellipsize">
-                {{ user?.nickname }}
-              </div>
-              <div class="centered-columns--column ellipsize">
-                {{ enemy?.nickname }}
+            <div class="flex flex-col">
+              <div class="big-text ellipsize">{{ enemyGlobal.points }}</div>
+              <div class="centered-columns--column">
+                {{ enemy.nickname }}
               </div>
             </div>
           </div>
-
           <!-- Single column header user-only data-->
           <div class="centered-columns" *ngIf="general?.botSetting === 0">
             <div class="big-text ellipsize">{{ userGlobal?.points }}</div>

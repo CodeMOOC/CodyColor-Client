@@ -409,7 +409,7 @@ img.profile--image {
 
 ul.list {
   padding: 0;
-  margin: 0;
+  margin: 0 20px;
 }
 
 /* spaziatura piccola: standard */
@@ -418,6 +418,7 @@ li.list--simple-element {
   justify-content: center;
   list-style-type: none;
   margin-bottom: 10px;
+  gap: 10px;
 }
 
 /* spaziatura più ampia */
@@ -1535,7 +1536,7 @@ table.playerlist-match-table {
 }
 
 @media screen and (max-width: 780px) {
-  .page--body {
+  .list--spaced-element {
     margin: 0 20px;
   }
 }

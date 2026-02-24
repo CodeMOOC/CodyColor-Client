@@ -128,7 +128,6 @@ export class RoyaleAftermatchComponent
   ngOnDestroy(): void {
     if (!this.preventResetOnDestroy) {
       this.quitGame();
-      this.rabbit.quitGame();
     }
     this.rabbit.clearPageCallbacks();
   }
@@ -142,12 +141,12 @@ export class RoyaleAftermatchComponent
         this.draw = data.match.winnerId === -1;
         this.winner = data.match.winnerId;
         this.matchCount = data.aggregated.matchCount;
+        this.aggregated = data.aggregated;
 
         // this.matchRanking = data.matchRanking;
         // this.globalRanking = data.globalRanking;
         // this.userMatchResult = data.userMatchResult;
         // this.userGlobalResult = data.userGlobalResult;
-        // this.aggregated = data.aggregated;
       });
     });
 
@@ -204,7 +203,6 @@ export class RoyaleAftermatchComponent
         this.gameData.update('match', {
           tiles: this.gameData.formatMatchTiles(message.tiles),
         });
-        this.preventResetOnDestroy = true;
 
         this.router.navigateByUrl('/royale-match');
       },
@@ -266,7 +264,7 @@ export class RoyaleAftermatchComponent
   }
 
   newMatch(): void {
-    console.log('User click starting new match');
+    this.preventResetOnDestroy = true;
     this.audio.playSound('menu-click');
     this.gameData.update('aggregated', {
       readyPlayers: this.gameData.value.aggregated.readyPlayers + 1,

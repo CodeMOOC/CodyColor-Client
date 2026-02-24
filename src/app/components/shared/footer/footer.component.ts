@@ -46,6 +46,14 @@ export class FooterComponent implements OnInit {
 
   ngOnInit(): void {
     this.userLogin();
+    // get current lang
+    this.language =
+      this.translate.currentLang || this.translate.getDefaultLang() || 'it';
+
+    // react to language changes
+    this.translate.onLangChange.subscribe((event) => {
+      this.language = event.lang;
+    });
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {

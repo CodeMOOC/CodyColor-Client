@@ -344,6 +344,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
     this.audio.playSound('roby-positioned');
 
     if (!this.isAnimationReady) {
+      this.gameData.stopTimer();
       this.isAnimationReady = true;
       const finalUserTime = this.gameData.getUserFinalTime();
       // aggiorna i dati della partita

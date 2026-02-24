@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { Firestore } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
 import { AuthService } from './services/auth.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-root',
@@ -17,13 +18,15 @@ import { AuthService } from './services/auth.service';
 })
 export class AppComponent implements OnInit {
   title = 'CodyColor-Client';
-
   showFooter = true;
 
-  // firestore and auth instances
   firestore: Firestore = inject(Firestore);
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private translate: TranslateService
+  ) {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {
@@ -33,5 +36,23 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.initializeAuth();
+
+    // lang init
+    this.translate.addLangs(['it', 'en']);
+    this.translate.setDefaultLang('it');
+
+    const browserLang = this.translate.getBrowserLang();
+    const langToUse =
+      browserLang && ['it', 'en'].includes(browserLang) ? browserLang : 'it';
+
+    this.translate.use(langToUse);
+
+    // If the page was reloaded, navigate to slashash to avoid issues with the app state
+    const navigationEntry = performance.getEntriesByType(
+      'navigation'
+    )[0] as PerformanceNavigationTiming;
+    if (navigationEntry?.type === 'reload') {
+      this.router.navigateByUrl('/');
+    }
   }
 }

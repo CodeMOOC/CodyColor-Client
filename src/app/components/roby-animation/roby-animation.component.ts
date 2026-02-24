@@ -273,13 +273,10 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
     const lastTile = tiles[tiles.length - 1];
     const lastX = lastTile.col * tileStep + offsetX;
     const lastY = lastTile.row * tileStep + offsetY;
-
     const exitDir =
       typeof this.path.exitDirection === 'number'
         ? this.path.exitDirection
-        : dirs && dirs.length
-        ? dirs[dirs.length - 1]
-        : 0;
+        : dirs[dirs.length - 1];
 
     // if we need to turn before leaving
     const lastDir = dirs[dirs.length - 1];

@@ -251,7 +251,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     this.playerValidated = true;
     this.gameData.update('user', { nickname: this.nickname });
     this.rabbit.sendValidationMessage();
-    this.session.enableNoSleep();
+    // this.session.enableNoSleep();
     this.audio.splashStartBase();
   }
 
@@ -363,7 +363,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
       },
       onStartMatch: (message: any) => {
         setTimeout(() => {
-          console.log('forcing zone tick');
+          console.log('zone tick');
         }, 0);
 
         this.gameData.update('aggregated', message.aggregated);

@@ -180,17 +180,6 @@
         (submitNickname)="ultimateSignUp($event)"
       >
       </app-nickname-form>
-
-      <!-- Profile -->
-      <app-profile-view
-        *ngIf="screen === ScreenState.Profile"
-        [serverUser]="serverUserData"
-        [firebaseUser]="firebaseUserData"
-        (logout)="logout()"
-        (deleteAccount)="deleteAccount()"
-        (goHome)="goToHome()"
-      >
-      </app-profile-view>
     </div>
     <div class="page--push"></div>
   </div>

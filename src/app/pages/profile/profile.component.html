@@ -1,8 +1,13 @@
-<div class="page--component">
+<div class="page--component profile-page">
   <ul class="list">
     <!-- User image -->
-    <li class="list--simple-element">
-      <img class="profile--image" [src]="avatarUrl" alt="User Avatar" />
+    <li class="list--simple-element" *ngIf="firebaseUser as user">
+      <img
+        class="profile--image"
+        [src]="user.photoURL || 'assets/img/user-avatar.png'"
+        (error)="onImageError($event)"
+        alt="User Avatar"
+      />
     </li>
 
     <!-- Welcome text -->

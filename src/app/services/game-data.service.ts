@@ -105,7 +105,6 @@ export class GameDataService {
   }
 
   updateMatchRanking(newRanking: MatchResult[]): void {
-    console.log('Updating match ranking with new data:', newRanking);
     const current = this.value;
     const type = current.general.gameType;
 
@@ -259,7 +258,6 @@ export class GameDataService {
     const enemy = this.value.enemyMatchResult;
 
     if (gameType === this.gameTypes.royale) {
-      console.log('Royale mode winner:', this.value.matchRanking[0]);
       return this.value.matchRanking[0];
     } else if (botSetting === 0) {
       return user;

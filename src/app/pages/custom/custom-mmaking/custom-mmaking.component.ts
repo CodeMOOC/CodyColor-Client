@@ -294,7 +294,7 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
     this.playerValidated = true;
     this.gameData.update('user', { nickname: this.nickname });
     this.rabbit.sendValidationMessage();
-    this.session.enableNoSleep();
+    // this.session.enableNoSleep();
     this.audio.splashStartBase();
   }
 

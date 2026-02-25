@@ -59,11 +59,11 @@ export class ProfileComponent {
       return;
     }
 
-    this.auth.user$.subscribe(user => {
+    this.auth.user$.subscribe((user) => {
       this.userLogged = !!user.firebaseUser && !!user.serverData;
-  
+
       if (!this.userLogged) return;
-  
+
       this.user = user;
       this.firebaseUser = user.firebaseUser;
       this.serverUser = user.serverData!;
@@ -79,9 +79,16 @@ export class ProfileComponent {
     this.rabbit
       .sendGetUserStatsRequestAndWait(this.user.firebaseUser?.uid ?? '')
       .then((res) => {
-        
-        const { avgPoints, bestMatch, totalMatches, totalPoints, wonMatches } = res;
-        this.serverUser = { ...this.serverUser, avgPoints, bestMatch, totalMatches, totalPoints, wonMatches };
+        const { avgPoints, bestMatch, totalMatches, totalPoints, wonMatches } =
+          res;
+        this.serverUser = {
+          ...this.serverUser,
+          avgPoints,
+          bestMatch,
+          totalMatches,
+          totalPoints,
+          wonMatches,
+        };
         this.auth.setServerUserData(this.serverUser);
       })
       .catch((err) => {
@@ -89,10 +96,15 @@ export class ProfileComponent {
       });
   }
 
-  // Default avatar if Firebase photoURL is missing
+  // firebase photoURL is missing and default avatar if not set
   get avatarUrl(): string {
     const url = this.firebaseUser?.photoURL;
     return url ? url : 'assets/img/user-avatar.png';
+  }
+
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.src = 'assets/img/user-avatar.png';
   }
 
   enterEditMode() {

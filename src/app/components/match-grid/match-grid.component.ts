@@ -82,7 +82,6 @@ export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
   // Track which arrow is hovered
   hoveredArrow: { [key: string]: boolean } = {};
 
-
   constructor(
     private matchManager: MatchManagerService,
     private rabbit: RabbitService,

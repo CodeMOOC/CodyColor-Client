@@ -14,7 +14,6 @@ import {
 import { GameDataService } from '../services/game-data.service';
 import { MultiOptionsModalComponent } from '../components/multi-options-modal/multi-options-modal.component';
 import { SingleOptionModalComponent } from '../components/single-option-modal/single-option-modal.component';
-import { ProfileViewComponent } from '../components/profile-view/profile-view.component';
 import { NicknameFormComponent } from '../components/nickname-form/nickname-form.component';
 import { RabbitService } from '../services/rabbit.service';
 import { Auth, sendPasswordResetEmail } from '@angular/fire/auth';
@@ -35,7 +34,6 @@ enum ScreenState {
     ReactiveFormsModule,
     MultiOptionsModalComponent,
     NicknameFormComponent,
-    ProfileViewComponent,
     SingleOptionModalComponent,
     TranslateModule,
   ],

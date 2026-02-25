@@ -149,8 +149,6 @@ export class RabbitService {
   subscribeGameRoom(): void {
     const endpoint = this.getGameRoomEndpoint();
 
-    console.log('SUBSCRIBING GAME ROOM', endpoint);
-
     this.subscriptions['gameRoom']?.unsubscribe();
     this.subscriptions['gameRoom'] = this.client.subscribe(endpoint, (msg) =>
       this.handleIncomingMessage(msg)
@@ -159,7 +157,6 @@ export class RabbitService {
     // Prevent duplicate heartbeat
     if (!this.heartbeatTimer) {
       this.heartbeatTimer = setInterval(() => {
-        console.log('HEARTBEAT SENT');
         this.sendInServerControlQueue({
           msgType: this.messageTypes.c_heartbeat,
           gameRoomId: this.gameDataService.value.general.gameRoomId,
@@ -292,7 +289,6 @@ export class RabbitService {
         break;
       case this.messageTypes.s_getUserStatsResponse:
         this.userStatsResponse$.next(message);
-        console.log('Received user stats response:', message);
         cb?.onGetUserStatsResponse?.(message);
         break;
       case this.messageTypes.s_editNicknameResponse:
@@ -430,9 +426,7 @@ export class RabbitService {
   }
 
   sendGetUserStatsRequestAndWait(userId: string): Promise<any> {
-    console.log('Requesting user stats for userId:', userId);
     return new Promise((resolve, reject) => {
-      console.log('Subscribing to userStatsResponse$ for user stats response');
       const correlationId = this.sessionHandler.getSessionId();
       const sub = this.userStatsResponse$.subscribe((msg) => {
         if (!msg) return;

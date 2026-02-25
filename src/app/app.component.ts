@@ -41,11 +41,12 @@ export class AppComponent implements OnInit {
     this.rabbit.setPageCallbacks({
       onConnected: () => {
         this.zone.run(() => {
-          this.rabbit.setBrokerConnected(true); // <-- push update to service
+          this.rabbit.setBrokerConnected(true);
         });
       },
       onConnectionLost: () => {
         this.zone.run(() => {
+          console.warn('Connection to broker lost');
           this.rabbit.setBrokerConnected(false);
           this.rabbit.setServerInfo({ totalMatches: 0, connectedPlayers: 0 });
         });

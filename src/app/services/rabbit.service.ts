@@ -112,8 +112,6 @@ export class RabbitService {
       heartbeatOutgoing: 5000,
     });
 
-    this._brokerConnected$.next(true);
-
     this.client.onConnect = () => this.onConnected();
     this.client.onWebSocketClose = () => this.onConnectionLost();
     this.client.activate();
@@ -151,6 +149,9 @@ export class RabbitService {
   subscribeGameRoom(): void {
     const endpoint = this.getGameRoomEndpoint();
 
+    console.log('SUBSCRIBING GAME ROOM', endpoint);
+
+    this.subscriptions['gameRoom']?.unsubscribe();
     this.subscriptions['gameRoom'] = this.client.subscribe(endpoint, (msg) =>
       this.handleIncomingMessage(msg)
     );
@@ -158,6 +159,7 @@ export class RabbitService {
     // Prevent duplicate heartbeat
     if (!this.heartbeatTimer) {
       this.heartbeatTimer = setInterval(() => {
+        console.log('HEARTBEAT SENT');
         this.sendInServerControlQueue({
           msgType: this.messageTypes.c_heartbeat,
           gameRoomId: this.gameDataService.value.general.gameRoomId,
@@ -170,7 +172,13 @@ export class RabbitService {
 
   quitGame(): void {
     this.subscriptions['gameRoom']?.unsubscribe();
-    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    delete this.subscriptions['gameRoom'];
+
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
+
     this.pageCallbacks = {};
   }
 

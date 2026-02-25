@@ -148,7 +148,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.matchManager.stopAll();
+    this.matchManager.resetMatchState();
     this.subs.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
@@ -273,7 +273,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
       (ms) => this.updateUserTimer(ms),
       (ms) => this.updateEnemyTimer(ms),
       () => {
-        this.matchManager.stopAll();
+        this.matchManager.resetMatchState();
         this.router.navigate(['/arcade-aftermatch']);
       }
     );

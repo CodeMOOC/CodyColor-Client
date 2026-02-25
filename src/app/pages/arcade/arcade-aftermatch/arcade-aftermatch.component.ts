@@ -109,6 +109,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
 
   // Helpers
   private quitGame(): void {
+    this.path.reset();
     this.rabbit.quitGame();
     this.gameData.reset();
     this.chat.clearChat();

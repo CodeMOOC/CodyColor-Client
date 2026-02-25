@@ -230,8 +230,4 @@ export class MatchManagerService {
       });
     }
   }
-
-  stopAll() {
-    this.resetForNewTimers();
-  }
 }

@@ -163,6 +163,7 @@
   "DELETE_ACCOUNT": "Azonosító törlése",
   "NO_RANKING": "A ranglista üres.",
   "YOUR_RANK": "A helyezésed",
+  "RANKING_LOGIN_NOTICE":"Ha szeretnél szerepelni a ranglistán, jelentkezz be vagy regisztrálj!",
   "TOP_10_MATCH_DAILY": "Napi helyezés",
   "TOP_10_MATCH_GLOBAL": "Globális helyezés",
   "TOP_10_POINTS_DAILY": "Napi pontszám helyezés",

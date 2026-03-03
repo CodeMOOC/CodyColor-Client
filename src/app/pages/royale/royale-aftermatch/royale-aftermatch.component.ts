@@ -14,7 +14,6 @@ import { GameDataService } from '../../../services/game-data.service';
 import { RabbitService } from '../../../services/rabbit.service';
 import { AudioService } from '../../../services/audio.service';
 import { AuthService } from '../../../services/auth.service';
-import { NavigationService } from '../../../services/navigation.service';
 import { SessionService } from '../../../services/session.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { LanguageService } from '../../../services/language.service';
@@ -39,7 +38,6 @@ export class RoyaleAftermatchComponent
 {
   private rabbit = inject(RabbitService);
   private gameData = inject(GameDataService);
-  private navigation = inject(NavigationService);
   private audio = inject(AudioService);
   private session = inject(SessionService);
   private chatHandler = inject(ChatHandlerService);
@@ -89,6 +87,8 @@ export class RoyaleAftermatchComponent
   userGlobalResult: any = null;
 
   aggregated: any = null;
+
+  isSharing: boolean = false;
 
   sharedLegacy = signal<boolean>(false);
 
@@ -205,7 +205,7 @@ export class RoyaleAftermatchComponent
           tiles: this.gameData.formatMatchTiles(message.tiles),
         });
 
-        this.router.navigateByUrl('/royale-match');
+        this.router.navigate(['/royale-match'], { replaceUrl: true });
       },
 
       onGameQuit: () => {
@@ -279,24 +279,35 @@ export class RoyaleAftermatchComponent
     this.rabbit.sendReadyMessage();
   }
 
-  share() {
+  async share() {
+    if (this.isSharing) return;
+
+    this.isSharing = true;
     this.audio.playSound('menu-click');
 
-    const text = `I took ${
-      this.userMatchResult.pathLength
-    } steps with my Roby in a ${this.general().gameType} match!`;
+    const text = `I took ${this.userMatchResult.pathLength} steps with my Roby in a ${this.general.gameType} match!`;
 
-    if (navigator.share) {
-      navigator.share({
-        title: 'CodyColor Multiplayer',
-        text,
-        url: 'https://codycolor.codemooc.net',
-      });
-    } else {
-      this.sharedLegacy.set(true);
-      this.copyToClipboard(
-        `${text} Play with me at https://codycolor.codemooc.net`
-      );
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'CodyColor Multiplayer',
+          text,
+          url: 'https://codycolor.codemooc.net',
+        });
+      } else {
+        this.sharedLegacy.set(true);
+        await this.copyToClipboard(
+          `${text} Play with me at https://codycolor.codemooc.net`
+        );
+      }
+    } catch (err) {
+      // user cancelled share → not an error
+      console.log('Share cancelled or failed:', err);
+    } finally {
+      // Small delay avoids double tap glitch on mobile
+      setTimeout(() => {
+        this.isSharing = false;
+      }, 500);
     }
   }
 

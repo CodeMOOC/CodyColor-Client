@@ -20,7 +20,6 @@ import { ChatHandlerService } from '../../../services/chat.service';
 import { ShareService } from '../../../services/share.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { AuthService } from '../../../services/auth.service';
-import { NavigationService } from '../../../services/navigation.service';
 import { TimerSetting } from '../../../models/timerSetting.model';
 import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
@@ -105,7 +104,6 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
   private modalService = inject(ModalService);
   private auth = inject(AuthService);
   private path = inject(PathService);
-  private navigation = inject(NavigationService);
   private zone = inject(NgZone);
   private translation = inject(LanguageService);
 
@@ -211,7 +209,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
 
   goToCreateMatch(): void {
     this.audio.playSound('menu-click');
-    this.navigation.goToPage('/royale-new-match');
+    this.router.navigate(['/royale-new-match'], { replaceUrl: true });
   }
 
   private loadTimerSettings() {
@@ -260,12 +258,6 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     const chatMessage = this.rabbit.sendChatMessage(messageBody);
     this.chat.enqueueChatMessage(chatMessage);
     this.chatBubbles = this.chat.getChatMessages();
-  }
-
-  getBubbleStyle(chatMessage: any): string {
-    return chatMessage.playerId === this.gameData.value.user.playerId
-      ? 'chat--bubble-player'
-      : 'chat--bubble-enemy';
   }
 
   copyLink() {
@@ -324,20 +316,6 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
           this.matchUrl = `${environment.webBaseUrl}/#!?royale=${message.general.code}`;
           this.rabbit.subscribeGameRoom();
 
-          // if (this.gameData.value.general.scheduledStart) {
-          //   this.startMatchTimerValue = message.msToStart;
-          //   this.relativeStartDate = Date.now() + message.msToStart;
-
-          //   this.startMatchTimer = setInterval(() => {
-          //     const remaining = this.relativeStartDate - Date.now();
-          //     this.startMatchTimerValue = remaining > 0 ? remaining : 0;
-          //     if (remaining <= 0 && this.startMatchTimer) {
-          //       clearInterval(this.startMatchTimer);
-          //       this.startMatchTimer = undefined;
-          //     }
-          //   }, 1000);
-          // }
-
           if (this.gameData.value.general.scheduledStart) {
             this.startMatchTimerValue.set(message.msToStart);
             this.relativeStartDate.set(Date.now() + message.msToStart);
@@ -376,7 +354,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
           this.startMatchTimer = undefined;
         }
 
-        this.navigation.goToPage('/royale-match');
+        this.router.navigate(['/royale-match'], { replaceUrl: true });
       },
       onGameQuit: () => this.handleEnemyQuit('ENEMY_LEFT'),
       onConnectionLost: () => this.handleEnemyQuit('FORCE_EXIT'),

@@ -13,12 +13,10 @@ import { ChatHandlerService } from '../../../services/chat.service';
 import { GameDataService } from '../../../services/game-data.service';
 import { RabbitService } from '../../../services/rabbit.service';
 import { PathService } from '../../../services/path.service';
-import { NavigationService } from '../../../services/navigation.service';
 import { AudioService } from '../../../services/audio.service';
 import { AuthService } from '../../../services/auth.service';
 import { SessionService } from '../../../services/session.service';
 import { VisibilityService } from '../../../services/visibility.service';
-import { LanguageService } from '../../../services/language.service';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatchGridComponent } from '../../../components/match-grid/match-grid.component';
@@ -52,7 +50,6 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
 
   private path = inject(PathService);
   private chat = inject(ChatHandlerService);
-  private navigation = inject(NavigationService);
   private audio = inject(AudioService);
   private modalService = inject(ModalService);
   private session = inject(SessionService);
@@ -343,7 +340,9 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       } else {
         this.gameTimerValue.set(0);
         this.clockAnimation = 'clock--end';
+
         this.router.navigate(['/royale-aftermatch'], {
+          replaceUrl: true,
           state: {
             matchRanking: this.gameData.value.matchRanking,
             globalRanking: this.gameData.value.globalRanking,
@@ -556,6 +555,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
 
         if (!this.forceExitModal) {
           this.router.navigate(['/royale-aftermatch'], {
+            replaceUrl: true,
             state: {
               matchRanking: msg.matchRanking,
               globalRanking: msg.globalRanking,

@@ -4,7 +4,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GameDataService } from '../../../services/game-data.service';
 import { AuthService } from '../../../services/auth.service';
 import { AudioService } from '../../../services/audio.service';
-import { NavigationService } from '../../../services/navigation.service';
 import { SessionService } from '../../../services/session.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { CommonModule } from '@angular/common';
@@ -116,7 +115,7 @@ export class BootmpMmakingComponent implements OnInit {
     this.gameData.update('enemy', { nickname: 'CodyColor', playerId: 1 });
     this.gameData.setNewMatchTiles();
 
-    this.router.navigateByUrl('/bootmp-match');
+    this.router.navigate(['/bootmp-match'], { replaceUrl: true });
   }
 
   private loadTimerSettings(): void {

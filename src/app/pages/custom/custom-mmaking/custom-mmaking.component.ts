@@ -193,7 +193,7 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
         this.gameData.update('match', {
           tiles: this.gameData.formatMatchTiles(message.tiles),
         });
-        this.navigation.goToPage('/arcade-match');
+        this.router.navigate(['/arcade-match'], { replaceUrl: true });
       },
       onGameQuit: () => {
         this.handleEnemyQuit('ENEMY_LEFT');
@@ -269,7 +269,7 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
 
   goToCreateMatch() {
     this.audio.playSound('menu-click');
-    this.navigation.goToPage('/custom-new-match');
+    this.router.navigate(['/custom-new-match'], { replaceUrl: true });
   }
 
   joinGame(codeValue: string) {

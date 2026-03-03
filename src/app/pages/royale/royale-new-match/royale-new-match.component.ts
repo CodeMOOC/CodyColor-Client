@@ -14,7 +14,6 @@ import { AudioService } from '../../../services/audio.service';
 import { AuthService } from '../../../services/auth.service';
 import { GameDataService } from '../../../services/game-data.service';
 import { ModalService } from '../../../services/modal-service.service';
-import { NavigationService } from '../../../services/navigation.service';
 import { RabbitService } from '../../../services/rabbit.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { SessionService } from '../../../services/session.service';
@@ -28,7 +27,6 @@ import { SessionService } from '../../../services/session.service';
 })
 export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
   private rabbit = inject(RabbitService);
-  private navigation = inject(NavigationService);
   private session = inject(SessionService);
   private gameData = inject(GameDataService);
   private auth = inject(AuthService);
@@ -75,7 +73,7 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
 
   currentTimerIndex = 1;
   currentMaxPlayersIndex = 1;
-  currentStartIndex = 0;
+  currentStartIndex = 1;
 
   settingsTimerReady = false;
   settingsMaxPlayersReady = false;

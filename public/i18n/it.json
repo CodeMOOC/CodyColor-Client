@@ -165,6 +165,7 @@
   "DELETE_ACCOUNT": "Elimina account",
   "NO_RANKING": "La classifica è vuota.",
   "YOUR_RANK": "La tua posizione",
+  "RANKING_LOGIN_NOTICE":"Se vuoi comparire in classifica, effettua il login o registrati!",
   "TOP_10_MATCH_DAILY": "Classifica match giornaliera",
   "TOP_10_MATCH_GLOBAL": "Classifica match assoluta",
   "TOP_10_POINTS_DAILY": "Classifica punti giornaliera",

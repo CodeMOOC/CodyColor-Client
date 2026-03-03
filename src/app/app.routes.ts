@@ -24,6 +24,7 @@ import { PrivacyComponent } from './pages/privacy/privacy.component';
 import { RankingsComponent } from './pages/rankings/rankings.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { sessionGuard } from './guards/session.guard';
+import { exitGameGuard } from './guards/exit-game.guard';
 
 export const routes: Routes = [
   { path: '', component: SplashComponent },
@@ -42,73 +43,85 @@ export const routes: Routes = [
     path: 'random-mmaking',
     component: RandomMmakingComponent,
     canActivate: [sessionGuard],
+    canDeactivate: [exitGameGuard],
     data: { gameMode: 'random-mmaking' },
   },
   {
     path: 'custom-mmaking',
     component: CustomMmakingComponent,
     canActivate: [sessionGuard],
+    canDeactivate: [exitGameGuard],
     data: { gameMode: 'custom-mmaking' },
   },
   {
     path: 'royale-mmaking',
     component: RoyaleMmakingComponent,
     canActivate: [sessionGuard],
+    canDeactivate: [exitGameGuard],
     data: { gameMode: 'royale-mmaking' },
   },
   {
     path: 'custom-new-match',
     component: NewMatchComponent,
     canActivate: [sessionGuard],
+    canDeactivate: [exitGameGuard],
     data: { gameMode: 'custom-new-match' },
   },
   {
     path: 'royale-new-match',
     component: RoyaleNewMatchComponent,
     canActivate: [sessionGuard],
+    canDeactivate: [exitGameGuard],
     data: { gameMode: 'royale-new-matchh' },
   },
   {
     path: 'arcade-match',
     component: ArcadeMatchComponent,
     canActivate: [sessionGuard],
+    canDeactivate: [exitGameGuard],
     data: { gameMode: 'arcade-match' },
   },
   {
     path: 'arcade-aftermatch',
     component: ArcadeAftermatchComponent,
     canActivate: [sessionGuard],
+    canDeactivate: [exitGameGuard],
     data: { gameMode: 'arcade-aftermatch' },
   },
   {
     path: 'royale-match',
     component: RoyaleMatchComponent,
     canActivate: [sessionGuard],
+    canDeactivate: [exitGameGuard],
     data: { gameMode: 'royale-match' },
   },
   {
     path: 'royale-aftermatch',
     component: RoyaleAftermatchComponent,
     canActivate: [sessionGuard],
+    canDeactivate: [exitGameGuard],
     data: { gameMode: 'royale-aftermatch' },
   },
   {
     path: 'bootmp-mmaking',
     component: BootmpMmakingComponent,
     canActivate: [sessionGuard],
-    data: { gameMode: 'boottmp' },
+    canDeactivate: [exitGameGuard],
+    data: { gameMode: 'boottmp-mmaking' },
   },
   {
     path: 'bootmp-match',
     component: BootmpMatchComponent,
     canActivate: [sessionGuard],
-    data: { gameMode: 'boottmp' },
+    canDeactivate: [exitGameGuard],
+    data: { gameMode: 'boottmp-match' },
   },
   {
     path: 'bootmp-aftermatch',
     component: BootmpAftermatchComponent,
     canActivate: [sessionGuard],
-    data: { gameMode: 'boottmp' },
+    canDeactivate: [exitGameGuard],
+    data: { gameMode: 'boottmp-aftermatch' },
   },
   { path: 'terms', component: TermsComponent },
   { path: 'privacy', component: PrivacyComponent },

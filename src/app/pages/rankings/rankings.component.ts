@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
-import { NavigationService } from '../../services/navigation.service';
 import { RabbitService } from '../../services/rabbit.service';
 import { AuthService } from '../../services/auth.service';
 import { GameData } from '../../models/game-data.model';

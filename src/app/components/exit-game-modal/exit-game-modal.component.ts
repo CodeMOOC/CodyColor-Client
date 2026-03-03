@@ -1,10 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { RabbitService } from '../../services/rabbit.service';
-import { AudioService } from '../../services/audio.service';
-import { NavigationService } from '../../services/navigation.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-exit-game-modal',
@@ -18,25 +17,18 @@ export class ExitGameModalComponent implements OnInit {
 
   constructor(
     private dialogRef: MatDialogRef<ExitGameModalComponent>,
-    private audioHandler: AudioService,
     private rabbit: RabbitService,
-    private navigation: NavigationService
+    private router: Router
   ) {}
 
   ngOnInit(): void {}
 
-  stopExitGame(): void {
-    this.audioHandler.playSound('menu-click');
-    this.closed.emit();
-    this.dialogRef.close(false);
+  continueExitGame(): void {
+    this.dialogRef.close(true);
   }
 
-  continueExitGame(): void {
-    this.audioHandler.playSound('menu-click');
-    this.rabbit.sendPlayerQuitRequest();
-    this.quitGame();
-    this.navigation.goToPage('/home');
-    this.dialogRef.close(true);
+  stopExitGame(): void {
+    this.dialogRef.close(false);
   }
 
   private quitGame(): void {

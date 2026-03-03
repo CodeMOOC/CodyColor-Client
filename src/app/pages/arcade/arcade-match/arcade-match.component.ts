@@ -274,7 +274,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
       (ms) => this.updateEnemyTimer(ms),
       () => {
         this.matchManager.resetMatchState();
-        this.router.navigate(['/arcade-aftermatch']);
+        this.router.navigate(['/arcade-aftermatch'], { replaceUrl: true });
       }
     );
   }
@@ -340,7 +340,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
         this.gameData.updateMatchRanking(message.matchRanking);
         this.gameData.updateGlobalRanking(message.globalRanking);
 
-        this.router.navigate(['/arcade-aftermatch']);
+        this.router.navigate(['/arcade-aftermatch'], { replaceUrl: true });
       },
     });
   }

@@ -59,8 +59,10 @@ button.chat--hint {
   white-space: nowrap;
 }
 
-button.chat--hint:hover {
-  background-color: #818387;
+@media (hover: hover) and (pointer: fine) {
+  button.chat--hint:hover {
+    background-color: #818387;
+  }
 }
 
 .chat--bubble-row {

@@ -207,7 +207,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
           tiles: this.gameData.formatMatchTiles(message.tiles),
         });
 
-        this.router.navigate(['/arcade-match']);
+        this.router.navigate(['/arcade-match'], { replaceUrl: true });
       },
 
       onGameQuit: () => {

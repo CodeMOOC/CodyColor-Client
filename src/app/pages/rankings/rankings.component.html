@@ -10,15 +10,27 @@
       <div class="page--body">
         <!-- Title + navigation arrows -->
         <div class="ranktitle">
-          <div class="ranktitle--button" (click)="scrollRanking(false)">
-            <i class="material-symbols-outlined">keyboard_arrow_left</i>
-          </div>
+          <button
+            class="ranktitle--button"
+            (click)="scrollRanking(false)"
+            type="button"
+          >
+            <i class="material-symbols-outlined white-arrow"
+              >keyboard_arrow_left</i
+            >
+          </button>
           <div class="ranktitle--text">
             <h2>{{ rankingTitles[rankIndex] }}</h2>
           </div>
-          <div class="ranktitle--button" (click)="scrollRanking(true)">
-            <i class="material-symbols-outlined">keyboard_arrow_right</i>
-          </div>
+          <button
+            class="ranktitle--button"
+            (click)="scrollRanking(true)"
+            type="button"
+          >
+            <i class="material-symbols-outlined white-arrow"
+              >keyboard_arrow_right</i
+            >
+          </button>
         </div>
 
         <!-- Subtitle -->
@@ -85,7 +97,10 @@
 
           <div
             class="my-rank"
-            *ngIf="myGlobalMatchRank && !myGlobalMatchRank.inTop10"
+            *ngIf="
+              myGlobalMatchRank && !myGlobalMatchRank.inTop10;
+              else noticeNotLogIn
+            "
           >
             <hr />
             <div class="my-rank--title">
@@ -102,6 +117,11 @@
               </tr>
             </table>
           </div>
+          <ng-template #noticeNotLogIn>
+            <div class="notice-not-log-in">
+              {{ "RANKING_LOGIN_NOTICE" | translate }}
+            </div>
+          </ng-template>
         </div>
 
         <!-- Top 10 Points Daily -->
@@ -156,7 +176,10 @@
           <!-- My global points rank (if not in top 10) -->
           <div
             class="my-rank"
-            *ngIf="myGlobalPointsRank && !myGlobalPointsRank.inTop10"
+            *ngIf="
+              myGlobalPointsRank && !myGlobalPointsRank.inTop10;
+              else noticeNotLogIn
+            "
           >
             <hr />
             <div class="my-rank--title">
@@ -170,6 +193,11 @@
               <span>{{ myGlobalPointsRank.wonMatches }}</span>
             </div>
           </div>
+          <ng-template #noticeNotLogIn>
+            <div class="notice-not-log-in">
+              {{ "RANKING_LOGIN_NOTICE" | translate }}
+            </div>
+          </ng-template>
         </div>
       </div>
       <div class="page--push"></div>

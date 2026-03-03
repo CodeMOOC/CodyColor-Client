@@ -304,7 +304,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
       (ms) => this.updateUserTimer(ms),
       (ms) => this.updateEnemyTimer(ms),
       () => {
-        this.router.navigate(['/bootmp-aftermatch']);
+        this.router.navigate(['/bootmp-aftermatch'], { replaceUrl: true });
         // this.matchManager.handleUserTimeout(this.user);
       }
     );
@@ -397,7 +397,7 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
     this.audio.playSound('menu-click');
     this.matchManager.executeEndSequence('player', this.botSetting === 0, {
       onComplete: () => {
-        this.router.navigate(['/bootmp-aftermatch']);
+        this.router.navigate(['/bootmp-aftermatch'], { replaceUrl: true });
         this.rabbit.sendEndAnimationMessage();
         if (!this.router.url.includes('royale'))
           this.matchManager.determineWinner();

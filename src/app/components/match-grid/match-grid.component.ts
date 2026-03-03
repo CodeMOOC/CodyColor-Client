@@ -221,7 +221,7 @@ export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
     this.matchManager.executeEndSequence(playerType, isSinglePlayer, {
       onComplete: () => {
         if (this.isBot) {
-          this.router.navigate([this.endRoute]);
+          this.router.navigate([this.endRoute], { replaceUrl: true });
         }
         this.rabbit.sendEndAnimationMessage();
         if (!this.router.url.includes('royale'))

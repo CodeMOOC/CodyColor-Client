@@ -108,7 +108,7 @@ export class BootmpAftermatchComponent implements OnInit {
     this.matchManager.resetMatchState();
 
     this.gameData.setNewMatchTiles();
-    this.router.navigate(['/bootmp-match']);
+    this.router.navigate(['/bootmp-match'], { replaceUrl: true });
   }
 
   shareText(): void {

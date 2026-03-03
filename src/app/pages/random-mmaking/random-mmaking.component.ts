@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { RabbitService } from '../../services/rabbit.service';
 import { GameDataService } from '../../services/game-data.service';
 import { AuthService } from '../../services/auth.service';
-import { NavigationService } from '../../services/navigation.service';
 import { AudioService } from '../../services/audio.service';
 import { SessionService } from '../../services/session.service';
 import { VisibilityService } from '../../services/visibility.service';
@@ -72,7 +71,6 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     private gameData: GameDataService,
     private modalService: ModalService,
     private router: Router,
-    private navigation: NavigationService,
     private audio: AudioService,
     private visibility: VisibilityService,
     private chat: ChatHandlerService,
@@ -107,7 +105,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
 
     this.enemy = this.gameData.value.enemy;
 
-    this.navigation.blockBackNavigation();
+    // this.navigation.blockBackNavigation();
     if (this.sessionHandler.isSessionInvalid()) {
       this.quitGame();
       this.router.navigate(['/']);
@@ -189,7 +187,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
         this.gameData.update('match', {
           tiles: this.gameData.formatMatchTiles(message.tiles),
         });
-        this.router.navigate(['/arcade-match']);
+        this.router.navigate(['/arcade-match'], { replaceUrl: true });
       },
       onGameQuit: () => {
         this.handleEnemyQuit('ENEMY_LEFT');
@@ -242,14 +240,6 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     this.clearTimers();
   }
 
-  private handleForcedExit(messageKey: string): void {
-    this.quitGame();
-    this.translation.setTranslation('forceExitText', messageKey).then((t) => {
-      this.forceExitText = t;
-      this.forceExitModal = true;
-    });
-  }
-
   getBubbleStyle(bubble: any): string {
     return bubble.playerId === this.gameData.value.user.playerId
       ? 'chat--bubble-player'
@@ -277,10 +267,5 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     this.readyClicked = true;
     this.rabbit.sendReadyMessage();
     if (!this.enemyReady) this.changeScreen(this.screens.waitingReady);
-  }
-
-  exitGame(): void {
-    this.audio.playSound('menu-click');
-    this.exitGameModal = true;
   }
 }

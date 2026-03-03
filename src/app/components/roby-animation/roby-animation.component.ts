@@ -230,6 +230,7 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
     let prevY = firstTileY;
 
     for (let i = 1; i < this.path.tilesCoords.length; i++) {
+      console.log('Processing tile', i, 'with dir', dirs[i]);
       const dir = dirs[i];
       const tile = tiles[i];
       const x = tile.col * tileStep + offsetX;
@@ -280,12 +281,16 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
 
     // if we need to turn before leaving
     const lastDir = dirs[dirs.length - 1];
+    const lastRawAngle = this.getAngle(lastDir);
+    const exitRawAngle = this.getAngle(exitDir);
+    const exitAngle = this.normalizeAngle(exitRawAngle, lastRawAngle);
+
     if (lastDir !== exitDir) {
       this.steps.push({
         type: 'turn',
         x: lastX,
         y: lastY,
-        angle: this.getAngle(exitDir),
+        angle: exitAngle,
         duration: this.turnDuration,
       });
     }
@@ -309,16 +314,19 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.stop();
-    let idx = 0;
+
+    const startDelay = this.isBotOrEnemy ? 100 : 0;
 
     // place robot at the step[0] starting location
-    this.currentX = this.steps[0].x;
-    this.currentY = this.steps[0].y;
-    this.currentAngle = this.steps[0].angle;
-    this.state = 'idle';
+    setTimeout(() => {
+      this.currentX = this.steps[0].x;
+      this.currentY = this.steps[0].y;
+      this.currentAngle = this.steps[0].angle;
+      this.state = 'idle';
 
-    // start animation
-    this.runSteps();
+      // start animation from step[1]
+      this.runSteps();
+    }, startDelay);
   }
 
   getPlacedRobyStyles() {
@@ -399,6 +407,7 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private getAngle(direction: number): number {
+    // console.log('getAngle for direction', direction);
     return [0, 90, 180, -90][direction] ?? 0;
   }
 
@@ -407,6 +416,9 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
 
     diff = ((((diff + 180) % 360) + 360) % 360) - 180;
 
+    console.log(
+      `normalizeAngle: target=${target}, current=${current}, diff=${diff}`
+    );
     return current + diff;
   }
 }

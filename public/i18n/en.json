@@ -163,6 +163,7 @@
   "DELETE_ACCOUNT": "Delete account",
   "NO_RANKING": "The ranking is empty.",
   "YOUR_RANK": "Your rank",
+  "RANKING_LOGIN_NOTICE":"If you want to appear in the rankings, please log in or register!",
   "TOP_10_MATCH_DAILY": "Daily match ranking",
   "TOP_10_MATCH_GLOBAL": "Global match ranking",
   "TOP_10_POINTS_DAILY": "Daily points ranking",

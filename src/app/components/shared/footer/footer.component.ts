@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { NavigationEnd, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DialogLanguageComponent } from '../../dialog-language/dialog-language.component';
 import { AudioService } from '../../../services/audio.service';
@@ -14,6 +14,7 @@ import { RabbitService } from '../../../services/rabbit.service';
 import { Match } from '../../../models/match.model';
 import { MatchManagerService } from '../../../services/match-manager.service';
 import { ChatHandlerService } from '../../../services/chat.service';
+import { GameResetService } from '../../../services/game-reset.service';
 
 @Component({
   selector: 'app-footer',
@@ -37,6 +38,7 @@ export class FooterComponent implements OnInit {
     private chat: ChatHandlerService,
     private dialog: MatDialog,
     private gameData: GameDataService,
+    private gameReset: GameResetService,
     private matchManager: MatchManagerService,
     private matDialog: MatDialog,
     private rabbit: RabbitService,
@@ -76,6 +78,7 @@ export class FooterComponent implements OnInit {
   }
 
   openExitGameDialog(): void {
+    console.log('Opening exit game dialog');
     const currentUrl = this.router.url;
     if (
       currentUrl === '/login' ||
@@ -94,7 +97,19 @@ export class FooterComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.quitGame();
+        const currentRoute = this.router.routerState.root;
+        let route = currentRoute;
+
+        while (route.firstChild) {
+          route = route.firstChild;
+        }
+        const currentMode = route.snapshot.data['gameMode'];
+
+        this.rabbit.sendPlayerQuitRequest();
+
+        this.router.navigate(['/home']);
+
+        this.gameReset.quitGame(currentMode);
       }
     });
   }

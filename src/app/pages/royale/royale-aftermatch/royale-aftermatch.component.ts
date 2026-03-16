@@ -189,12 +189,9 @@ export class RoyaleAftermatchComponent
 
   private registerRabbitCallbacks(): void {
     this.rabbit.setPageCallbacks({
-      // TO DO: capire perché non entra correttamente
-      onReadyMessage: () => {
-        this.zone.run((message: any) => {
-          const agg = this.aggregated();
-
-          this.gameData.update('aggregated', message.aggregated);
+      onReadyMessage: (message: any) => {
+        this.gameData.update('aggregated', {
+          readyPlayers: this.gameData.value.aggregated.readyPlayers + 1,
         });
       },
 

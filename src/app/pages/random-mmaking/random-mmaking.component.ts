@@ -105,12 +105,6 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
 
     this.enemy = this.gameData.value.enemy;
 
-    // this.navigation.blockBackNavigation();
-    if (this.sessionHandler.isSessionInvalid()) {
-      this.quitGame();
-      this.router.navigate(['/']);
-      return;
-    }
     this.subscriptions.push(
       this.authHandler.user$.subscribe((user) => {
         this.userLogged = !!user.firebaseUser && !!user.serverData;

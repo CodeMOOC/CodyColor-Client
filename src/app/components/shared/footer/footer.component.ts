@@ -78,7 +78,6 @@ export class FooterComponent implements OnInit {
   }
 
   openExitGameDialog(): void {
-    console.log('Opening exit game dialog');
     const currentUrl = this.router.url;
     if (
       currentUrl === '/login' ||

@@ -173,8 +173,8 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
       this.steps = [];
       return;
     }
-    const tileStep = 50 + 5;
 
+    const tileStep = 55; // 50 + 5
     const offsetX = 10;
     const offsetY = 55;
 
@@ -198,8 +198,8 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
     const firstTileX = firstTile.col * tileStep + offsetX;
     const firstTileY = firstTile.row * tileStep + offsetY;
 
-    // entry is firstTile - dirVector * tileStep
-    const dv = dirVecs[firstDir] ?? { dx: 0, dy: 0 };
+    const dv = dirVecs[firstDir];
+
     const entryX = firstTileX - dv.dx * tileStep;
     const entryY = firstTileY - dv.dy * tileStep;
 
@@ -207,61 +207,56 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
     this.entryY = entryY;
     this.entryAngle = this.getAngle(firstDir);
 
+    let currentAngle = this.entryAngle;
+
     this.steps.push({
       type: 'move',
       x: entryX,
       y: entryY,
-      angle: this.getAngle(firstDir),
+      angle: currentAngle,
       duration: this.moveDuration,
     });
 
-    // move into the first tile
     this.steps.push({
       type: 'move',
       x: firstTileX,
       y: firstTileY,
-      angle: this.getAngle(firstDir),
+      angle: currentAngle,
       duration: this.moveDuration,
     });
 
-    // subsequent tiles
-    let prevDir = dirs[0];
+    let prevDir = firstDir;
     let prevX = firstTileX;
     let prevY = firstTileY;
 
-    for (let i = 1; i < this.path.tilesCoords.length; i++) {
-      console.log('Processing tile', i, 'with dir', dirs[i]);
+    for (let i = 1; i < tiles.length; i++) {
       const dir = dirs[i];
       const tile = tiles[i];
+
       const x = tile.col * tileStep + offsetX;
       const y = tile.row * tileStep + offsetY;
 
-      const rawAngle = this.getAngle(dir);
-      const angle = this.normalizeAngle(rawAngle, this.getAngle(prevDir));
-      if (dir !== prevDir) {
-        // turn in place (stay at prevX, prevY)
+      const turn = this.getTurn(prevDir, dir);
+
+      if (turn !== 0) {
+        currentAngle += turn;
+
         this.steps.push({
           type: 'turn',
           x: prevX,
           y: prevY,
-          angle,
+          angle: currentAngle,
           duration: this.turnDuration,
         });
       }
 
-      let moveDur = this.moveDuration;
+      const moveDur = dir === prevDir ? this.tileDuration : this.moveDuration;
 
-      // if no turn is needed, extend move duration to full tile
-      if (dir === prevDir) {
-        moveDur = this.tileDuration; // straight moves take full time
-      }
-
-      // then move to the next tile
       this.steps.push({
         type: 'move',
         x,
         y,
-        angle,
+        angle: currentAngle,
         duration: moveDur,
       });
 
@@ -270,32 +265,34 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
       prevY = y;
     }
 
-    // EXIT: compute exit direction
+    // EXIT LOGIC
     const lastTile = tiles[tiles.length - 1];
     const lastX = lastTile.col * tileStep + offsetX;
     const lastY = lastTile.row * tileStep + offsetY;
+
+    const lastDir = dirs[dirs.length - 1];
+
     const exitDir =
       typeof this.path.exitDirection === 'number'
         ? this.path.exitDirection
-        : dirs[dirs.length - 1];
+        : lastDir;
 
-    // if we need to turn before leaving
-    const lastDir = dirs[dirs.length - 1];
-    const lastRawAngle = this.getAngle(lastDir);
-    const exitRawAngle = this.getAngle(exitDir);
-    const exitAngle = this.normalizeAngle(exitRawAngle, lastRawAngle);
+    const exitTurn = this.getTurn(lastDir, exitDir);
 
-    if (lastDir !== exitDir) {
+    if (exitTurn !== 0) {
+      currentAngle += exitTurn;
+
       this.steps.push({
         type: 'turn',
         x: lastX,
         y: lastY,
-        angle: exitAngle,
+        angle: currentAngle,
         duration: this.turnDuration,
       });
     }
 
-    const edv = dirVecs[exitDir] ?? { dx: 0, dy: 0 };
+    const edv = dirVecs[exitDir];
+
     const offX = lastX + edv.dx * tileStep;
     const offY = lastY + edv.dy * tileStep;
 
@@ -303,7 +300,7 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
       type: 'move',
       x: offX,
       y: offY,
-      angle: this.getAngle(exitDir),
+      angle: currentAngle,
       duration: this.moveDuration,
     });
   }
@@ -411,14 +408,13 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
     return [0, 90, 180, -90][direction] ?? 0;
   }
 
-  private normalizeAngle(target: number, current: number): number {
-    let diff = target - current;
+  private getTurn(prevDir: number, nextDir: number): number {
+    const diff = (nextDir - prevDir + 4) % 4;
 
-    diff = ((((diff + 180) % 360) + 360) % 360) - 180;
+    if (diff === 0) return 0; // straight
+    if (diff === 1) return 90; // right
+    if (diff === 3) return -90; // left
 
-    console.log(
-      `normalizeAngle: target=${target}, current=${current}, diff=${diff}`
-    );
-    return current + diff;
+    throw new Error('Robot cannot turn');
   }
 }

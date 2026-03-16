@@ -8,7 +8,7 @@ import {
   Signal,
   computed,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
@@ -104,8 +104,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
   private modalService = inject(ModalService);
   private auth = inject(AuthService);
   private path = inject(PathService);
-  private zone = inject(NgZone);
-  private translation = inject(LanguageService);
+  private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
     this.path.reset();
@@ -141,6 +140,14 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
       })
     );
 
+    this.route.queryParams.subscribe((params) => {
+      const code = params['code'];
+
+      if (code) {
+        this.codeValue = code;
+        this.joinGame(code);
+      }
+    });
     this.loadTimerSettings();
 
     // visibility callback
@@ -313,7 +320,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
           this.gameData.update('aggregated', message.aggregated);
           this.gameData.update('user', message.user);
 
-          this.matchUrl = `${environment.webBaseUrl}/#!?royale=${message.general.code}`;
+          this.matchUrl = `${environment.webBaseUrl}royale-mmaking?code=${message.general.code}`;
           this.rabbit.subscribeGameRoom();
 
           if (this.gameData.value.general.scheduledStart) {

@@ -53,12 +53,6 @@ export class ProfileComponent {
   ) {}
 
   ngOnInit(): void {
-    // Session check
-    if (this.session.isSessionInvalid()) {
-      this.router.navigate(['/']);
-      return;
-    }
-
     this.auth.user$.subscribe((user) => {
       this.userLogged = !!user.firebaseUser && !!user.serverData;
 

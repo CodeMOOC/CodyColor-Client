@@ -95,6 +95,10 @@ export class RabbitService {
   ) {
     this.debug = false;
     // environment.rabbit.socketUrl !== 'wss://codycolor.codemooc.net/api/ws';
+
+    if (!this.getBrokerConnectionState()) {
+      this.connect();
+    }
   }
 
   connect(): void {
@@ -180,6 +184,7 @@ export class RabbitService {
   }
 
   private onConnected(): void {
+    this.setBrokerConnected(true);
     this.connectedToBroker = true;
     const serverDirectEndpoint = `${
       this.endpoints.clientControlTopic

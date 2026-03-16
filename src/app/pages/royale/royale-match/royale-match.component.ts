@@ -341,18 +341,13 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
         this.gameTimerValue.set(0);
         this.clockAnimation = 'clock--end';
 
-        this.router.navigate(['/royale-aftermatch'], {
-          replaceUrl: true,
-          state: {
-            matchRanking: this.gameData.value.matchRanking,
-            globalRanking: this.gameData.value.globalRanking,
-            userMatchResult: this.gameData.value.userMatchResult,
-            userGlobalResult: this.gameData.value.userGlobalResult,
-            aggregated: this.gameData.value.aggregated,
-          },
-        });
+        if (!this.gameData.value.match.positioned) {
+          this.autoPlacePlayer();
+        }
 
         if (!this.gameData.value.match.positioned) {
+          console.log('Timer ended: auto-placing player');
+          console.log(this.user);
           this.gameData.update('match', {
             positioned: true,
             time: 0,
@@ -368,9 +363,10 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
             points: 0,
           });
 
-          this.gameData.update('aggregated', {
-            positionedPlayers: this.aggregated.positionedPlayers + 1,
-          });
+          // this.gameData.update('aggregated', {
+          //   positionedPlayers:
+          //     this.gameData.value.aggregated.positionedPlayers + 1,
+          // });
 
           this.showCompleteGrid = true;
           this.showArrows = false;
@@ -382,6 +378,36 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
     };
 
     this.gameTimer = setTimeout(step, interval);
+  }
+
+  // posizionamento automatico se timer finisce e giocatore non ha scelto posizione
+  private autoPlacePlayer() {
+    const side = -1;
+    const distance = -1;
+    this.gameData.update('match', {
+      positioned: true,
+      time: 0,
+      startPosition: { side, distance },
+    });
+
+    this.gameData.update('userMatchResult', {
+      nickname: this.user.nickname,
+      playerId: this.user.playerId,
+      time: 0,
+      pathLength: 0,
+      startPosition: { side, distance },
+      points: 0,
+    });
+
+    // this.gameData.update('aggregated', {
+    //   positionedPlayers: this.gameData.value.aggregated.positionedPlayers + 1,
+    // });
+
+    this.showCompleteGrid = true;
+    this.showArrows = false;
+    this.showDraggableRoby = false;
+    this.calculateAllStartPositionCss(false);
+    this.rabbit.sendPlayerPositionedMessage();
   }
 
   // -------------------------------
@@ -414,37 +440,6 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       this.showCompleteGrid = false;
       this.draggableRobyImage = 'roby-idle';
       this.calculateAllStartPositionCss(false);
-    }
-  }
-
-  robyDropped(side: number, distance: number) {
-    this.audio.playSound('roby-positioned');
-    this.showDraggableRoby = false;
-    this.showCompleteGrid = true;
-
-    if (!this.startAnimation) {
-      this.gameData.update('match', {
-        positioned: true,
-        time: this.nextGameTimerValue,
-        startPosition: { side, distance },
-      });
-
-      this.path.computePath(this.gameData.value.match.startPosition);
-
-      this.gameData.update('userMatchResult', {
-        nickname: this.user.nickname,
-        playerId: this.user.playerId,
-        time: this.gameData.value.match.time,
-        pathLength: this.path.value.pathLength,
-        startPosition: this.gameData.value.match.startPosition,
-        points: this.gameData.calculateMatchPoints(this.path.value.pathLength),
-      });
-
-      this.gameData.update('aggregated', {
-        positionedPlayers: this.aggregated.positionedPlayers + 1,
-      });
-
-      this.rabbit.sendPlayerPositionedMessage();
     }
   }
 
@@ -484,6 +479,10 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
     // Compute path
     this.path.computePath(this.gameData.value.match.startPosition);
 
+    this.gameData.update('aggregated', {
+      positionedPlayers: this.gameData.value.aggregated.positionedPlayers + 1,
+    });
+
     // notify opponent via Rabbit
     this.rabbit.sendPlayerPositionedMessage();
   }
@@ -493,12 +492,12 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
     this.rabbit.setPageCallbacks({
       onEnemyPositioned: () => {
         this.gameData.update('aggregated', {
-          positionedPlayers: this.aggregated.positionedPlayers + 1,
+          positionedPlayers:
+            this.gameData.value.aggregated.positionedPlayers + 1,
         });
-        this.aggregated.positionedPlayers =
-          this.aggregated.positionedPlayers + 1;
       },
       onPlayerRemoved: (msg: any) => {
+        console.log('Player removed:', msg.removedPlayerId);
         if (msg.removedPlayerId === this.user.playerId) {
           this.quitGame();
           this.handleEnemyQuit(this.translate.instant('ENEMY_LEFT'));
@@ -508,15 +507,18 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       },
 
       onGameQuit: () => {
+        console.log('Enemy quit the game on quit callback in royale-match');
         this.handleEnemyQuit(this.translate.instant('ENEMY_LEFT'));
       },
 
       onConnectionLost: () => {
+        console.log('Connection lost callback in royale-match');
         this.quitGame();
         this.handleEnemyQuit(this.translate.instant('ENEMY_LEFT'));
       },
 
       onStartAnimation: (msg: any) => {
+        console.log('Start animation callback in royale-match');
         this.startAnimation = true;
         this.clockAnimation = 'clock--end';
         // this.gameTimerValue.set(msg.matchTime);

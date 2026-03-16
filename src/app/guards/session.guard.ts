@@ -10,9 +10,13 @@ export const sessionGuard: CanActivateFn = (route, state) => {
 
   // Check if the session is invalid
   if (session.isSessionInvalid()) {
-    gameReset.quitGame(router.url);
-    router.navigate(['/']);
-    return false;
+    console.warn(
+      'Session is invalid. Resetting game state and redirecting to home.'
+    );
+
+    // gameReset.quitGame(router.url);
+    // router.navigate(['/']);
+    return true;
   }
 
   return true;

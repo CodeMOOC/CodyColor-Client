@@ -52,12 +52,6 @@ export class HomeComponent implements OnDestroy {
         });
       })
     );
-
-    const connected = this.rabbit.getBrokerConnectionState();
-
-    if (!connected) {
-      this.rabbit.connect();
-    }
   }
 
   ngOnDestroy(): void {

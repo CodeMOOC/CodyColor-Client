@@ -3,6 +3,25 @@
  * con due button ai lati utilizzabile come titolo scrollabile nella
  * schermata rankings
  * ------------------------------------------------------------------------- */
+.page--body {
+  transition: opacity 0.2s ease;
+}
+
+.ranking-section {
+  opacity: 0;
+  transform: translateX(20px);
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  transition: all 0.4s ease;
+}
+
+.ranking-section.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  position: relative;
+}
 
 .ranktitle {
   display: flex;
@@ -91,10 +110,11 @@
 }
 
 .my-rank {
-  margin-top: 12px;
-  padding: 10px;
-  border-radius: 6px;
-  background: rgba(242, 209, 23, 0.286);
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .my-rank--title {
@@ -107,4 +127,61 @@
   grid-template-columns: auto 1fr auto auto auto;
   gap: 10px;
   font-weight: 600;
+}
+
+.top1 {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.25), transparent);
+  font-weight: bold;
+}
+
+.top2 {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.25), transparent);
+}
+
+.top3 {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.25), transparent);
+}
+
+.playerlist-match-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.playerlist-match-table th {
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.7;
+  padding: 8px;
+}
+
+.playerlist-match-table td {
+  padding: 10px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.highlight {
+  background: rgba(63, 81, 181, 0.25);
+  border-left: 3px solid #3f51b5;
+  font-weight: bold;
+}
+
+.rank-pos {
+  font-weight: bold;
+  width: 30px;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.empty {
+  text-align: center;
+  opacity: 0.6;
+  padding: 20px;
+}
+
+@media (hover: hover) {
+  .playerlist-match-table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
 }

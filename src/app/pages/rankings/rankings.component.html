@@ -42,7 +42,7 @@
         <div *ngIf="rankIndex === indexes.top10MatchDaily">
           <table
             class="playerlist-match-table"
-            *ngIf="!isLoading && !rankings.top10MatchDaily?.length"
+            *ngIf="!isLoading && rankings.top10MatchDaily?.length"
           >
             <tr>
               <th></th>

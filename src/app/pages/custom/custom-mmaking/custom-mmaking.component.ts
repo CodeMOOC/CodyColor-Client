@@ -3,8 +3,6 @@ import { RabbitService } from '../../../services/rabbit.service';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GameDataService } from '../../../services/game-data.service';
-import { NavigationService } from '../../../services/navigation.service';
-import { LanguageService } from '../../../services/language.service';
 import { AudioService } from '../../../services/audio.service';
 import { SessionService } from '../../../services/session.service';
 import { AuthService } from '../../../services/auth.service';
@@ -92,7 +90,6 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
     private chatService: ChatHandlerService,
     private rabbit: RabbitService,
     private router: Router,
-    private navigation: NavigationService,
     private modalService: ModalService,
     private translate: TranslateService,
     private audio: AudioService,

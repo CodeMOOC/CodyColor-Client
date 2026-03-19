@@ -320,7 +320,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
           this.gameData.update('aggregated', message.aggregated);
           this.gameData.update('user', message.user);
 
-          this.matchUrl = `${environment.webBaseUrl}royale-mmaking?code=${message.general.code}`;
+          this.matchUrl = `${environment.webBaseUrl}/royale-mmaking?code=${message.general.code}`;
           this.rabbit.subscribeGameRoom();
 
           if (this.gameData.value.general.scheduledStart) {

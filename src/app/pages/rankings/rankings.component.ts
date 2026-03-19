@@ -47,10 +47,7 @@ export class RankingsComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private gameData: GameDataService,
     private rankingsHandler: RankingsService,
-    private audio: AudioService,
-    private session: SessionService,
-    private translationHandler: TranslateService,
-    private router: Router
+    private audio: AudioService
   ) {}
 
   ngOnInit(): void {

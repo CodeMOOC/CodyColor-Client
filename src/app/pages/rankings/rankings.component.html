@@ -97,10 +97,7 @@
 
           <div
             class="my-rank"
-            *ngIf="
-              myGlobalMatchRank && !myGlobalMatchRank.inTop10;
-              else noticeNotLogIn
-            "
+            *ngIf="myGlobalMatchRank && !myGlobalMatchRank.inTop10"
           >
             <hr />
             <div class="my-rank--title">
@@ -117,11 +114,10 @@
               </tr>
             </table>
           </div>
-          <ng-template #noticeNotLogIn>
-            <div class="notice-not-log-in">
-              {{ "RANKING_LOGIN_NOTICE" | translate }}
-            </div>
-          </ng-template>
+
+          <div *ngIf="!userLogged" class="notice-not-log-in">
+            {{ "RANKING_LOGIN_NOTICE" | translate }}
+          </div>
         </div>
 
         <!-- Top 10 Points Daily -->
@@ -173,13 +169,11 @@
           <div *ngIf="!rankings.top10PointsGlobal?.length">
             {{ "NO_RANKING" | translate }}
           </div>
+
           <!-- My global points rank (if not in top 10) -->
           <div
             class="my-rank"
-            *ngIf="
-              myGlobalPointsRank && !myGlobalPointsRank.inTop10;
-              else noticeNotLogIn
-            "
+            *ngIf="myGlobalPointsRank && !myGlobalPointsRank.inTop10"
           >
             <hr />
             <div class="my-rank--title">
@@ -193,11 +187,9 @@
               <span>{{ myGlobalPointsRank.wonMatches }}</span>
             </div>
           </div>
-          <ng-template #noticeNotLogIn>
-            <div class="notice-not-log-in">
-              {{ "RANKING_LOGIN_NOTICE" | translate }}
-            </div>
-          </ng-template>
+          <div *ngIf="!userLogged" class="notice-not-log-in">
+            {{ "RANKING_LOGIN_NOTICE" | translate }}
+          </div>
         </div>
       </div>
       <div class="page--push"></div>

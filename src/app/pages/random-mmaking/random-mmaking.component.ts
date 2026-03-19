@@ -205,11 +205,11 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
       this.mmakingTimerValue -= 1000;
       if (this.mmakingTimerValue <= 0) {
         this.quitGame();
-        this.translation.translateM('NO_NEW_ENEMY').then((text) => {
-          this.forceExitText = text;
-          this.forceExitModal = true;
-        });
         this.clearTimers();
+
+        this.handleEnemyQuit('NO_NEW_ENEMY');
+
+        this.router.navigate(['/home']);
       }
     }, 1000);
   }

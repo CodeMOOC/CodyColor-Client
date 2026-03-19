@@ -79,6 +79,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   enemyTimerValue = 0;
   userTimerAnimation = '';
   enemyTimerAnimation = '';
+  isGameFrozen = false;
 
   timerFormatter: (time: number) => string = (t) => t.toString();
 
@@ -266,6 +267,8 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   }
 
   startMatchTimers(): void {
+    this.matchManager.resetMatchState();
+
     this.countdownInProgress = false;
     this.matchManager.startMatchTimers(
       0, // No bot
@@ -346,6 +349,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   }
 
   updateUserTimer(ms: number) {
+    if (this.isGameFrozen) return;
     if (this.isAnimationReady || this.match.positioned) return;
     if (ms < 10000) this.userTimerAnimation = 'clock-ending-animation';
     this.userTimerValue = ms;
@@ -392,9 +396,10 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     this.calculateAllStartPositionCss(false);
   }
 
-  private async handleEnemyQuit(message: string) {
+  private handleEnemyQuit(message: string) {
+    this.isGameFrozen = true;
     this.quitGame();
-    await this.modalService.showForceExitModal(message);
+    this.modalService.showForceExitModal(message);
     this.router.navigate(['/home']);
   }
 

@@ -38,6 +38,8 @@ export class GameDataService {
 
   // pulizia dei dati relativi alla partita
   initializeMatchData(): void {
+    this.stopTimer();
+
     this.gameDataSubject.next({
       ...this.value,
       match: this.emptyMatch(),
@@ -55,6 +57,11 @@ export class GameDataService {
 
   // pulizia di tutti i dati al valore iniziale
   reset(): void {
+    this.stopTimer();
+
+    this.userTimer$.next(0);
+    this.enemyTimer$.next(0);
+
     this.gameDataSubject.next(this.emptyGameData());
   }
 

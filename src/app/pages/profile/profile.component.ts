@@ -141,9 +141,11 @@ export class ProfileComponent {
     this.multiOptionsModal = false;
   }
   deleteAccount() {
-    this.showMultiOption('SURE_TO_DELETE', () => {
+    this.showMultiOption('SURE_TO_DELETE', async () => {
       this.auth.deleteAccount();
       this.multiOptionsModal = false;
+      await this.auth.logout();
+      this.router.navigate(['/login']);
     });
   }
 

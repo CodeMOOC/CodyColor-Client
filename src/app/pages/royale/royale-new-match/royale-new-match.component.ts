@@ -17,6 +17,7 @@ import { ModalService } from '../../../services/modal-service.service';
 import { RabbitService } from '../../../services/rabbit.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { SessionService } from '../../../services/session.service';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-royale-new-match',
@@ -36,6 +37,7 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
   private translate = inject(TranslateService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private gameLifecycle = inject(GameLifecycleService);
 
   private subs: Subscription[] = [];
 
@@ -80,6 +82,8 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
   settingsStartReady = false;
 
   ngOnInit(): void {
+    this.gameLifecycle.startNewMatch();
+
     // Set game mode in gameData
     this.gameData.update('general', {
       gameType: this.gameData.getGameTypes().royale,
@@ -87,7 +91,7 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
 
     // VISIBILITY HANDLER - force exit
     this.visibility.setDeadlineCallback(() => {
-      this.quitGame();
+      this.gameLifecycle.leaveGame();
       this.forceExitText = this.translate.instant('FORCE_EXIT');
       this.forceExitModal = true;
     });
@@ -122,7 +126,7 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
     // RABBIT CALLBACKS
     this.rabbit.setPageCallbacks({
       onConnectionLost: () => {
-        this.quitGame();
+        this.gameLifecycle.leaveGame();
         this.forceExitText = this.translate.instant('FORCE_EXIT');
         this.forceExitModal = true;
       },
@@ -257,10 +261,5 @@ export class RoyaleNewMatchComponent implements OnInit, OnDestroy {
     if (hours === h && minutes > m) return true;
 
     return false;
-  }
-
-  private quitGame() {
-    this.rabbit.quitGame();
-    this.gameData.reset();
   }
 }

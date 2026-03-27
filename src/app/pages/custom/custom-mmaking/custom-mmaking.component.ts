@@ -18,6 +18,7 @@ import { SpinnerComponent } from '../../../components/spinner/spinner.component'
 import { ChatComponent } from '../../../components/chat/chat.component';
 import { ModalService } from '../../../services/modal-service.service';
 import { TimerSetting } from '../../../models/timerSetting.model';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-custom-mmaking',
@@ -88,6 +89,7 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
   constructor(
     private auth: AuthService,
     private chatService: ChatHandlerService,
+    private gameLifecycle: GameLifecycleService,
     private rabbit: RabbitService,
     private router: Router,
     private modalService: ModalService,
@@ -128,7 +130,7 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
     this.rabbit.setPageCallbacks({
       onGeneralInfoMessage: () => {
         if (!this.session.isClientVersionValid()) {
-          this.quitGame();
+          this.gameLifecycle.leaveGame();
           this.translate.get('OUTDATED_VERSION_DESC').subscribe((text) => {
             this.forceExitText = text;
             this.forceExitModal = true;
@@ -219,7 +221,7 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
   }
 
   private async handleEnemyQuit(message: string) {
-    this.quitGame();
+    this.gameLifecycle.leaveGame();
     await this.modalService.showForceExitModal(message);
     this.router.navigate(['/home']);
   }
@@ -250,12 +252,6 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
         this.joinMessage = text;
       });
     }
-  }
-
-  private quitGame() {
-    this.chatService.clearChat();
-    this.rabbit.quitGame();
-    this.gameData.reset();
   }
 
   handleMessageSend(body: string) {

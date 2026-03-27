@@ -33,6 +33,7 @@ import {
 } from '../../../models/game-data.model';
 import { PathService } from '../../../services/path.service';
 import { ChatComponent } from '../../../components/chat/chat.component';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-royale-mmaking',
@@ -86,7 +87,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     createDefaultAggregated();
   user: GameDataService['value']['user'] = createDefaultPlayer();
 
-  codeValue: string = '';
+  codeValue: number | null = null;
 
   battleTime: number = 30000;
 
@@ -94,6 +95,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
   private rabbit = inject(RabbitService);
   private authHandler = inject(AuthService);
   private gameData = inject(GameDataService);
+  private gameLifecycle = inject(GameLifecycleService);
   private audio = inject(AudioService);
   private router = inject(Router);
   private session = inject(SessionService);
@@ -153,7 +155,7 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     // visibility callback
     // this.visibility.setDeadlineCallback(() => {
     //   this.rabbit.sendPlayerQuitRequest();
-    //   this.quitGame();
+    //   this.gameLifecycle.leaveGame();
     //   this.forceExitText = this.translate.instant('FORCE_EXIT');
     //   this.forceExitModal = true;
     // });
@@ -197,16 +199,6 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     this.rabbit.clearPageCallbacks();
   }
 
-  private quitGame(): void {
-    this.rabbit.quitGame();
-    this.gameData.reset();
-    this.chat.clearChat();
-    if (this.startMatchTimer) {
-      clearInterval(this.startMatchTimer);
-      this.startMatchTimer = undefined;
-    }
-  }
-
   private changeScreen(newScreen: string): void {
     this.mmakingState = this.screens.loadingScreen;
     setTimeout(() => {
@@ -232,13 +224,14 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
       });
   }
 
-  joinGame(codeValue: string): void {
+  joinGame(codeValue: number | null): void {
+    if (!codeValue) return;
     this.mmakingRequested = true;
     this.audio.playSound('menu-click');
     this.translate
       .get('SEARCH_MATCH_INFO')
       .subscribe((text) => (this.joinMessage = text));
-    this.gameData.update('general', { code: codeValue });
+    this.gameData.update('general', { code: codeValue.toString() });
 
     this.rabbit.sendGameRequest(
       this.authHandler.currentUser?.firebaseUser?.uid ?? ''
@@ -285,7 +278,8 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
     this.rabbit.setPageCallbacks({
       onGeneralInfoMessage: () => {
         if (!this.session.isClientVersionValid()) {
-          this.quitGame();
+          this.gameLifecycle.leaveGame();
+
           this.translate.get('OUTDATED_VERSION_DESC').subscribe((text) => {
             this.forceExitText = text;
             this.forceExitModal = true;
@@ -390,7 +384,8 @@ export class RoyaleMmakingComponent implements OnInit, OnDestroy {
   }
 
   private async handleEnemyQuit(message: string) {
-    this.quitGame();
+    this.gameLifecycle.leaveGame();
+
     await this.modalService.showForceExitModal(message);
     this.forceExitModal = true;
 

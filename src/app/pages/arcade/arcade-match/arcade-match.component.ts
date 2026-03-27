@@ -28,6 +28,7 @@ import { RabbitService } from '../../../services/rabbit.service';
 import { ChatHandlerService } from '../../../services/chat.service';
 import { ModalService } from '../../../services/modal-service.service';
 import { CountdownCodyComponent } from '../../../components/countdown-cody/countdown-cody.component';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-arcade-match',
@@ -104,6 +105,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     private audio: AudioService,
     private chat: ChatHandlerService,
     private gameData: GameDataService,
+    private gameLifecycle: GameLifecycleService,
     private path: PathService,
     private matchManager: MatchManagerService,
     private modalService: ModalService,
@@ -119,12 +121,13 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     this.buildEntryPoints();
     this.calculateAllStartPositionCss(false);
 
+    this.userMatchResult = this.gameData.value.userMatchResult;
+    this.enemyMatchResult = this.gameData.value.enemyMatchResult;
+
     this.subs.add(
       this.gameData.gameData$.subscribe((data) => {
         this.user = data.user;
         this.enemy = data.enemy;
-        this.userMatchResult = data.userMatchResult;
-        this.enemyMatchResult = data.enemyMatchResult;
         this.general = data.general;
         this.match = data.match;
       })
@@ -282,24 +285,6 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
     );
   }
 
-  // metodo per terminare la partita in modo sicuro, disattivando i timer,
-  // interrompendo animazioni e connessioni con il server
-  private quitGame(): void {
-    this.gameData.reset();
-
-    if (this.userTimerValue !== 0) {
-      this.userTimerValue = 0;
-    }
-
-    if (this.enemyTimerValue !== 0) {
-      this.enemyTimerValue = 0;
-    }
-
-    this.rabbit.quitGame();
-    this.chat.clearChat();
-    this.gameData.initializeMatchData();
-  }
-
   private registerRabbitCallbacks(): void {
     this.rabbit.setPageCallbacks({
       onEnemyPositioned: (message: any) => {
@@ -398,7 +383,7 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
 
   private handleEnemyQuit(message: string) {
     this.isGameFrozen = true;
-    this.quitGame();
+    this.gameLifecycle.leaveGame();
     this.modalService.showForceExitModal(message);
     this.router.navigate(['/home']);
   }

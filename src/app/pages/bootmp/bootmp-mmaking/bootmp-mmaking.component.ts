@@ -11,6 +11,7 @@ import { LanguageService } from '../../../services/language.service';
 import { FormsModule, NgForm } from '@angular/forms';
 import { PathService } from '../../../services/path.service';
 import { TimerSetting } from '../../../models/timerSetting.model';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-bootmp-mmaking',
@@ -38,6 +39,7 @@ export class BootmpMmakingComponent implements OnInit {
 
   constructor(
     private gameData: GameDataService,
+    private gameDataLifecycle: GameLifecycleService,
     private auth: AuthService,
     private audio: AudioService,
     private path: PathService,
@@ -47,6 +49,8 @@ export class BootmpMmakingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.gameDataLifecycle.startNewMatch();
+
     this.auth.authReady$.subscribe((ready) => {
       if (ready) {
         this.auth.user$.subscribe((appUser) => {

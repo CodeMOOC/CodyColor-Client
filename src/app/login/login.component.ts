@@ -14,7 +14,6 @@ import {
 import { GameDataService } from '../services/game-data.service';
 import { MultiOptionsModalComponent } from '../components/multi-options-modal/multi-options-modal.component';
 import { SingleOptionModalComponent } from '../components/single-option-modal/single-option-modal.component';
-import { NicknameFormComponent } from '../components/nickname-form/nickname-form.component';
 import { RabbitService } from '../services/rabbit.service';
 import { Auth, sendPasswordResetEmail } from '@angular/fire/auth';
 import { Router } from '@angular/router';
@@ -33,7 +32,6 @@ enum ScreenState {
     FormsModule,
     ReactiveFormsModule,
     MultiOptionsModalComponent,
-    NicknameFormComponent,
     SingleOptionModalComponent,
     TranslateModule,
   ],
@@ -136,7 +134,10 @@ export class LoginComponent {
 
   ultimateSignUp(nickname: string) {
     this.hideSignUpButton = true;
-    this.auth.completeSignUp(nickname, this.authForm.value.email);
+    this.auth.completeSignUp(
+      this.authForm.value.nickname,
+      this.authForm.value.email
+    );
   }
 
   logout() {
@@ -257,8 +258,12 @@ export class LoginComponent {
           this.showSingleOption(this.translate.instant('PASSWORD_MISMATCH'));
           return;
         }
+
         await this.auth.signUpWithEmail(email!, password!, { name, surname });
-        this.screen = ScreenState.Nickname;
+        await this.auth.completeSignUp(
+          this.authForm.value.nickname,
+          this.authForm.value.email
+        );
       } else {
         await this.auth.signInWithEmail(email!, password!);
         this.router.navigate(['/profile']);

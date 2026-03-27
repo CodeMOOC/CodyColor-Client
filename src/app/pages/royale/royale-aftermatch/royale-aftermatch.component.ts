@@ -25,6 +25,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ModalService } from '../../../services/modal-service.service';
 import { PathService } from '../../../services/path.service';
 import { MatchManagerService } from '../../../services/match-manager.service';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-royale-aftermatch',
@@ -38,6 +39,7 @@ export class RoyaleAftermatchComponent
 {
   private rabbit = inject(RabbitService);
   private gameData = inject(GameDataService);
+  private gameLifecycle = inject(GameLifecycleService);
   private audio = inject(AudioService);
   private session = inject(SessionService);
   private chatHandler = inject(ChatHandlerService);
@@ -71,7 +73,7 @@ export class RoyaleAftermatchComponent
   // --- Game data ---
   user: Player | null = null;
   enemy: Player | null = null;
-  winner: number | null = null;
+  winner: string = '';
   draw = false;
   matchCount = 0;
   userMatch: any;
@@ -141,7 +143,7 @@ export class RoyaleAftermatchComponent
         this.enemy = data.enemy;
         this.general = data.general;
         this.draw = data.match.winnerId === -1;
-        this.winner = data.match.winnerId;
+        this.winner = this.gameData.getMatchWinner()?.nickname ?? '';
         this.matchCount = data.aggregated.matchCount;
         this.aggregated = data.aggregated;
 
@@ -153,10 +155,8 @@ export class RoyaleAftermatchComponent
     });
 
     // Play win/lose sounds
-    if (this.winner?.toString() === this.user?.nickname)
-      this.audio.playSound('win');
-    else if (this.winner?.toString() === this.enemy?.nickname)
-      this.audio.playSound('lost');
+    if (this.winner === this.user?.nickname) this.audio.playSound('win');
+    else if (this.winner === this.enemy?.nickname) this.audio.playSound('lost');
   }
 
   // countdown
@@ -249,9 +249,7 @@ export class RoyaleAftermatchComponent
   }
 
   private quitGame() {
-    this.rabbit.quitGame();
-    this.gameData.initializeMatchData();
-    this.chatHandler.clearChat();
+    this.gameLifecycle.leaveGame();
     this.clearNewMatchTimer();
   }
 
@@ -270,8 +268,7 @@ export class RoyaleAftermatchComponent
 
     this.newMatchClicked = true;
 
-    this.path.reset();
-    this.matchManager.resetMatchState();
+    this.gameLifecycle.restartMatch();
 
     this.rabbit.sendReadyMessage();
   }
@@ -299,7 +296,7 @@ export class RoyaleAftermatchComponent
       }
     } catch (err) {
       // user cancelled share → not an error
-      console.log('Share cancelled or failed:', err);
+      console.warn('Share cancelled or failed:', err);
     } finally {
       // Small delay avoids double tap glitch on mobile
       setTimeout(() => {

@@ -21,7 +21,7 @@
               >
             </button>
             <div class="ranktitle--text">
-              <h2>{{ rankingTitles[rankIndex] }}</h2>
+              <h2>{{ getRankingTitleKey(rankIndex) | translate }}</h2>
             </div>
             <button
               class="ranktitle--button"
@@ -36,7 +36,7 @@
 
           <!-- Subtitle -->
           <div class="ranksubtitle">
-            {{ rankingSubTitles[rankIndex] }}
+            {{ getRankingSubTitles(rankIndex) | translate }}
           </div>
         </div>
         <!-- Top 10 Match Daily -->
@@ -58,12 +58,18 @@
               </tr>
               <tr
                 *ngFor="let match of rankings.top10MatchDaily; index as i"
-                [class.highlight]="isCurrentUser(match.nickname)"
                 [class.top1]="i === 0"
                 [class.top2]="i === 1"
                 [class.top3]="i === 2"
               >
-                <td class="rank-pos">{{ i + 1 }}</td>
+                <td>
+                  <span *ngIf="isCurrentUser(match.nickname)" class="me-label">
+                    {{ "ME_LABEL" | translate }}
+                  </span>
+                </td>
+                <td class="rank-pos">
+                  {{ i + 1 }}
+                </td>
                 <td>{{ match.nickname }}</td>
                 <td>{{ match.points }}</td>
                 <td>{{ match.pathLength }}</td>
@@ -96,12 +102,18 @@
               </tr>
               <tr
                 *ngFor="let match of rankings.top10MatchGlobal; index as i"
-                [class.highlight]="isCurrentUser(match.nickname)"
                 [class.top1]="i === 0"
                 [class.top2]="i === 1"
                 [class.top3]="i === 2"
               >
-                <td class="rank-pos">{{ i + 1 }}</td>
+                <td>
+                  <span *ngIf="isCurrentUser(match.nickname)" class="me-label">
+                    {{ "ME_LABEL" | translate }}
+                  </span>
+                </td>
+                <td class="rank-pos">
+                  {{ i + 1 }}
+                </td>
                 <td>{{ match.nickname }}</td>
                 <td>{{ match.points }}</td>
                 <td>{{ match.pathLength }}</td>
@@ -157,13 +169,21 @@
               </tr>
               <tr
                 *ngFor="let player of rankings.top10PointsDaily; index as i"
-                [class.highlight]="isCurrentUser(player.nickname)"
                 [class.top1]="i === 0"
                 [class.top2]="i === 1"
                 [class.top3]="i === 2"
               >
-                <td class="rank-pos">{{ i + 1 }}</td>
-                <td>{{ player.nickname }}</td>
+                <td>
+                  <span *ngIf="isCurrentUser(player.nickname)" class="me-label">
+                    {{ "ME_LABEL" | translate }}
+                  </span>
+                </td>
+                <td class="rank-pos">
+                  {{ i + 1 }}
+                </td>
+                <td>
+                  {{ player.nickname }}
+                </td>
                 <td>{{ player.points }}</td>
                 <td>{{ player.wonMatches }}</td>
               </tr>
@@ -192,12 +212,18 @@
               </tr>
               <tr
                 *ngFor="let player of rankings.top10PointsGlobal; index as i"
-                [class.highlight]="isCurrentUser(player.nickname)"
                 [class.top1]="i === 0"
                 [class.top2]="i === 1"
                 [class.top3]="i === 2"
               >
-                <td class="rank-pos">{{ i + 1 }}</td>
+                <td>
+                  <span *ngIf="isCurrentUser(player.nickname)" class="me-label">
+                    {{ "ME_LABEL" | translate }}
+                  </span>
+                </td>
+                <td class="rank-pos">
+                  {{ i + 1 }}
+                </td>
                 <td>{{ player.nickname }}</td>
                 <td>{{ player.points }}</td>
                 <td>{{ player.wonMatches }}</td>

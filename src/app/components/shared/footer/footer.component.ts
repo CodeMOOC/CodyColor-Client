@@ -14,7 +14,7 @@ import { RabbitService } from '../../../services/rabbit.service';
 import { Match } from '../../../models/match.model';
 import { MatchManagerService } from '../../../services/match-manager.service';
 import { ChatHandlerService } from '../../../services/chat.service';
-import { GameResetService } from '../../../services/game-reset.service';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-footer',
@@ -38,7 +38,7 @@ export class FooterComponent implements OnInit {
     private chat: ChatHandlerService,
     private dialog: MatDialog,
     private gameData: GameDataService,
-    private gameReset: GameResetService,
+    private gameLifecycle: GameLifecycleService,
     private matchManager: MatchManagerService,
     private matDialog: MatDialog,
     private rabbit: RabbitService,
@@ -108,7 +108,7 @@ export class FooterComponent implements OnInit {
 
         this.router.navigate(['/home']);
 
-        this.gameReset.quitGame(currentMode);
+        this.gameLifecycle.leaveGame();
       }
     });
   }
@@ -118,12 +118,6 @@ export class FooterComponent implements OnInit {
     this.exitGameModal = false;
   }
 
-  private quitGame(): void {
-    // this.pathService.quitGame();
-    this.chat.clearChat();
-    this.gameData.reset();
-    this.matchManager.resetMatchState();
-  }
   onExitGame(): void {
     this.audio.playSound('menu-click');
     this.exitGameModal = true;
@@ -131,7 +125,7 @@ export class FooterComponent implements OnInit {
 
   continueExit(): void {
     this.audio.playSound('menu-click');
-    this.quitGame();
+    this.gameLifecycle.leaveGame();
     this.router.navigate(['/home']);
   }
 

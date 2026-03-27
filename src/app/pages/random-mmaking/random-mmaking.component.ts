@@ -17,6 +17,10 @@ import { ModalService } from '../../services/modal-service.service';
 import { ChatComponent } from '../../components/chat/chat.component';
 import { AppUser } from '../../models/user.model';
 import { Player } from '../../models/player.model';
+import { Path } from '../../models/path.model';
+import { PathService } from '../../services/path.service';
+import { MatchManagerService } from '../../services/match-manager.service';
+import { GameLifecycleService } from '../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-random-mmaking',
@@ -76,10 +80,13 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     private chat: ChatHandlerService,
     private sessionHandler: SessionService,
     private translate: TranslateService,
-    private translation: LanguageService
+    private translation: LanguageService,
+    private gameLifecycle: GameLifecycleService
   ) {}
 
   ngOnInit(): void {
+    this.gameLifecycle.startNewMatch();
+
     this.initMatchmaking();
     this.visibility.setDeadlineCallback(() => this.handleDeadline());
   }
@@ -133,7 +140,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     this.rabbit.sendPlayerQuitRequest();
 
     // quit the game
-    this.quitGame();
+    this.gameLifecycle.leaveGame();
 
     // show modal and set translation
     this.translation.setTranslation('forceExitText', 'FORCE_EXIT');
@@ -204,7 +211,7 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
     this.mmakingTimerId = setInterval(() => {
       this.mmakingTimerValue -= 1000;
       if (this.mmakingTimerValue <= 0) {
-        this.quitGame();
+        this.gameLifecycle.leaveGame();
         this.clearTimers();
 
         this.handleEnemyQuit('NO_NEW_ENEMY');
@@ -222,16 +229,9 @@ export class RandomMmakingComponent implements OnInit, OnDestroy {
   }
 
   private async handleEnemyQuit(message: string) {
-    this.quitGame();
+    this.gameLifecycle.leaveGame();
     await this.modalService.showForceExitModal(message);
     this.router.navigate(['/home']);
-  }
-
-  private quitGame(): void {
-    this.rabbit.quitGame();
-    this.gameData.reset();
-    this.chat.clearChat();
-    this.clearTimers();
   }
 
   getBubbleStyle(bubble: any): string {

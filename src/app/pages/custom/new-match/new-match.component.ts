@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GameDataService } from '../../../services/game-data.service';
 import { AuthService } from '../../../services/auth.service';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-new-match',
@@ -32,11 +33,14 @@ export class NewMatchComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private gameData: GameDataService,
+    private gameLifecycle: GameLifecycleService,
     private router: Router,
     private translate: TranslateService
   ) {}
 
   ngOnInit() {
+    this.gameLifecycle.startNewMatch();
+
     this.translate
       .get(['15_SECONDS', '30_SECONDS', '1_MINUTE', '2_MINUTES'])
       .subscribe((translations) => {

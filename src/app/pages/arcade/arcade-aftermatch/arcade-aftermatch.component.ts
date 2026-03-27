@@ -17,6 +17,7 @@ import { MatchManagerService } from '../../../services/match-manager.service';
 import { ChatComponent } from '../../../components/chat/chat.component';
 import { ModalService } from '../../../services/modal-service.service';
 import { Player } from '../../../models/player.model';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-arcade-aftermatch',
@@ -69,6 +70,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     private router: Router,
     private session: SessionService,
     private chat: ChatHandlerService,
+    private gameLifecycle: GameLifecycleService,
     private modalService: ModalService,
     private translate: TranslateService,
     private path: PathService,
@@ -88,7 +90,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     this.visibility.setDeadlineCallback(() => {
       this.rabbit.sendPlayerQuitRequest();
       this.zone.run(() => {
-        this.quitGame();
+        this.gameLifecycle.leaveGame();
         this.forceExitText = this.translate.instant('FORCE_EXIT');
         this.forceExitModal = true;
       });
@@ -100,23 +102,11 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
 
     if (!this.preventResetOnDestroy) {
-      this.quitGame();
+      this.gameLifecycle.leaveGame();
     }
 
     this.visibility.setDeadlineCallback(() => {});
     this.rabbit.clearPageCallbacks();
-  }
-
-  // Helpers
-  private quitGame(): void {
-    this.path.reset();
-    this.rabbit.quitGame();
-    this.gameData.reset();
-    this.chat.clearChat();
-    if (this.newMatchTimer) {
-      clearInterval(this.newMatchTimer);
-      this.newMatchTimer = undefined;
-    }
   }
 
   userLogin(): void {
@@ -241,7 +231,7 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   }
 
   private async handleEnemyQuit(message: string) {
-    this.quitGame();
+    this.gameLifecycle.leaveGame();
     await this.modalService.showForceExitModal(message);
     this.router.navigate(['/home']);
   }

@@ -173,14 +173,17 @@ export class AuthService {
 
   getFirebaseErrorMessage(err: any) {
     switch (err.code) {
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        return 'ERR_INVALID_CREDENTIALS';
+
       case 'auth/invalid-email':
         return 'ERR_INVALID_EMAIL';
+
       case 'auth/user-disabled':
         return 'ERR_USER_DISABLED';
-      case 'auth/user-not-found':
-        return 'ERR_USER_NOT_FOUND';
-      case 'auth/wrong-password':
-        return 'ERR_WRONG_PASSWORD';
+
       case 'auth/email-already-in-use':
         return 'ERR_EMAIL_EXISTS';
 

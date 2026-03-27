@@ -64,7 +64,7 @@ import { RabbitService } from '../services/rabbit.service';
 import { PathService } from '../services/path.service';
 import { GameDataService } from '../services/game-data.service';
 import { MatchManagerService } from '../services/match-manager.service';
-import { GameResetService } from '../services/game-reset.service';
+import { GameLifecycleService } from '../services/game-lifecycle.service';
 
 @Injectable({ providedIn: 'root' })
 export class exitGameGuard implements CanDeactivate<unknown> {
@@ -72,7 +72,7 @@ export class exitGameGuard implements CanDeactivate<unknown> {
     private dialog: MatDialog,
     private rabbit: RabbitService,
     private router: Router,
-    private gameReset: GameResetService
+    private gameLifecycle: GameLifecycleService
   ) {}
 
   canDeactivate(
@@ -95,7 +95,7 @@ export class exitGameGuard implements CanDeactivate<unknown> {
         map((confirmed) => {
           if (confirmed) {
             this.rabbit.sendPlayerQuitRequest();
-            this.gameReset.quitGame(currentMode);
+            this.gameLifecycle.leaveGame();
             return true;
           }
           return false;

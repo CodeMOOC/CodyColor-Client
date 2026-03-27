@@ -16,18 +16,6 @@ export class LanguageService {
   private initLanguage(): void {
     this.translate.addLangs(this.supportedLangs);
     this.translate.setDefaultLang(this.defaultLang);
-
-    const savedLang = localStorage.getItem('language');
-    const browserLang = this.translate.getBrowserLang() ?? '';
-
-    const langToUse =
-      savedLang && this.supportedLangs.includes(savedLang)
-        ? savedLang
-        : this.supportedLangs.includes(browserLang)
-        ? browserLang
-        : this.defaultLang;
-
-    this.translate.use(langToUse);
   }
 
   getCurrentLanguage(): string {

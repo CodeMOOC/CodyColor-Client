@@ -151,35 +151,7 @@
             </button>
           </div>
         </div>
-        <div class="social-login" *ngIf="!isSignUp">
-          <p class="social-divider">{{ "OR_CONTINUE_WITH" | translate }}</p>
-
-          <button
-            type="button"
-            class="social-btn google"
-            (click)="onGoogleLogin()"
-          >
-            <img src="assets/icons/google.svg" alt="Google" class="icon" />
-            {{ "LOGIN_WITH_GOOGLE" | translate }}
-          </button>
-
-          <button
-            type="button"
-            class="social-btn facebook"
-            (click)="onFacebookLogin()"
-          >
-            <img src="assets/icons/facebook.svg" alt="Facebook" class="icon" />
-            {{ "LOGIN_WITH_FACEBOOK" | translate }}
-          </button>
-        </div>
       </section>
-
-      <!-- Nickname selection -->
-      <app-nickname-form
-        *ngIf="screen === ScreenState.Nickname"
-        (submitNickname)="ultimateSignUp($event)"
-      >
-      </app-nickname-form>
     </div>
     <div class="page--push"></div>
   </div>

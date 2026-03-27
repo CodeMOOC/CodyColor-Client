@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { GameDataService } from './game-data.service';
 import { EntryPoint, Side, Tile } from '../models/cell.model';
 import { Path } from '../models/path.model';

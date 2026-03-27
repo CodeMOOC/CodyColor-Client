@@ -31,6 +31,7 @@ import {
 import { createDefaultPlayer, Player } from '../../../models/player.model';
 import { CountdownCodyComponent } from '../../../components/countdown-cody/countdown-cody.component';
 import { MatchManagerService } from '../../../services/match-manager.service';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-royale-match',
@@ -57,8 +58,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private visibility = inject(VisibilityService);
   private router = inject(Router);
-  private zone = inject(NgZone);
-  private matchManager = inject(MatchManagerService);
+  private gameLifecycle = inject(GameLifecycleService);
 
   // Timers
   private startCountdownTimer: any;
@@ -171,8 +171,6 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // this.quitGame();
-
     this.rabbit.clearPageCallbacks();
   }
 
@@ -191,10 +189,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       this.gameTimer = undefined;
     }
 
-    this.rabbit.quitGame();
-    // this.path.quitGame();
-    this.chat.clearChat();
-    this.gameData.initializeMatchData();
+    this.gameLifecycle.leaveGame();
   }
 
   private buildGrid() {
@@ -552,8 +547,6 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
             this.gameData.value.userMatchResult.points +
             this.gameData.value.userGlobalResult.points,
         });
-
-        // this.path.quitGame();
 
         if (!this.forceExitModal) {
           this.router.navigate(['/royale-aftermatch'], {

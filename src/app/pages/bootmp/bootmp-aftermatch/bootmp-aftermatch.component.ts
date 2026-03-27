@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { PathService } from '../../../services/path.service';
 import { Subject, takeUntil } from 'rxjs';
 import { MatchManagerService } from '../../../services/match-manager.service';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-bootmp-aftermatch',
@@ -52,9 +53,7 @@ export class BootmpAftermatchComponent implements OnInit {
   constructor(
     private rabbit: RabbitService,
     private audio: AudioService,
-    private matchManager: MatchManagerService,
-    private path: PathService,
-    private session: SessionService,
+    private gameDataLifecycle: GameLifecycleService,
     private language: LanguageService,
     private shareService: ShareService,
     private visibility: VisibilityService,
@@ -64,7 +63,6 @@ export class BootmpAftermatchComponent implements OnInit {
   ngOnInit(): void {
     this.visibility.setDeadlineCallback(() => {
       this.rabbit.sendPlayerQuitRequest();
-      this.quitGame();
       this.language.setTranslation('forceExitText', 'FORCE_EXIT');
       this.forceExitModal = true;
     });
@@ -96,17 +94,10 @@ export class BootmpAftermatchComponent implements OnInit {
     this.basePlaying = this.audio.isEnabled();
   }
 
-  private quitGame(): void {
-    this.gameData.reset();
-  }
-
   newMatch(): void {
     this.audio.playSound('menu-click');
     // reset match
-    this.gameData.initializeMatchData();
-    this.path.reset();
-    this.matchManager.resetMatchState();
-
+    this.gameDataLifecycle.restartMatch();
     this.gameData.setNewMatchTiles();
     this.router.navigate(['/bootmp-match'], { replaceUrl: true });
   }
@@ -126,7 +117,7 @@ export class BootmpAftermatchComponent implements OnInit {
 
   continueForceExit(): void {
     this.audio.playSound('menu-click');
-    this.quitGame();
+    this.gameDataLifecycle.leaveGame();
     this.router.navigate(['/home']);
   }
 }

@@ -55,7 +55,10 @@
               <button
                 class="navigation--button flashing-animation"
                 (click)="joinGame(codeValue)"
-                [disabled]="customMatchForm.invalid || mmakingRequested"
+                [disabled]="
+                  (customMatchForm.invalid && customMatchForm.touched) ||
+                  mmakingRequested
+                "
               >
                 {{ "JOIN" | translate }}
                 <i

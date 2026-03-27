@@ -101,8 +101,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   grid: Tile[][] = [];
   entryPoints: EntryPoint[] = [];
 
-  subs = new Subscription();
-
   @ViewChildren('arrowCell', { read: ElementRef })
   arrowElements!: QueryList<ElementRef>;
 
@@ -138,20 +136,16 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
 
     this.executeAnimation = false;
 
-    this.subs.add(
-      this.gameData.gameData$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((data) => {
-          this.user = data.user;
-          this.enemy = data.enemy;
-          this.general = data.general;
-          this.match = data.match;
-          this.userPoints = data.userGlobalResult.points;
-          this.enemyPoints = data.enemyGlobalResult.points;
-        })
-    );
+    this.gameData.gameData$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
+      this.user = data.user;
+      this.enemy = data.enemy;
+      this.general = data.general;
+      this.match = data.match;
+      this.userPoints = data.userGlobalResult.points;
+      this.enemyPoints = data.enemyGlobalResult.points;
+    });
 
-    this.path.path$.subscribe((p) => {
+    this.path.path$.pipe(takeUntil(this.destroy$)).subscribe((p) => {
       this.playerPath = p;
 
       if (this.playerPath.startPosition.side !== Side.None) {
@@ -174,7 +168,6 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subs.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
     this.gameData.stopTimer();

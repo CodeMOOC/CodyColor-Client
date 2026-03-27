@@ -57,7 +57,6 @@ export class RankingsComponent implements OnInit, OnDestroy {
       this.userNickname = user.serverData?.nickname ?? '';
     });
 
-    this.loadTranslations();
     this.initRankings();
 
     this.rabbit.setPageCallbacks({
@@ -105,38 +104,25 @@ export class RankingsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.rabbit.clearPageCallbacks();
   }
-  private loadTranslations(): void {
-    this.translate
-      .get([
-        'TOP_10_MATCH_DAILY',
-        'TOP_10_MATCH_GLOBAL',
-        'TOP_10_POINTS_DAILY',
-        'TOP_10_POINTS_GLOBAL',
-      ])
-      .subscribe((t) => {
-        this.rankingTitles = [
-          t['TOP_10_MATCH_DAILY'],
-          t['TOP_10_MATCH_GLOBAL'],
-          t['TOP_10_POINTS_DAILY'],
-          t['TOP_10_POINTS_GLOBAL'],
-        ];
-      });
 
-    this.translate
-      .get([
-        'TOP_10_MATCH_DAILY_SUBT',
-        'TOP_10_MATCH_GLOBAL_SUBT',
-        'TOP_10_POINTS_DAILY_SUBT',
-        'TOP_10_POINTS_GLOBAL_SUBT',
-      ])
-      .subscribe((t) => {
-        this.rankingSubTitles = [
-          t['TOP_10_MATCH_DAILY_SUBT'],
-          t['TOP_10_MATCH_GLOBAL_SUBT'],
-          t['TOP_10_POINTS_DAILY_SUBT'],
-          t['TOP_10_POINTS_GLOBAL_SUBT'],
-        ];
-      });
+  getRankingTitleKey(index: number): string {
+    const keys = [
+      'TOP_10_MATCH_DAILY',
+      'TOP_10_MATCH_GLOBAL',
+      'TOP_10_POINTS_DAILY',
+      'TOP_10_POINTS_GLOBAL',
+    ];
+    return keys[index];
+  }
+
+  getRankingSubTitles(index: number): string {
+    const keys = [
+      'TOP_10_MATCH_DAILY_SUBT',
+      'TOP_10_MATCH_GLOBAL_SUBT',
+      'TOP_10_POINTS_DAILY_SUBT',
+      'TOP_10_POINTS_GLOBAL_SUBT',
+    ];
+    return keys[index];
   }
 
   private initRankings(): void {

@@ -13,6 +13,7 @@ import { environment } from '../../environments/environment';
 // TMP: To change when updating BE
 import * as LZUTF8 from 'lzutf8';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { PathService } from './path.service';
 
 @Injectable({ providedIn: 'root' })
 export class RabbitService {
@@ -91,6 +92,7 @@ export class RabbitService {
 
   constructor(
     private gameDataService: GameDataService,
+    private path: PathService,
     private sessionHandler: SessionService
   ) {
     this.debug = false;
@@ -555,6 +557,7 @@ export class RabbitService {
       gameRoomId: this.gameDataService.value.general.gameRoomId,
       playerId: this.gameDataService.value.user.playerId,
       gameType: this.gameDataService.value.general.gameType,
+      startPosition: this.path.value.startPosition
     });
   }
 

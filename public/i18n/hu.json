@@ -74,7 +74,7 @@
   "NEW_CUSTOM_EXT": "Új tervezett játék",
   "JOIN_BATTLE": "Csatlakozás csatához",
   "AGA_FOUND": "Megvan a csata. Válassz becenevet a csatlakozáshoz!",
-  "BATTLE_WELCOME": "Üdv a Csatában \"{{ gameName }}\"! A meccsek időtartama {{ battleTime }}; egyszerre maximum {{ maxPlayers }} játékos küzdhet.",
+  "BATTLE_WELCOME": "Üdv a Csatában \"{{ gameName }}\"! A meccsek időtartama {{ battleTime }} másodpercek; egyszerre maximum {{ maxPlayers }} játékos küzdhet.",
   "WHEN_START": "Mikor kezdődik a meccs?",
   "WHEN_TIMER": "Minden játékos csatlakozott, a visszaszámlálás után kezdődik a küzdelem:",
   "WHEN_INSTANT": "A játék akkor indul, amikor a szervező megnyomja a start gombot.",

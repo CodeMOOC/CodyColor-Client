@@ -26,6 +26,7 @@ import { RobyAnimationComponent } from '../roby-animation/roby-animation.compone
 import { MatchManagerService } from '../../services/match-manager.service';
 import { Router } from '@angular/router';
 import { RabbitService } from '../../services/rabbit.service';
+import { PathService } from '../../services/path.service';
 
 @Component({
   selector: 'app-match-grid',
@@ -50,6 +51,7 @@ export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() Side = Side;
   @Input() endRoute: string = '';
   @Input() skipAnimation = false;
+  @Input() isTimeout = false;
 
   /** Outputs */
   @Output() tileDropped = new EventEmitter<{ side: Side; distance: number }>();
@@ -84,6 +86,7 @@ export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
 
   constructor(
     private matchManager: MatchManagerService,
+    private pathService: PathService,
     private rabbit: RabbitService,
     private router: Router
   ) {}
@@ -97,7 +100,7 @@ export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.skipAnimation) {
-      this.executeEndSequence();
+      this.executeEndSequence({ source: 'skip' });
     }
   }
 
@@ -206,27 +209,44 @@ export class MatchGridComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   // cosa fare una volta terminata senza intoppi la partita; mostra la schermata aftermatch
-  executeEndSequence(playerType?: 'player' | 'enemy') {
-    if (playerType === 'player') {
-      this.isPlayerAnimationDone = true;
-      this.playerAnim?.play();
+  executeEndSequence(event: {
+    source: 'animation' | 'timeout' | 'skip';
+    role?: 'player' | 'enemy';
+  }) {
+    if (event.source === 'animation') {
+      if (event.role === 'player') {
+        this.isPlayerAnimationDone = true;
+        this.playerAnim?.play();
+      }
+      if (event.role === 'enemy') {
+        this.isEnemyAnimationDone = true;
+        this.enemyAnim?.play();
+      }
     }
-    if (playerType === 'enemy') {
+    if (event.source === 'skip' || event.source === 'timeout') {
+      this.isPlayerAnimationDone = true;
       this.isEnemyAnimationDone = true;
-      this.enemyAnim?.play();
     }
 
     const isSinglePlayer = this.isBot && this.enemyPaths?.length === 0;
 
-    this.matchManager.executeEndSequence(playerType, isSinglePlayer, {
-      onComplete: () => {
-        if (this.isBot) {
-          this.router.navigate([this.endRoute], { replaceUrl: true });
-        }
-        this.rabbit.sendEndAnimationMessage();
-        if (!this.router.url.includes('royale'))
-          this.matchManager.determineWinner();
+    this.matchManager.executeEndSequence(
+      event.role,
+      isSinglePlayer,
+      {
+        onComplete: () => {
+          if (this.isBot) {
+            this.router.navigate([this.endRoute], { replaceUrl: true });
+          }
+          this.rabbit.sendEndAnimationMessage();
+          if (!this.router.url.includes('royale'))
+            this.matchManager.determineWinner();
+
+          if (this.isTimeout) {
+          }
+        },
       },
-    });
+      event.source === 'skip' || event.source === 'timeout'
+    );
   }
 }

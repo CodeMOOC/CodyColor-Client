@@ -94,6 +94,8 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
   positionEnemyTrigger = 0;
   forceExitText: string = '';
 
+  isTimeout: boolean = false;
+
   // CSS
   tilesCss: string[][] = [];
   startPositionsCss: string[][] = [];
@@ -279,8 +281,14 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
       (ms) => this.updateUserTimer(ms),
       (ms) => this.updateEnemyTimer(ms),
       () => {
-        this.matchManager.resetMatchState();
-        this.router.navigate(['/arcade-aftermatch'], { replaceUrl: true });
+        this.isTimeout = true;
+        this.matchManager.handleUserTimeout(this.user, {
+          onComplete: () => {
+            this.askedForSkip = true;
+            this.executeAnimation = true;
+            this.isAnimationReady = true;
+          },
+        });
       }
     );
   }
@@ -299,7 +307,10 @@ export class ArcadeMatchComponent implements OnInit, OnDestroy {
           this.executeAnimation = true;
           this.isAnimationReady = true;
           // Trigger visual animation sequence in MatchGrid
-          this.matchGrid.executeEndSequence('enemy');
+          this.matchGrid.executeEndSequence({
+            source: 'animation',
+            role: 'enemy',
+          });
         }
       },
       onGameQuit: () => {

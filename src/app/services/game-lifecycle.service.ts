@@ -31,7 +31,7 @@ export class GameLifecycleService {
     this.match.resetMatchState();
     this.path.reset();
     // this.chat.clearChat();
-    // this.gameData.initializeMatchData();
+    this.gameData.initializeMatchData();
   }
 
   leaveGame(): void {

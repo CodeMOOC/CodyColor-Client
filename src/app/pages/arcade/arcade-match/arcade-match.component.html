@@ -83,6 +83,7 @@
             (tileDropped)="onTileDropped($event.side, $event.distance)"
             (dragStarted)="onDragStarted()"
             (dragEnded)="onDragEnded()"
+            [isTimeout]="isTimeout"
           ></app-match-grid>
 
           <!-- PLAYER TIME DISPLAY -->

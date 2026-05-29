@@ -370,14 +370,25 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
         !this.gameData.value.match.enemyPositioned &&
         this.gameData.value.general.botSetting !== 0
       ) {
-        const botPath = this.path.calculateBotPath(
-          this.gameData.value.general.botSetting
-        );
+        const botPath = this.enemyPath;
+
+        if (!botPath) {
+          console.error('Bot path is undefined');
+          return;
+        }
 
         this.gameData.update('match', {
           enemyPositioned: true,
           enemyTime: this.positionEnemyTrigger,
           enemyStartPosition: botPath.startPosition,
+        });
+
+        this.gameData.update('enemyMatchResult', {
+          nickname: this.gameData.value.enemy.nickname,
+          playerId: this.gameData.value.enemy.playerId,
+          pathLength: botPath.pathLength,
+          time: this.positionEnemyTrigger,
+          startPosition: botPath.startPosition,
         });
 
         this.enemyTimerValue = this.gameData.value.match.enemyTime;
@@ -388,13 +399,17 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
 
   skip(): void {
     this.audio.playSound('menu-click');
-    this.matchManager.executeEndSequence('player', this.botSetting === 0, {
-      onComplete: () => {
-        this.router.navigate(['/bootmp-aftermatch'], { replaceUrl: true });
-        this.rabbit.sendEndAnimationMessage();
-        if (!this.router.url.includes('royale'))
+    this.matchManager.executeEndSequence(
+      'player',
+      true,
+      {
+        onComplete: () => {
+          this.router.navigate(['/bootmp-aftermatch'], { replaceUrl: true });
+
           this.matchManager.determineWinner();
+        },
       },
-    });
+      true
+    );
   }
 }

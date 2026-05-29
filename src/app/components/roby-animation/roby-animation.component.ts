@@ -126,6 +126,7 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit(): void {
     this.prepareSteps();
+    this.syncInitialPosition();
 
     this.finished.subscribe(() => {
       this.image = this.isBotOrEnemy ? 'enemy-positioned' : 'roby-positioned';
@@ -135,6 +136,7 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['path'] && this.path && this.path.pathLength > 0) {
       this.prepareSteps();
+      this.syncInitialPosition();
     }
 
     if (changes['executeAnimation']?.currentValue === true) {
@@ -146,6 +148,16 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
     this.stop();
   }
 
+  private syncInitialPosition(): void {
+    if (this.steps && this.steps.length > 0) {
+      this.currentX = this.steps[0].x;
+      this.currentY = this.steps[0].y;
+      this.currentAngle = this.steps[0].angle;
+    } else {
+      this.currentX = this.startPixel.x;
+      this.currentY = this.startPixel.y;
+    }
+  }
   public play(): void {
     this.stop();
     this.prepareSteps();
@@ -311,6 +323,10 @@ export class RobyAnimationComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.stop();
+
+    this.syncInitialPosition();
+    this.state = 'idle';
+    this.cdr.detectChanges();
 
     const startDelay = this.isBotOrEnemy ? 100 : 0;
 

@@ -55,6 +55,7 @@
             [isBot]="false"
             [Side]="Side"
             [endRoute]="'/arcade-aftermatch'"
+            [isTimeout]="isTimeout"
             (tileDropped)="onTileDropped($event.side, $event.distance)"
             (dragStarted)="onDragStarted()"
             (dragEnded)="onDragEnded()"

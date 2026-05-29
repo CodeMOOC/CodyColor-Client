@@ -59,6 +59,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   private visibility = inject(VisibilityService);
   private router = inject(Router);
   private gameLifecycle = inject(GameLifecycleService);
+  private matchManager = inject(MatchManagerService);
 
   // Timers
   private startCountdownTimer: any;
@@ -103,6 +104,8 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
 
   executeAnimation: boolean = false;
 
+  isTimeout: boolean = false;
+
   // Grid
   rows = 5;
   cols = 5;
@@ -124,6 +127,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   isDragging = false;
 
   subs = new Subscription();
+  isQuitting = false;
 
   @ViewChild(MatchGridComponent) matchGrid!: MatchGridComponent;
 
@@ -313,11 +317,13 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
     this.countdownInProgress = false;
     const interval = 10;
     let expected = Date.now() + interval;
+    const duration = this.general.timerSetting;
+    const endTime = Date.now() + duration;
 
     const step = () => {
       const drift = Date.now() - expected;
 
-      this.nextGameTimerValue -= interval + drift;
+      this.nextGameTimerValue = Math.max(0, endTime - Date.now());
 
       if (this.nextGameTimerValue > 0) {
         if (this.nextGameTimerValue < 10000) {
@@ -333,42 +339,25 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
           this.clockAnimation = 'clock--end';
         }
       } else {
+        if (this.gameTimer) {
+          clearTimeout(this.gameTimer);
+          this.gameTimer = null;
+        }
+
         this.gameTimerValue.set(0);
         this.clockAnimation = 'clock--end';
 
         if (!this.gameData.value.match.positioned) {
-          this.autoPlacePlayer();
+          this.isTimeout = true;
+          this.matchManager.handleUserTimeout(this.user, {
+            onComplete: () => {
+              this.askedForSkip = true;
+              this.executeAnimation = true;
+            },
+          });
         }
 
-        if (!this.gameData.value.match.positioned) {
-          console.log('Timer ended: auto-placing player');
-          console.log(this.user);
-          this.gameData.update('match', {
-            positioned: true,
-            time: 0,
-            startPosition: { side: -1, distance: -1 },
-          });
-
-          this.gameData.update('userMatchResult', {
-            nickname: this.user.nickname,
-            playerId: this.user.playerId,
-            time: 0,
-            pathLength: 0,
-            startPosition: { side: -1, distance: -1 },
-            points: 0,
-          });
-
-          // this.gameData.update('aggregated', {
-          //   positionedPlayers:
-          //     this.gameData.value.aggregated.positionedPlayers + 1,
-          // });
-
-          this.showCompleteGrid = true;
-          this.showArrows = false;
-          this.showDraggableRoby = false;
-          this.calculateAllStartPositionCss(false);
-          this.rabbit.sendPlayerPositionedMessage();
-        }
+        return;
       }
     };
 
@@ -394,10 +383,11 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       points: 0,
     });
 
-    // this.gameData.update('aggregated', {
-    //   positionedPlayers: this.gameData.value.aggregated.positionedPlayers + 1,
-    // });
+    this.gameData.update('aggregated', {
+      positionedPlayers: this.gameData.value.aggregated.positionedPlayers + 1,
+    });
 
+    this.askedForSkip = true;
     this.showCompleteGrid = true;
     this.showArrows = false;
     this.showDraggableRoby = false;
@@ -492,9 +482,7 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
         });
       },
       onPlayerRemoved: (msg: any) => {
-        console.log('Player removed:', msg.removedPlayerId);
         if (msg.removedPlayerId === this.user.playerId) {
-          this.quitGame();
           this.handleEnemyQuit(this.translate.instant('ENEMY_LEFT'));
         } else {
           this.gameData.update('aggregated', msg.aggregated);
@@ -502,18 +490,14 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
       },
 
       onGameQuit: () => {
-        console.log('Enemy quit the game on quit callback in royale-match');
         this.handleEnemyQuit(this.translate.instant('ENEMY_LEFT'));
       },
 
       onConnectionLost: () => {
-        console.log('Connection lost callback in royale-match');
-        this.quitGame();
-        this.handleEnemyQuit(this.translate.instant('ENEMY_LEFT'));
+        this.handleEnemyQuit(this.translate.instant('FORCE_EXIT'));
       },
 
       onStartAnimation: (msg: any) => {
-        console.log('Start animation callback in royale-match');
         this.startAnimation = true;
         this.clockAnimation = 'clock--end';
         // this.gameTimerValue.set(msg.matchTime);
@@ -521,6 +505,17 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
         this.executeAnimation = true;
 
         this.path.positionAllEnemies(msg.startPositions);
+
+        // this.nextGameTimerValue = 0;
+        // this.gameTimerValue.set(0);
+
+        // clearTimeout(this.gameTimer);
+        // this.gameTimer = undefined;
+
+        // if (this.wasAutoPlaced) {
+        //   console.log('Player timed out earlier, auto-skipping animation now.');
+        //   this.askedForSkip = true;
+        // }
       },
 
       onEndMatch: (msg: any) => {
@@ -570,6 +565,12 @@ export class RoyaleMatchComponent implements OnInit, OnDestroy {
   }
 
   private async handleEnemyQuit(message: string) {
+    if (this.isQuitting) {
+      return;
+    }
+
+    this.isQuitting = true;
+
     this.quitGame();
     await this.modalService.showForceExitModal(message);
     this.router.navigate(['/home']);

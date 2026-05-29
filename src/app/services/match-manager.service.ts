@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { Player } from '../models/player.model';
 import { GameDataService } from './game-data.service';
 import { PathService } from './path.service';
+import { RabbitService } from './rabbit.service';
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +20,7 @@ export class MatchManagerService {
   constructor(
     private gameData: GameDataService,
     private path: PathService,
-    private router: Router
+    private rabbit: RabbitService
   ) {}
 
   /**
@@ -66,7 +67,7 @@ export class MatchManagerService {
   /**
    * Called when user runs out of time before placing the robot
    */
-  handleUserTimeout(user: Player) {
+  handleUserTimeout(user: Player, options?: { onComplete?: () => void }) {
     if (this.gameData.value.match.positioned) return;
 
     this.gameData.update('match', {
@@ -84,7 +85,11 @@ export class MatchManagerService {
       startPosition: { side: -1, distance: -1 },
     });
 
-    this.executeEndSequence();
+    this.rabbit.sendPlayerPositionedMessage();
+
+    if (options && typeof options.onComplete === 'function') {
+      options.onComplete();
+    }
   }
 
   /**
@@ -117,33 +122,18 @@ export class MatchManagerService {
     this.gameData.stopTimer();
   }
 
-  executeEndSequence(
-    playerType?: 'player' | 'enemy',
+  private finalizeMatch(
     isSinglePlayer: boolean = false,
     options?: { onComplete?: () => void }
-  ): void {
-    const current = this.gameData.value;
-
-    // Handle animation state
-    if (playerType === 'player') this.playerAnimationDone = true;
-    if (playerType === 'enemy' || isSinglePlayer) {
-      this.enemyAnimationDone = true;
-    }
-
-    // if playerType is not defined, skip animations
-    const skipAnimations = !playerType;
-    if (
-      !skipAnimations &&
-      !(this.playerAnimationDone && this.enemyAnimationDone)
-    )
-      return;
-
+  ) {
     // Prevent multiple executions
     if (this.isAnimationReady) return;
     this.isAnimationReady = true;
+    const current = this.gameData.value;
 
     // Update the user match result with path information
     const userPath = this.path.value;
+
     this.gameData.update('userMatchResult', {
       pathLength: userPath.pathLength,
       startPosition: userPath.startPosition,
@@ -158,9 +148,6 @@ export class MatchManagerService {
 
     // if bot is enabled, calculate enemy bot path
     if (current.general.botSetting === 1) {
-      const botPath = this.path.calculateBotPath(current.general.botSetting);
-      enemyPathLength = botPath.pathLength;
-
       this.gameData.update('enemyMatchResult', {
         nickname: current.enemy.nickname,
         playerId: current.enemy.playerId,
@@ -192,9 +179,49 @@ export class MatchManagerService {
     if (options?.onComplete) options.onComplete();
   }
 
-  determineWinner(): void {
+  executeEndSequence(
+    playerType?: 'player' | 'enemy',
+    isSinglePlayer: boolean = false,
+    options?: { onComplete?: () => void },
+    isSkipAnimations: boolean = false
+  ): void {
+    // SKIP ALWAYS WINS
+    if (isSkipAnimations) {
+      this.playerAnimationDone = true;
+      this.enemyAnimationDone = true;
+
+      this.finalizeMatch(isSinglePlayer, options);
+      return;
+    }
+
+    if (playerType === 'player') {
+      this.playerAnimationDone = true;
+    }
+
+    if (playerType === 'enemy' || isSinglePlayer) {
+      this.enemyAnimationDone = true;
+    }
+
     const current = this.gameData.value;
 
+    const shouldWaitForEnemyAnimation =
+      !isSinglePlayer &&
+      current.enemyMatchResult &&
+      current.enemyMatchResult.pathLength > 0;
+
+    const playerReady = this.playerAnimationDone;
+
+    const enemyReady = !shouldWaitForEnemyAnimation || this.enemyAnimationDone;
+
+    if (!(playerReady && enemyReady)) {
+      return;
+    }
+
+    this.finalizeMatch(isSinglePlayer, options);
+  }
+
+  determineWinner(): void {
+    const current = this.gameData.value;
     // Determine winner
     const winner = this.gameData.getMatchWinner();
 

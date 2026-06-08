@@ -2,7 +2,6 @@ export interface MyRank {
   position: number;
   points: number;
   wonMatches: number;
-  inTop10: boolean;
 }
 
 interface MyGlobalMatchRank {
@@ -10,14 +9,12 @@ interface MyGlobalMatchRank {
   points: number;
   time: number;
   pathLength: number;
-  inTop10: boolean;
 }
 
 interface MyGlobalPointsRank {
   position: number;
   points: number;
   wonMatches: number;
-  inTop10: boolean;
 }
 
 export interface RankingsData {

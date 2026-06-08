@@ -1,4 +1,4 @@
-<div id="arcade-aftermatch" class="page">
+<div id="arcade-aftermatch" class="page--container">
   <div class="page--wrapper">
     <div class="page--body">
       <ul class="list">
@@ -36,7 +36,7 @@
 
         <!-- Match winner -->
         <li class="list--spaced-element">
-          <h2 class="capitalize" *ngIf="!draw">
+          <h2 class="" *ngIf="!draw">
             {{
               "WINNER" | translate : { winner: winner, matchCount: matchCount }
             }}
@@ -109,19 +109,25 @@
               >
             </button>
           </div>
-          <div>
+          <div class="action-secondary">
             {{
               "MAT_START_COUNTDOWN"
                 | translate : { countdown: timeFormatter(newMatchTimerValue) }
             }}
           </div>
-          <div *ngIf="enemyRequestNewMatch">
-            <div class="flashing-animation">
+
+          <!-- Status area (reserved space) -->
+          <div class="action-status">
+            <div class="flashing-animation" *ngIf="enemyRequestNewMatch">
               {{ "ENEMY_REQUEST_NM" | translate }}
             </div>
-          </div>
-          <div *ngIf="newMatchClicked">
-            <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
+
+            <div
+              class="flashing-animation"
+              *ngIf="!enemyRequestNewMatch && newMatchClicked"
+            >
+              {{ "ENEMY_WAIT" | translate }}
+            </div>
           </div>
         </li>
 

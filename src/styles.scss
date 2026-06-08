@@ -311,10 +311,26 @@ img.profile--image {
   justify-content: center;
 }
 
+.floating-up-animation {
+  transform: translateX(0px);
+  animation: float-top 4s ease-in-out infinite;
+}
+
+@keyframes float-top {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
 /* contenitore della griglia di gioco, con altezza fissa e contenuto
  * absolute positioned (per permettere il drag 'n drop) */
 #match-in-progress.page--component {
-  height: 520px;
+  // height: 520px;
   width: 100%;
   position: relative;
 }
@@ -408,7 +424,6 @@ img.profile--image {
 
 ul.list {
   padding: 0;
-  margin: 0 20px;
 }
 
 /* spaziatura piccola: standard */
@@ -436,7 +451,7 @@ li.list--super-spaced-element {
 }
 
 #aftermatch-options.list--spaced-element {
-  height: 70px;
+  // height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -449,6 +464,7 @@ li.list--super-spaced-element {
  * ------------------------------------------------------------------------- */
 
 button.navigation--button {
+  width: 100%;
   background-color: Transparent;
   color: white;
   font-size: 30px;
@@ -737,23 +753,15 @@ button.modal--button-secondary:hover {
   text-align: center;
 }
 
-.two-columns--column-large {
-  width: 60%;
-  text-align: left;
-}
-
-.two-columns--column-small {
-  width: 40%;
-  text-align: right;
-}
-
 /* -------------------------------------------------------------------------
  * Modulo centered-columns: fornisce un contenitore che contiene due colonne
  * parallele tra loro, con contenuto centrato al loro interno
  * ------------------------------------------------------------------------- */
 
 .centered-columns {
-  margin: 0 auto 20px auto;
+  // margin: 0 auto 20px auto;
+  margin: 0 auto;
+  padding: 20px;
   font-size: 20px;
 }
 
@@ -766,6 +774,7 @@ button.modal--button-secondary:hover {
 
 .centered-columns--column {
   width: 50%;
+  min-width: 0;
   text-align: center;
 }
 
@@ -1497,7 +1506,16 @@ input[type="number"] {
 }
 
 @media screen and (max-width: 780px) {
-  .list--spaced-element {
-    margin: 0 20px;
+  .clock {
+    font-size: 30px;
+  }
+
+  button.navigation--button {
+    font-size: 24px;
+    width: 100%;
+  }
+
+  .icon-lg {
+    font-size: 24px;
   }
 }

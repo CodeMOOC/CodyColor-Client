@@ -65,12 +65,16 @@ export class NewMatchComponent implements OnInit {
   }
 
   editTimer(increment: boolean) {
-    if (increment)
-      this.currentTimerIndex =
-        this.currentTimerIndex < 3 ? this.currentTimerIndex + 1 : 3;
-    else
-      this.currentTimerIndex =
-        this.currentTimerIndex > 0 ? this.currentTimerIndex - 1 : 0;
+    const next = this.currentTimerIndex + (increment ? 1 : -1);
+
+    this.currentTimerIndex = Math.min(
+      Math.max(next, 0),
+      this.timerSettings.length - 1
+    );
+
+    this.gameData.update('general', {
+      timerSetting: this.timerSettings[this.currentTimerIndex].value,
+    });
   }
 
   requestMMaking() {

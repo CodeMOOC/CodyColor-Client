@@ -1,19 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, NgZone, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AudioService } from '../../services/audio.service';
+import { Component, NgZone, DestroyRef, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RabbitService } from '../../services/rabbit.service';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
-  imports: [TranslateModule, CommonModule],
+  imports: [TranslateModule, CommonModule, RouterLink],
   standalone: true,
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent implements OnDestroy {
+export class HomeComponent {
   loginOrProfile = 'LOGIN'; // or 'PROFILE', depending on auth state
   userNickname = 'Guest';
   userLogged = false;
@@ -30,59 +29,37 @@ export class HomeComponent implements OnDestroy {
   brokerConnected = false;
   totalMatches = 0;
   connectedPlayers = 0;
-  private subs: Subscription[] = [];
 
-  constructor(
-    private rabbit: RabbitService,
-    private router: Router,
-    private translate: TranslateService,
-    private zone: NgZone
-  ) {
-    this.subs.push(
-      this.rabbit.brokerConnected$.subscribe((connected) => {
-        this.zone.run(() => (this.brokerConnected = connected));
-      })
-    );
+  private destroyRef = inject(DestroyRef);
 
-    this.subs.push(
-      this.rabbit.serverInfo$.subscribe((info) => {
+  constructor(private rabbit: RabbitService, private zone: NgZone) {
+    this.rabbit.brokerConnected$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((connected: any) => {
         this.zone.run(() => {
+          this.brokerConnected = connected;
+        });
+      });
+
+    this.rabbit.serverInfo$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((info: any) => {
+        this.zone.run(() => {
+          console.log('Received server info:', info);
+
           this.totalMatches = info.totalMatches;
           this.connectedPlayers = info.connectedPlayers;
         });
-      })
-    );
-  }
+      });
 
-  ngOnDestroy(): void {
-    this.rabbit.clearPageCallbacks();
+    this.destroyRef.onDestroy(() => {
+      this.rabbit.clearPageCallbacks();
+    });
   }
 
   sendPing(): void {
     // This will send a message to the server queue
     this.rabbit.sendRankingsRequest();
-  }
-
-  goToRules() {
-    this.router.navigate(['/rules']);
-  }
-  goToRMMaking() {
-    this.router.navigate(['/random-mmaking']);
-  }
-  goToCMMaking() {
-    this.router.navigate(['/custom-mmaking']);
-  }
-  goToAMMaking() {
-    this.router.navigate(['/royale-mmaking']);
-  }
-  goToBootcamp() {
-    this.router.navigate(['/bootmp-mmaking']);
-  }
-  goToRankings() {
-    this.router.navigate(['/rankings']);
-  }
-  goToLoginProfile() {
-    this.router.navigate(['/login']);
   }
 
   toggleBase() {

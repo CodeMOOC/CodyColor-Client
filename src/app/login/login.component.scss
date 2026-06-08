@@ -67,6 +67,7 @@
     border-radius: 0.5rem;
     font-size: 1rem;
     transition: border-color 0.2s;
+    box-sizing: border-box;
 
     &:focus {
       outline: none;
@@ -120,6 +121,7 @@
 .password-wrapper {
   position: relative;
   width: 100%;
+  display: block;
 }
 
 .password-wrapper input {

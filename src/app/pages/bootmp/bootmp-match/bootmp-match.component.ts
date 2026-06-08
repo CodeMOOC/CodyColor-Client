@@ -297,8 +297,36 @@ export class BootmpMatchComponent implements OnInit, OnDestroy {
       (ms) => this.updateUserTimer(ms),
       (ms) => this.updateEnemyTimer(ms),
       () => {
+        this.matchManager.handleUserTimeout(this.user);
+        if (this.gameData.value.general.botSetting !== 0) {
+          const botPath = this.enemyPath;
+
+          if (!botPath) {
+            console.error('Bot path is undefined');
+            return;
+          }
+
+          this.gameData.update('match', {
+            enemyPositioned: true,
+            enemyTime: this.positionEnemyTrigger,
+            enemyStartPosition: botPath.startPosition,
+          });
+
+          this.gameData.update('enemyMatchResult', {
+            nickname: this.gameData.value.enemy.nickname,
+            playerId: this.gameData.value.enemy.playerId,
+            pathLength: botPath.pathLength,
+            time: this.positionEnemyTrigger,
+            startPosition: botPath.startPosition,
+          });
+
+          this.enemyTimerValue = this.gameData.value.match.enemyTime;
+          this.enemyTimerAnimation = 'clock--end';
+
+          this.matchManager.determineWinner();
+        }
+
         this.router.navigate(['/bootmp-aftermatch'], { replaceUrl: true });
-        // this.matchManager.handleUserTimeout(this.user);
       }
     );
   }

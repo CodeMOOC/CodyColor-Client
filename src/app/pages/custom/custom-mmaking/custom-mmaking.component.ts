@@ -148,12 +148,15 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
           this.gameData.update('general', { code: '0000' });
         } else {
           // valid response from server
-          this.gameData.update('general', message.general);
+          this.gameData.update('general', {
+            ...message.general,
+            timerSetting: this.gameData.value.general.timerSetting,
+          });
           this.gameData.update('user', message.user);
           this.gameData.update('enemy', message.enemy);
 
           this.user.set(message.user);
-          this.matchUrl = `${this.baseUrl}/#!?custom=${message.general.code}`;
+          this.matchUrl = `${this.baseUrl}/#/?custom=${message.general.code}`;
           this.rabbit.subscribeGameRoom();
 
           const formattedTranslateCode = this.gameData.formatTimeStatic(
@@ -323,18 +326,6 @@ export class CustomMmakingComponent implements OnInit, OnDestroy {
           { text: translations['2_MINUTES'], value: 120000 },
         ];
       });
-  }
-
-  editTimer(increment: boolean) {
-    this.audio.playSound('menu-click');
-    if (increment) {
-      this.currentTimerIndex = Math.min(this.currentTimerIndex + 1, 3);
-    } else {
-      this.currentTimerIndex = Math.max(this.currentTimerIndex - 1, 0);
-    }
-    this.gameData.update('general', {
-      timerSetting: this.timerSettings[this.currentTimerIndex].value,
-    });
   }
 
   requestMMaking() {

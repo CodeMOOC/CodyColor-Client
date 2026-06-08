@@ -1,8 +1,7 @@
-<div class="h-screen page">
-  <div class="h-full flex flex-col justify-between">
-    <div class="">
-      <router-outlet></router-outlet>
-    </div>
-    <app-footer *ngIf="showFooter" />
+<div class="h-screen page flex flex-col">
+  <div class="flex-grow overflow-y-auto">
+    <router-outlet></router-outlet>
   </div>
+
+  <app-footer *ngIf="showFooter" class="flex-shrink-0" />
 </div>

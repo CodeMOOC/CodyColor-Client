@@ -13,16 +13,13 @@
         class="page--component"
         *ngIf="!countdownInProgress"
       >
-        <div class="two-columns">
-          <div
-            class="two-columns--column-large clock ellipsize"
-            [ngClass]="clockAnimation"
-          >
+        <div class="two-columns flex justify-between">
+          <div class="clock ellipsize" [ngClass]="clockAnimation">
             <span class="material-symbols-outlined">schedule</span>
             {{ formattedStartTimer() }}
           </div>
 
-          <div class="two-columns--column-small">
+          <div class="">
             <div class="ellipsize">
               <i class="material-symbols-outlined">smart_toy</i>
               {{

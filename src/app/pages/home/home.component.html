@@ -8,37 +8,37 @@
     <div class="page--body">
       <ul class="list">
         <li class="menu-element list--simple-element">
-          <button class="navigation--button" (click)="goToRules()">
+          <button class="navigation--button" routerLink="/rules">
             {{ "HOW_TO_PLAY" | translate }}
           </button>
         </li>
         <li class="menu-element list--simple-element">
-          <button class="navigation--button" (click)="goToRMMaking()">
+          <button class="navigation--button" routerLink="/random-mmaking">
             {{ "RANDOM_MATCH" | translate }}
           </button>
         </li>
         <li class="menu-element list--simple-element">
-          <button class="navigation--button" (click)="goToCMMaking()">
+          <button class="navigation--button" routerLink="/custom-mmaking">
             {{ "CUSTOM_MATCH" | translate }}
           </button>
         </li>
         <li class="menu-element list--simple-element">
-          <button class="navigation--button" (click)="goToAMMaking()">
+          <button class="navigation--button" routerLink="/royale-mmaking">
             {{ "AGA_MATCH" | translate }}
           </button>
         </li>
         <li class="menu-element list--simple-element">
-          <button class="navigation--button" (click)="goToBootcamp()">
+          <button class="navigation--button" routerLink="/bootmp-mmaking">
             {{ "BOOT_CAMP" | translate }}
           </button>
         </li>
         <li class="menu-element list--simple-element">
-          <button class="navigation--button" (click)="goToRankings()">
+          <button class="navigation--button" routerLink="/rankings">
             {{ "RANKINGS" | translate }}
           </button>
         </li>
-
-        <li class="list--simple-element" *ngIf="brokerConnected">
+        @if(brokerConnected) {
+        <li class="list--simple-element">
           <div [ngClass]="brokerConnected ? 'flashing-animation' : ''">
             {{
               "NOTIF_GENERAL"
@@ -50,6 +50,7 @@
             }}
           </div>
         </li>
+        }
         <li class="list--simple-element" *ngIf="!brokerConnected">
           <div [ngClass]="!brokerConnected ? 'flashing-animation' : ''">
             {{ "NOTIF_OFFLINE" | translate }}

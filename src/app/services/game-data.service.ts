@@ -91,24 +91,41 @@ export class GameDataService {
 
   updateGlobalRanking(newRanking: GlobalResult[]): void {
     const current = this.value;
-    const type = current.general.gameType;
 
-    // nuovo oggetto GameData con ranking aggiornato
-    const next: GameData = {
-      ...current,
-      globalRanking: [...newRanking],
-    };
+    // merge by playerId summing points and wonMatches, while keeping nickname if present
+    const map = new Map<number, GlobalResult>(
+      current.globalRanking.map((p) => [p.playerId, { ...p }])
+    );
 
-    if (type === this.gameTypes.random || type === this.gameTypes.custom) {
-      const [p1, p2] = newRanking;
-      const user = p1.playerId === current.user.playerId ? p1 : p2;
-      const enemy = user === p1 ? p2 : p1;
+    for (const incoming of newRanking) {
+      const existing = map.get(incoming.playerId);
 
-      next.userGlobalResult = { ...user };
-      next.enemyGlobalResult = { ...enemy };
+      map.set(incoming.playerId, {
+        playerId: incoming.playerId,
+        nickname: incoming.nickname ?? existing?.nickname ?? 'Anonymous',
+        points: (existing?.points ?? 0) + (incoming.points ?? 0),
+        wonMatches: (existing?.wonMatches ?? 0) + (incoming.wonMatches ?? 0),
+      });
     }
 
-    this.gameDataSubject.next(next);
+    const merged = Array.from(map.values()).sort((a, b) => b.points - a.points);
+
+    // compute derived user/enemy after merge
+    const userId = current.user.playerId;
+
+    const userGlobalResult =
+      merged.find((p) => p.playerId === userId) ?? this.emptyGlobalResult();
+
+    // pick "enemy" as next best non-user or fallback second
+    const enemyGlobalResult =
+      merged.find((p) => p.playerId !== userId) ?? this.emptyGlobalResult();
+
+    this.gameDataSubject.next({
+      ...current,
+      globalRanking: merged,
+      userGlobalResult: { ...userGlobalResult },
+      enemyGlobalResult: { ...enemyGlobalResult },
+    });
   }
 
   updateMatchRanking(newRanking: MatchResult[]): void {

@@ -1,4 +1,4 @@
-<div id="arcade-match" class="page">
+<div id="arcade-match" class="page--container">
   <div class="page--wrapper">
     <div class="page--body">
       <!-- countdown -->
@@ -49,21 +49,6 @@
               <span class="material-symbols-outlined">schedule</span>
               {{ timerFormatter(enemyTimerValue) }}
             </div>
-          </div>
-        </div>
-
-        <!-- PLAYER-ONLY STATS (BOT MODE) -->
-        <div class="two-columns" *ngIf="general?.botSetting === 0">
-          <div
-            class="two-columns--column clock ellipsize"
-            [ngClass]="userTimerAnimation"
-          >
-            <span class="material-symbols-outlined">schedule</span>
-            {{ timerFormatter(userTimerValue) }}
-          </div>
-          <div class="two-columns--column">
-            <div class="big-text ellipsize">{{ userMatchResult.points }}</div>
-            <div class="ellipsize">{{ userMatchResult.nickname }}</div>
           </div>
         </div>
 

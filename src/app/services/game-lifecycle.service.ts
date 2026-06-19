@@ -39,6 +39,6 @@ export class GameLifecycleService {
     this.path.reset();
     this.chat.clearChat();
     this.gameData.reset();
-    this.rabbit.quitGame;
+    this.rabbit.quitGame();
   }
 }

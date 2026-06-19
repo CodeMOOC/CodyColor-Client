@@ -1,0 +1,26 @@
+.points-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+}
+
+.enemy-request-slot {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.enemy-request-slot.visible {
+  opacity: 1;
+}
+
+.match-status-slot {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

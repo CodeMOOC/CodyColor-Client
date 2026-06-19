@@ -1,0 +1,173 @@
+<div class="page" id="login">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <p *ngIf="screen !== ScreenState.Profile">
+        {{ "LOGIN_DESC" | translate }}
+      </p>
+      <!-- Login screen -->
+      <section *ngIf="screen === ScreenState.Login" class="auth-container">
+        <div class="auth-card">
+          <h2 class="auth-title">
+            {{
+              isSignUp
+                ? ("SIGNUP_TITLE" | translate)
+                : ("LOGIN_TITLE" | translate)
+            }}
+          </h2>
+          <form
+            [formGroup]="authForm"
+            (ngSubmit)="submitAuth()"
+            class="auth-form"
+          >
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="test@example.com"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">{{ "INSERT_PASSWORD" | translate }}</label>
+              <div class="password-wrapper">
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="••••••••"
+                  required
+                />
+
+                <span
+                  class="material-symbols-outlined eye-icon"
+                  (click)="togglePassword()"
+                >
+                  {{ showPassword ? "visibility_off" : "visibility" }}
+                </span>
+              </div>
+            </div>
+            <div
+              class="error-text"
+              *ngIf="
+                authForm.get('password')?.touched &&
+                authForm.get('password')?.invalid
+              "
+            >
+              <small
+                *ngIf="authForm.get('password')?.errors?.['required'] || authForm.get('password')?.errors?.['pattern']"
+              >
+                {{ "PASSWORD_REQUIRED" | translate }}
+              </small>
+            </div>
+            <!-- Forgot password -->
+            <div class="form-group text-right" *ngIf="!isSignUp">
+              <button
+                type="button"
+                class="btn-link forgot-password"
+                (click)="onForgotPassword()"
+              >
+                {{ "FORGOT_PASSWORD" | translate }}
+              </button>
+            </div>
+
+            <div class="form-group" *ngIf="isSignUp">
+              <label for="repeatPassword">{{
+                "CONFIRM_PASSWORD" | translate
+              }}</label>
+              <div class="password-wrapper">
+                <input
+                  id="repeatPassword"
+                  [type]="showRepeatPassword ? 'text' : 'password'"
+                  formControlName="repeatPassword"
+                  placeholder="••••••••"
+                  required
+                />
+                <span
+                  class="material-symbols-outlined eye-icon"
+                  (click)="toggleRepeatPassword()"
+                >
+                  {{ showRepeatPassword ? "visibility_off" : "visibility" }}
+                </span>
+              </div>
+            </div>
+
+            <div
+              class="error-text"
+              *ngIf="
+   isSignUp &&
+   authForm.errors?.['passwordMismatch'] &&
+   authForm.get('repeatPassword')?.touched
+ "
+            >
+              <small> {{ "PASSWORD_MISMATCH" | translate }} </small>
+            </div>
+
+            <div class="form-group relative" *ngIf="isSignUp">
+              <label for="nickname"
+                >{{ "NICKNAME" | translate }}
+                <button
+                  type="button"
+                  class="info-btn"
+                  (mouseenter)="showInfo()"
+                  (mouseleave)="hideInfo()"
+                  (click)="toggleInfo()"
+                >
+                  ⓘ
+                </button>
+              </label>
+
+              <div class="info-tooltip" *ngIf="infoVisible">
+                {{ "LOGIN_SETNICK_DESC" | translate }}
+              </div>
+
+              <input
+                id="nickname"
+                type="text"
+                formControlName="nickname"
+                placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+                required
+              />
+            </div>
+
+            <button
+              class="btn-primary"
+              type="submit"
+              [disabled]="authForm.invalid || loading"
+            >
+              {{ isSignUp ? ("REGISTER_BTN" | translate) : "Login" }}
+            </button>
+          </form>
+
+          <div class="auth-footer">
+            <button type="button" class="btn-link" (click)="toggleMode()">
+              {{
+                isSignUp
+                  ? ("ALREADY_HAVE_ACCOUNT" | translate)
+                  : ("NEED_SIGN_UP" | translate)
+              }}
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="page--push"></div>
+  </div>
+
+  <app-single-option-modal
+    *ngIf="singleOptionModal"
+    [text]="singleOptionText"
+    (ok)="singleOptionOk()"
+  >
+  </app-single-option-modal>
+
+  <app-multi-options-modal
+    *ngIf="multiOptionsModal"
+    [text]="multiOptionsText"
+    (ok)="multiOptionsOk()"
+    (cancel)="multiOptionsCancel()"
+  >
+  </app-multi-options-modal>
+</div>

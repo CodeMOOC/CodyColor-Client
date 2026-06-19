@@ -1,0 +1,151 @@
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { GameDataService } from '../../../services/game-data.service';
+import { AuthService } from '../../../services/auth.service';
+import { AudioService } from '../../../services/audio.service';
+import { SessionService } from '../../../services/session.service';
+import { VisibilityService } from '../../../services/visibility.service';
+import { CommonModule } from '@angular/common';
+import { LanguageService } from '../../../services/language.service';
+import { FormsModule, NgForm } from '@angular/forms';
+import { PathService } from '../../../services/path.service';
+import { TimerSetting } from '../../../models/timerSetting.model';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
+
+@Component({
+  selector: 'app-bootmp-mmaking',
+  imports: [CommonModule, FormsModule, TranslateModule],
+  standalone: true,
+  templateUrl: './bootmp-mmaking.component.html',
+  styleUrl: './bootmp-mmaking.component.scss',
+})
+export class BootmpMmakingComponent implements OnInit {
+  nickname: string = '';
+  userNickname: string = '';
+  userLogged = false;
+  pageReady = false;
+
+  botSettings: { text: string; value: number }[] = [];
+  currentBotSettingIndex = 0;
+
+  timerSettings: TimerSetting[] = [];
+
+  currentTimerIndex = 1;
+
+  exitGameModal = false;
+  forceExitModal = false;
+  forceExitText = '';
+
+  constructor(
+    private gameData: GameDataService,
+    private gameDataLifecycle: GameLifecycleService,
+    private auth: AuthService,
+    private audio: AudioService,
+    private path: PathService,
+    private translate: TranslateService,
+    private router: Router,
+    private session: SessionService
+  ) {}
+
+  ngOnInit(): void {
+    this.gameDataLifecycle.startNewMatch();
+
+    this.auth.authReady$.subscribe((ready) => {
+      if (ready) {
+        this.auth.user$.subscribe((appUser) => {
+          this.userLogged = !!appUser.firebaseUser && !!appUser.serverData;
+          this.userNickname = appUser.serverData?.nickname || '';
+          this.nickname = this.userNickname;
+        });
+      }
+    });
+
+    this.gameData.update('general', {
+      gameType: this.gameData.getGameTypes().bootmp,
+    });
+
+    setTimeout(() => {
+      this.pageReady = true;
+    }, 200);
+
+    this.loadTimerSettings();
+    this.loadBotSettings();
+  }
+
+  editTimer(increment: boolean): void {
+    this.audio.playSound('menu-click');
+
+    if (increment) {
+      this.currentTimerIndex = Math.min(
+        this.currentTimerIndex + 1,
+        this.timerSettings.length - 1
+      );
+    } else {
+      this.currentTimerIndex = Math.max(this.currentTimerIndex - 1, 0);
+    }
+
+    this.gameData.update('general', {
+      timerSetting: this.timerSettings[this.currentTimerIndex].value,
+    });
+  }
+
+  editBotSetting(increment: boolean): void {
+    if (increment) {
+      this.currentBotSettingIndex = Math.min(
+        this.currentBotSettingIndex + 1,
+        this.botSettings.length - 1
+      );
+    } else {
+      this.currentBotSettingIndex = Math.max(
+        this.currentBotSettingIndex - 1,
+        0
+      );
+    }
+
+    this.gameData.update('general', {
+      botSetting: this.botSettings[this.currentBotSettingIndex].value,
+    });
+  }
+
+  createBootcamp(form: NgForm): void {
+    if (form.invalid) {
+      form.control.markAllAsTouched();
+      return;
+    }
+    this.path.reset();
+
+    this.gameData.update('user', { nickname: this.nickname, playerId: 0 });
+    this.gameData.update('enemy', { nickname: 'CodyColor', playerId: 1 });
+    this.gameData.setNewMatchTiles();
+
+    this.router.navigate(['/bootmp-match'], { replaceUrl: true });
+  }
+
+  private loadTimerSettings(): void {
+    this.translate
+      .get(['15_SECONDS', '30_SECONDS', '1_MINUTE', '2_MINUTES'])
+      .subscribe((translations) => {
+        this.timerSettings = [
+          { text: translations['15_SECONDS'], value: 15000 },
+          { text: translations['30_SECONDS'], value: 30000 },
+          { text: translations['1_MINUTE'], value: 60000 },
+          { text: translations['2_MINUTES'], value: 120000 },
+        ];
+      });
+  }
+
+  private loadBotSettings(): void {
+    this.translate
+      .get(['NO_ENEMY', 'AI_EASY', 'AI_MEDIUM', 'AI_HARD'])
+      .subscribe((translations) => {
+        this.botSettings = [
+          { text: translations['NO_ENEMY'], value: 0 },
+          { text: translations['AI_EASY'], value: 1 },
+          { text: translations['AI_MEDIUM'], value: 2 },
+          { text: translations['AI_HARD'], value: 3 },
+        ];
+        this.gameData.update('general', { botSetting: 0 });
+      });
+  }
+}

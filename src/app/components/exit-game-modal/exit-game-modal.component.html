@@ -1,0 +1,13 @@
+<div class="modal">
+  <div class="modal--content">
+    <p>{{ "MODAL_EXIT_DESC" | translate }}</p>
+    <div class="modal--buttons-container">
+      <button class="modal--button-secondary" (click)="stopExitGame()">
+        {{ "UNDO" | translate }}
+      </button>
+      <button class="modal--button-primary" (click)="continueExitGame()">
+        {{ "OK" | translate }}
+      </button>
+    </div>
+  </div>
+</div>

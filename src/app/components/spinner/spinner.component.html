@@ -1,0 +1,36 @@
+<!-- Ready clicked, aspettando il segnale di ready dell'avversario -->
+<div
+  id="waiting-confirm"
+  ng-show="mmakingState === screens.waitingReady"
+  class="page--component"
+>
+  <ul class="list">
+    <li class="list--spaced-element">
+      <div class="loading-spinner">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </li>
+    <li class="list--spaced-element">
+      <div
+        *ngIf="timerValue !== undefined; else noTimerValue"
+        class="flashing-animation"
+      >
+        {{ messageKey | translate }} <br />
+        {{ formattedTimer }}
+      </div>
+      <ng-template #noTimerValue>
+        <div class="flashing-animation">
+          {{ messageKey | translate }} <br />
+        </div>
+      </ng-template>
+    </li>
+  </ul>
+</div>

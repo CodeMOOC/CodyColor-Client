@@ -1,0 +1,10 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-terms',
+  imports: [],
+  standalone: true,
+  templateUrl: './terms.component.html',
+  styleUrl: './terms.component.scss',
+})
+export class TermsComponent {}

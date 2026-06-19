@@ -1,4 +1,4 @@
-version: '3'
+# Base Docker Compose configuration
 
 networks:
   web:
@@ -6,11 +6,9 @@ networks:
 
 services:
   server:
-    build: ./build
+    build: .
     networks:
-    - web
+      - web
     expose:
-    - "80"
-    logging:
-      driver: "none"
+      - "80"
     restart: unless-stopped

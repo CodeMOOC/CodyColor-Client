@@ -1,0 +1,579 @@
+import { Injectable } from '@angular/core';
+import {
+  Client,
+  IMessage,
+  StompConfig,
+  StompSubscription,
+} from '@stomp/stompjs';
+
+import { SessionService } from './session.service';
+import { GameDataService } from './game-data.service';
+import { environment } from '../../environments/environment';
+
+// TMP: To change when updating BE
+import * as LZUTF8 from 'lzutf8';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { PathService } from './path.service';
+
+@Injectable({ providedIn: 'root' })
+export class RabbitService {
+  private client!: Client;
+  private connectedToBroker = false;
+  private connectedToServer = false;
+  private pageCallbacks: any = {};
+  private heartbeatTimer: any;
+  private subscriptions: Record<string, StompSubscription> = {};
+  private lastMsgId?: string;
+  private debug: boolean;
+  private loginResponseSubject = new BehaviorSubject<any>(null);
+  loginResponse$: Observable<any> = this.loginResponseSubject.asObservable();
+  private userStatsResponse$ = new BehaviorSubject<any>(null);
+
+  private _brokerConnected$ = new BehaviorSubject<boolean>(false);
+  private _serverInfo$ = new BehaviorSubject<{
+    totalMatches: number;
+    connectedPlayers: number;
+  }>({ totalMatches: 0, connectedPlayers: 0 });
+
+  brokerConnected$ = this._brokerConnected$.asObservable();
+  serverInfo$ = this._serverInfo$.asObservable();
+
+  private readonly endpoints = {
+    serverControlQueue: '/queue/serverControl',
+    clientControlTopic: '/topic/clientsControl',
+    generalTopic: '/topic/general',
+    randomGameRoomsTopic: '/topic/gameRooms',
+    customGameRoomsTopic: '/topic/custGameRooms',
+    agaGameRoomsTopics: '/topic/agaGameRooms',
+  };
+
+  readonly messageTypes = {
+    c_connectedSignal: 'c_connectedSignal',
+    s_generalInfo: 's_generalInfo', //
+
+    c_gameRequest: 'c_gameRequest', // client richiede di giocare
+    s_gameResponse: 's_gameResponse', // server fornisce credenziali di gioco
+
+    c_playerQuit: 'c_playerQuit', // richiesta di fine gioco di un client
+    s_gameQuit: 's_gameQuit', // forza il fine gioco per tutti
+
+    s_playerAdded: 's_playerAdded', // notifica un giocatore si collega
+    s_playerRemoved: 's_playerRemoved', // notifica un giocatore si scollega
+
+    c_validation: 'c_validation', // rende l'iscrizione del giocatore 'valida' fornendo credenz. come il nick
+    c_ready: 'c_ready', // segnale pronto a giocare; viene intercettato anche dai client
+    s_startMatch: 's_startMatch', // segnale avvia partita
+
+    c_positioned: 'c_positioned', // segnale giocatore posizionato
+    s_timerSync: 's_timerSync', // re-rincronizza i timer ogni 5 secondi
+    s_startAnimation: 's_startAnimation', // inviato quando tutti sono posizionati
+    c_endAnimation: 'c_endAnimation', // notifica la fine dell'animazione, o lo skip
+    s_endMatch: 's_endMatch', // segnale aftermatch
+
+    c_heartbeat: 'c_heartbeat', // segnale heartbeat
+    c_chat: 'c_chat', // chat, intercettati SOLO dai client
+
+    c_signUpRequest: 'c_signUpRequest', // aggiunge l'utente al db con nickname
+    c_logInRequest: 'c_logInRequest', // richiedi nickname utente con uid
+    s_authResponse: 's_authResponse', // fornisci il nickname utente - o messaggio error
+
+    c_getUserStatsRequest: 'c_getUserStatsRequest', // richiedi le statistiche di un utente
+    s_getUserStatsResponse: 's_getUserStatsResponse', // restituisci le statistiche di un utente
+
+    c_editNicknameRequest: 'c_editNicknameRequest', // richiedi la modifica del nickname
+    s_editNicknameResponse: 's_editNicknameResponse', // conferma la modifica del nickname - o messaggio error
+
+    c_userDeleteRequest: 'c_userDeleteRequest', // richiedi l'eliminazione di un utente
+    s_userDeleteResponse: 's_userDeleteResponse', // conferma l'eliminazione di un utente
+
+    c_rankingsRequest: 'c_rankingsRequest', // richiedi le classifiche
+    s_rankingsResponse: 's_rankingsResponse', // restituisci le classifiche
+  };
+
+  constructor(
+    private gameDataService: GameDataService,
+    private path: PathService,
+    private sessionHandler: SessionService
+  ) {
+    this.debug = false;
+    // environment.rabbit.socketUrl !== 'wss://codycolor.codemooc.net/api/ws';
+
+    if (!this.getBrokerConnectionState()) {
+      this.connect();
+    }
+  }
+
+  connect(): void {
+    this.client = new Client({
+      brokerURL: environment.rabbit.socketUrl,
+      connectHeaders: {
+        login: environment.rabbit.username,
+        passcode: environment.rabbit.password,
+      },
+      debug: (str) => {
+        if (this.debug) console.log(str);
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 5000,
+      heartbeatOutgoing: 5000,
+    });
+
+    this.client.onConnect = () => this.onConnected();
+    this.client.onWebSocketClose = () => this.onConnectionLost();
+    this.client.activate();
+  }
+
+  async waitForBrokerConnection(): Promise<void> {
+    if (this.client?.connected) return;
+
+    return new Promise((resolve) => {
+      const check = setInterval(() => {
+        if (this.client?.connected) {
+          clearInterval(check);
+          resolve();
+        }
+      }, 100);
+    });
+  }
+
+  setPageCallbacks(callbacks: any): void {
+    this.pageCallbacks = callbacks;
+  }
+
+  clearPageCallbacks() {
+    this.pageCallbacks = {};
+  }
+
+  getBrokerConnectionState(): boolean {
+    return this.connectedToBroker;
+  }
+
+  getServerConnectionState(): boolean {
+    return this.connectedToServer;
+  }
+
+  subscribeGameRoom(): void {
+    const endpoint = this.getGameRoomEndpoint();
+
+    this.subscriptions['gameRoom']?.unsubscribe();
+    this.subscriptions['gameRoom'] = this.client.subscribe(endpoint, (msg) =>
+      this.handleIncomingMessage(msg)
+    );
+
+    // Prevent duplicate heartbeat
+    if (!this.heartbeatTimer) {
+      this.heartbeatTimer = setInterval(() => {
+        this.sendInServerControlQueue({
+          msgType: this.messageTypes.c_heartbeat,
+          gameRoomId: this.gameDataService.value.general.gameRoomId,
+          playerId: this.gameDataService.value.user.playerId,
+          gameType: this.gameDataService.value.general.gameType,
+        });
+      }, 5000);
+    }
+  }
+
+  quitGame(): void {
+    this.subscriptions['gameRoom']?.unsubscribe();
+    delete this.subscriptions['gameRoom'];
+
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
+
+    this.pageCallbacks = {};
+  }
+
+  private onConnected(): void {
+    this.setBrokerConnected(true);
+    this.connectedToBroker = true;
+    const serverDirectEndpoint = `${
+      this.endpoints.clientControlTopic
+    }.${this.sessionHandler.getSessionId()}`;
+
+    this.subscriptions['serverDirect'] = this.client.subscribe(
+      serverDirectEndpoint,
+      (m) => this.handleIncomingMessage(m)
+    );
+    this.subscriptions['general'] = this.client.subscribe(
+      this.endpoints.generalTopic,
+      (m) => this.handleIncomingMessage(m)
+    );
+
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_connectedSignal,
+      correlationId: this.sessionHandler.getSessionId(),
+    });
+
+    this.pageCallbacks?.onConnected?.();
+  }
+
+  private onConnectionLost(): void {
+    this.connectedToBroker = false;
+    this.connectedToServer = false;
+    this.pageCallbacks?.onConnectionLost?.();
+  }
+
+  setBrokerConnected(value: boolean) {
+    this._brokerConnected$.next(value);
+  }
+
+  setServerInfo(info: { totalMatches: number; connectedPlayers: number }) {
+    this._serverInfo$.next(info);
+  }
+
+  private sendInServerControlQueue(message: any): void {
+    if (this.debug)
+      console.log('DEBUG: Sent message in server queue:', message);
+
+    message.msgId = Math.floor(Math.random() * 100000).toString();
+
+    this.client.publish({
+      destination: this.endpoints.serverControlQueue,
+      body: JSON.stringify(message),
+      headers: {
+        durable: 'false',
+        exclusive: 'false',
+      },
+    });
+  }
+
+  private sendInGameRoomTopic(message: any): void {
+    if (this.debug) console.log('DEBUG: Sent message in topic:', message);
+    if (
+      this.gameDataService.value.general.gameRoomId === -1 ||
+      this.gameDataService.value.user.playerId === -1
+    )
+      return;
+    message.msgId = Math.floor(Math.random() * 100000).toString();
+    this.client.publish({
+      destination: this.getGameRoomEndpoint(),
+      body: JSON.stringify(message),
+    });
+  }
+
+  private getGameRoomEndpoint(): string {
+    const type = this.gameDataService.value.general.gameType;
+    const id = this.gameDataService.value.general.gameRoomId;
+    if (type === this.gameDataService.getGameTypes().random)
+      return `${this.endpoints.randomGameRoomsTopic}.${id}`;
+    if (type === this.gameDataService.getGameTypes().custom)
+      return `${this.endpoints.customGameRoomsTopic}.${id}`;
+    if (type === this.gameDataService.getGameTypes().royale)
+      return `${this.endpoints.agaGameRoomsTopics}.${id}`;
+    return '';
+  }
+
+  private handleIncomingMessage(rawMessage: IMessage): void {
+    if (this.debug) console.log('DEBUG: Received message:', rawMessage.body);
+    const message = JSON.parse(rawMessage.body);
+
+    if (message.gameData) {
+      message.gameData = JSON.parse(
+        LZUTF8.decompress(message.gameData, {
+          inputEncoding: 'StorageBinaryString',
+        })
+      );
+    }
+
+    // if (this.lastMsgId === message.msgId) {
+    //   console.log('Received duplicate message. Ignored.');
+    //   return;
+    // }
+    this.lastMsgId = message.msgId;
+
+    const cb = this.pageCallbacks;
+
+    this.loginResponseSubject.next(message);
+
+    switch (message.msgType) {
+      case this.messageTypes.s_gameResponse:
+        cb?.onGameRequestResponse?.(message);
+        break;
+      case this.messageTypes.s_authResponse:
+        cb?.onLogInResponse?.(message);
+        break;
+      case this.messageTypes.s_getUserStatsResponse:
+        this.userStatsResponse$.next(message);
+        cb?.onGetUserStatsResponse?.(message);
+        break;
+      case this.messageTypes.s_editNicknameResponse:
+        cb?.onEditNicknameResponse?.(message);
+        break;
+      case this.messageTypes.s_userDeleteResponse:
+        cb?.onUserDeletedResponse?.(message);
+        break;
+      case this.messageTypes.s_rankingsResponse:
+        cb?.onRankingsResponse?.(message);
+        break;
+      case this.messageTypes.s_generalInfo:
+        this.connectedToServer = true;
+        this.sessionHandler.setGeneralInfo({
+          totalMatches: message.totalMatches,
+          connectedPlayers: message.connectedPlayers,
+          randomWaitingPlayers: message.randomWaitingPlayers,
+          requiredClientVersion: message.requiredClientVersion,
+        });
+        cb?.onGeneralInfoMessage?.(message);
+        break;
+      case this.messageTypes.c_ready:
+        if (message.playerId !== this.gameDataService.value.user.playerId)
+          cb?.onReadyMessage?.(message);
+        break;
+      case this.messageTypes.c_positioned:
+        if (message.playerId !== this.gameDataService.value.user.playerId)
+          cb?.onEnemyPositioned?.(message);
+        break;
+      case this.messageTypes.c_chat:
+        if (message.playerId !== this.gameDataService.value.user.playerId)
+          cb?.onChatMessage?.(message);
+        break;
+      case this.messageTypes.s_startAnimation:
+        cb?.onStartAnimation?.(message);
+        break;
+      case this.messageTypes.s_startMatch:
+        cb?.onStartMatch?.(message);
+        break;
+      case this.messageTypes.s_endMatch:
+        cb?.onEndMatch?.(message);
+        break;
+      case this.messageTypes.s_gameQuit:
+        cb?.onGameQuit?.(message);
+        break;
+      case this.messageTypes.s_playerAdded:
+        cb?.onPlayerAdded?.(message);
+        break;
+      case this.messageTypes.s_playerRemoved:
+        cb?.onPlayerRemoved?.(message);
+        break;
+    }
+  }
+
+  // richiesta per iniziare una nuova partita
+  sendGameRequest(userId: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_gameRequest,
+      user: this.gameDataService.value.user,
+      general: this.gameDataService.value.general,
+      gameType: this.gameDataService.value.general.gameType,
+      userId: userId,
+      correlationId: this.sessionHandler.getSessionId(),
+      clientVersion: this.sessionHandler.getClientVersion(),
+    });
+  }
+
+  sendSignUpRequestAndWait(
+    nickname: string,
+    email: string,
+    userId: string
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const correlationId = this.sessionHandler.getSessionId();
+
+      // Subscribe to loginResponse$ (which also gets auth/signup responses)
+      const sub = this.loginResponse$.subscribe((msg) => {
+        if (!msg) return;
+
+        // Only handle the response for this specific sign-up
+        if (
+          msg.msgType === this.messageTypes.s_authResponse &&
+          msg.correlationId === correlationId
+        ) {
+          sub.unsubscribe(); // stop listening after receiving response
+
+          if (msg.success) {
+            resolve(msg); // resolved with server data
+          } else {
+            reject(new Error('Sign up failed'));
+          }
+        }
+      });
+
+      // Send the request
+      this.sendSignUpRequest(nickname, email, userId);
+    });
+  }
+
+  sendSignUpRequest(nickname: string, email: string, userId: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_signUpRequest,
+      nickname: nickname,
+      email: email,
+      correlationId: this.sessionHandler.getSessionId(),
+      userId: userId,
+    });
+  }
+
+  sendLogInRequestAndWait(userId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const correlationId = this.sessionHandler.getSessionId();
+      const sub = this.loginResponse$.subscribe((msg) => {
+        if (!msg) return;
+        if (
+          msg.msgType === this.messageTypes.s_authResponse &&
+          msg.correlationId === correlationId
+        ) {
+          sub.unsubscribe();
+          if (msg.success) resolve(msg);
+          else reject(new Error('Login failed'));
+        }
+      });
+
+      this.sendLogInRequest(userId);
+    });
+  }
+
+  sendLogInRequest(userId: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_logInRequest,
+      correlationId: this.sessionHandler.getSessionId(),
+      userId: userId,
+    });
+  }
+
+  sendGetUserStatsRequestAndWait(userId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const correlationId = this.sessionHandler.getSessionId();
+      const sub = this.userStatsResponse$.subscribe((msg) => {
+        if (!msg) return;
+        if (
+          msg.msgType === this.messageTypes.s_getUserStatsResponse &&
+          msg.correlationId === correlationId
+        ) {
+          sub.unsubscribe();
+          if (msg.success) resolve(msg);
+          else reject(new Error('Stats get error'));
+        }
+      });
+
+      this.sendGetUserStatsRequest(userId);
+    });
+  }
+
+  sendGetUserStatsRequest(userId: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_getUserStatsRequest,
+      correlationId: this.sessionHandler.getSessionId(),
+      userId: userId,
+    });
+  }
+
+  sendRankingsRequest(userId?: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_rankingsRequest,
+      correlationId: this.sessionHandler.getSessionId(),
+      userId: userId,
+    });
+  }
+
+  sendEditNicknameAndWait(userId: string, newNickname: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const correlationId = this.sessionHandler.getSessionId();
+
+      const sub = this.loginResponse$.subscribe((msg) => {
+        if (!msg) return;
+
+        if (
+          msg.msgType === this.messageTypes.s_editNicknameResponse &&
+          msg.correlationId === correlationId
+        ) {
+          sub.unsubscribe();
+          if (msg.success) resolve(msg);
+          else reject(new Error(msg.error || 'Nickname update failed'));
+        }
+      });
+
+      this.sendEditNicknameRequest(userId, newNickname);
+    });
+  }
+
+  sendEditNicknameRequest(userId: string, newNickname: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_editNicknameRequest,
+      userId: userId,
+      newNickname: newNickname,
+    });
+  }
+
+  sendUserDeleteRequest(userId: string): void {
+    this.sendInServerControlQueue({
+      msgType: this.messageTypes.c_userDeleteRequest,
+      correlationId: this.sessionHandler.getSessionId(),
+      userId: userId,
+    });
+  }
+
+  // notifica all'avversario che si è pronti a iniziare la partita
+  sendReadyMessage(): void {
+    this.sendInGameRoomTopic({
+      msgType: this.messageTypes.c_ready,
+      gameRoomId: this.gameDataService.value.general.gameRoomId,
+      playerId: this.gameDataService.value.user.playerId,
+      gameType: this.gameDataService.value.general.gameType,
+      clientDirect: true,
+    });
+  }
+
+  // notifica i propri dati
+  sendValidationMessage(): void {
+    this.sendInGameRoomTopic({
+      msgType: this.messageTypes.c_validation,
+      organizer: this.gameDataService.value.user.organizer,
+      gameRoomId: this.gameDataService.value.general.gameRoomId,
+      playerId: this.gameDataService.value.user.playerId,
+      nickname: this.gameDataService.value.user.nickname,
+      gameType: this.gameDataService.value.general.gameType,
+    });
+  }
+
+  // notifica all'avversario l'avvenuto posizionamento di roby
+  sendPlayerPositionedMessage(): void {
+    this.sendInGameRoomTopic({
+      msgType: this.messageTypes.c_positioned,
+      gameRoomId: this.gameDataService.value.general.gameRoomId,
+      playerId: this.gameDataService.value.user.playerId,
+      gameType: this.gameDataService.value.general.gameType,
+      matchTime: this.gameDataService.value.match.time,
+      side: this.gameDataService.value.match.startPosition.side,
+      distance: this.gameDataService.value.match.startPosition.distance,
+    });
+  }
+
+  // notifica all'avversario l'avvenuto posizionamento di roby
+  sendPlayerQuitRequest(): void {
+    this.sendInGameRoomTopic({
+      msgType: this.messageTypes.c_playerQuit,
+      gameRoomId: this.gameDataService.value.general.gameRoomId,
+      playerId: this.gameDataService.value.user.playerId,
+      gameType: this.gameDataService.value.general.gameType,
+    });
+  }
+
+  // notifica all'avversario la volontà di skippare l'animazione
+  sendEndAnimationMessage(): void {
+    this.sendInGameRoomTopic({
+      msgType: this.messageTypes.c_endAnimation,
+      gameRoomId: this.gameDataService.value.general.gameRoomId,
+      playerId: this.gameDataService.value.user.playerId,
+      gameType: this.gameDataService.value.general.gameType,
+      startPosition: this.path.value.startPosition
+    });
+  }
+
+  // formatta, invia e restituisci messaggio di chat
+  sendChatMessage(messageBody: string): any {
+    const message = {
+      msgType: this.messageTypes.c_chat,
+      gameRoomId: this.gameDataService.value.general.gameRoomId,
+      playerId: this.gameDataService.value.user.playerId,
+      sender: this.gameDataService.value.user.nickname,
+      body: messageBody,
+      date: new Date().getTime(),
+      clientDirect: true,
+      gameType: this.gameDataService.value.general.gameType,
+    };
+    this.sendInGameRoomTopic(message);
+    return message;
+  }
+}

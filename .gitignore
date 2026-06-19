@@ -3,4 +3,10 @@
 src/settings.js
 build/settings.js
 node_modules
-src/contents/bower_components
+src/environments/environment.prod.ts
+src/environments/environment.ts
+src/environments/environment.development.ts
+\.angular
+dist/
+src/.DS_Store
+.DS_Store

@@ -1,0 +1,88 @@
+<div id="custom-new-match" class="page">
+  <div class="page--wrapper">
+    <div class="page--body">
+      <!-- Create match -->
+      <form #customMatchForm="ngForm" (ngSubmit)="requestMMaking()" novalidate>
+        <ul class="list">
+          <li class="list--spaced-element">
+            <h2>{{ "NEW_CUSTOM_EXT" | translate }}</h2>
+          </li>
+
+          <li class="list--spaced-element">
+            {{ "NEW_CUSTOM_MATCH_DESC" | translate }}
+          </li>
+
+          <li class="list--simple-element">
+            <label for="nickname">{{ "NICKNAME" | translate }}</label>
+          </li>
+
+          <li class="list--spaced-element">
+            <input
+              type="text"
+              id="nickname"
+              name="nickname"
+              maxlength="22"
+              minlength="3"
+              [(ngModel)]="nickname"
+              placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+              class="standard-input"
+              required
+              autofocus
+              #nicknameModel="ngModel"
+            />
+          </li>
+          <div
+            class="input-error"
+            *ngIf="nicknameModel.errors?.['minlength'] && nicknameModel.touched"
+          >
+            {{ "NICKNAME_REQUIRED" | translate }}
+          </div>
+
+          <li class="list--simple-element">
+            {{ "MATCH_TIME" | translate }}
+          </li>
+
+          <li class="list--spaced-element">
+            <div class="selector">
+              <div class="selector--button" (click)="editTimer(false)">
+                <i class="material-symbols-outlined inline-block">{{
+                  "remove"
+                }}</i>
+              </div>
+              <div class="selector--text">
+                {{ timerSettings[currentTimerIndex].text }}
+              </div>
+              <div class="selector--button" (click)="editTimer(true)">
+                <i class="material-symbols-outlined inline-block">{{
+                  "add"
+                }}</i>
+              </div>
+            </div>
+          </li>
+
+          <li class="list--spaced-element">
+            <button
+              type="submit"
+              class="navigation--button flashing-animation"
+              [disabled]="customMatchForm.invalid"
+            >
+              {{ "CREATE_MATCH" | translate }}
+              <i
+                class="material-symbols-outlined inline-block animate-slide-left icon-lg"
+                >{{ "keyboard_double_arrow_right" }}</i
+              >
+            </button>
+          </li>
+
+          <li class="list--spaced-element" *ngIf="creatingMatch">
+            <div class="flashing-animation">
+              {{ "CREATING_MATCH" | translate }}
+            </div>
+          </li>
+        </ul>
+      </form>
+    </div>
+
+    <div class="page--push"></div>
+  </div>
+</div>

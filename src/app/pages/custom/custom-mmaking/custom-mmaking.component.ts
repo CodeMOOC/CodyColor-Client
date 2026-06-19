@@ -1,0 +1,338 @@
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { RabbitService } from '../../../services/rabbit.service';
+import { Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { GameDataService } from '../../../services/game-data.service';
+import { AudioService } from '../../../services/audio.service';
+import { SessionService } from '../../../services/session.service';
+import { AuthService } from '../../../services/auth.service';
+import { VisibilityService } from '../../../services/visibility.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Player } from '../../../models/player.model';
+import { environment } from '../../../../environments/environment';
+import { Bubble } from '../../../models/bubble.model';
+import { ChatHandlerService } from '../../../services/chat.service';
+import { ShareService } from '../../../services/share.service';
+import { SpinnerComponent } from '../../../components/spinner/spinner.component';
+import { ChatComponent } from '../../../components/chat/chat.component';
+import { ModalService } from '../../../services/modal-service.service';
+import { TimerSetting } from '../../../models/timerSetting.model';
+import { GameLifecycleService } from '../../../services/game-lifecycle.service';
+
+@Component({
+  selector: 'app-custom-mmaking',
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    SpinnerComponent,
+    ChatComponent,
+  ],
+  standalone: true,
+  templateUrl: './custom-mmaking.component.html',
+  styleUrl: './custom-mmaking.component.scss',
+})
+export class CustomMmakingComponent implements OnInit, OnDestroy {
+  user = signal<Player>({} as Player);
+
+  enemy!: Player;
+
+  userLogged = false;
+  userNickname = '';
+  nickname = '';
+  timerSettings: TimerSetting[] = [];
+  currentTimerIndex = 1;
+
+  creatingMatch = false;
+  exitGameModal = false;
+  forceExitModal = false;
+  forceExitText = '';
+  languageModal = false;
+
+  screens = {
+    loadingScreen: 'loadingScreen',
+    joinMatch: 'joinMatch',
+    nicknameSelection: 'nicknameSelection',
+    waitingEnemy: 'waitingEnemy',
+    waitingReady: 'waitingReady',
+    enemyFound: 'enemyFound',
+  };
+  mmakingState: string = this.screens.joinMatch;
+  mmakingRequested = false;
+  enemyReady = false;
+  readyClicked = false;
+  playerValidated = false;
+
+  linkCopied = false;
+  codeCopied = false;
+
+  codeValue: string = '';
+
+  joinMessage = '';
+
+  general: any;
+  totTime: string = '';
+
+  baseUrl: string = environment.webBaseUrl;
+  matchUrl: string = '';
+
+  bubble: Bubble = {
+    id: '',
+    body: '',
+    sender: '',
+  };
+  chatVisible = false;
+  chatBubbles: Bubble[] = [];
+  chatHints: string[] = [];
+
+  constructor(
+    private auth: AuthService,
+    private chatService: ChatHandlerService,
+    private gameLifecycle: GameLifecycleService,
+    private rabbit: RabbitService,
+    private router: Router,
+    private modalService: ModalService,
+    private translate: TranslateService,
+    private audio: AudioService,
+    private session: SessionService,
+    private gameData: GameDataService,
+    private authHandler: AuthService,
+    private shareService: ShareService
+  ) {}
+
+  ngOnInit(): void {
+    this.gameData.update('general', {
+      gameType: this.gameData.getGameTypes().custom,
+    });
+    this.auth.authReady$.subscribe((ready) => {
+      if (ready) {
+        this.auth.user$.subscribe((appUser) => {
+          this.userLogged = !!appUser.firebaseUser && !!appUser.serverData;
+          this.userNickname = appUser.serverData?.nickname || '';
+          this.nickname = this.userNickname;
+        });
+      }
+    });
+
+    this.loadTimerSettings();
+
+    this.gameData.gameData$.subscribe((gameData) => {
+      this.general = gameData.general;
+      this.enemy = gameData.enemy;
+    });
+
+    this.chatBubbles = this.chatService.getChatMessages();
+    this.chatHints = this.chatService.getChatHintsPreMatch();
+
+    this.handleInitialGameRequest();
+
+    this.rabbit.setPageCallbacks({
+      onGeneralInfoMessage: () => {
+        if (!this.session.isClientVersionValid()) {
+          this.gameLifecycle.leaveGame();
+          this.translate.get('OUTDATED_VERSION_DESC').subscribe((text) => {
+            this.forceExitText = text;
+            this.forceExitModal = true;
+          });
+        }
+      },
+
+      onGameRequestResponse: (message: any) => {
+        if (message.code.toString() === '0000') {
+          // invalid match code
+          this.mmakingRequested = false;
+          this.translate.get('CODE_NOT_VALID').subscribe((text) => {
+            this.joinMessage = text;
+          });
+          this.gameData.update('general', { code: '0000' });
+        } else {
+          // valid response from server
+          this.gameData.update('general', {
+            ...message.general,
+            timerSetting: this.gameData.value.general.timerSetting,
+          });
+          this.gameData.update('user', message.user);
+          this.gameData.update('enemy', message.enemy);
+
+          this.user.set(message.user);
+          this.matchUrl = `${this.baseUrl}/#/?custom=${message.general.code}`;
+          this.rabbit.subscribeGameRoom();
+
+          const formattedTranslateCode = this.gameData.formatTimeStatic(
+            message.general.timerSetting
+          );
+          this.translate
+            .get(formattedTranslateCode)
+            .subscribe((res: string) => {
+              this.totTime = res;
+            });
+
+          if (this.gameData.value.user.validated) {
+            this.changeScreen(this.screens.waitingEnemy);
+          } else {
+            this.changeScreen(this.screens.nicknameSelection);
+          }
+        }
+      },
+      onPlayerAdded: (message: any) => {
+        const user = this.gameData.value.user;
+        if (message.addedPlayerId === user.playerId) {
+          if (!user.validated) {
+            this.changeScreen(this.screens.enemyFound);
+          }
+          this.gameData.update('user', message.addedPlayer);
+        } else {
+          this.audio.playSound('enemy-found');
+          this.gameData.update('enemy', message.addedPlayer);
+          this.changeScreen(this.screens.enemyFound);
+        }
+      },
+      onReadyMessage: () => {
+        this.enemyReady = true;
+      },
+      onStartMatch: (message: any) => {
+        this.gameData.update('match', {
+          tiles: this.gameData.formatMatchTiles(message.tiles),
+        });
+        this.router.navigate(['/arcade-match'], { replaceUrl: true });
+      },
+      onGameQuit: () => {
+        this.handleEnemyQuit('ENEMY_LEFT');
+      },
+
+      onConnectionLost: () => {
+        this.handleEnemyQuit('FORCE_EXIT');
+      },
+      onChatMessage: (message: any) => {
+        this.audio.playSound('roby-over');
+        this.chatService.enqueueChatMessage(message);
+        this.chatBubbles = this.chatService.getChatMessages();
+      },
+    });
+
+    let formattedTranslateCode = this.gameData.formatTimeStatic(
+      this.gameData.value.general.timerSetting
+    );
+    this.translate.get(formattedTranslateCode).subscribe((res: string) => {
+      this.totTime = res;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.rabbit.clearPageCallbacks();
+  }
+
+  private async handleEnemyQuit(message: string) {
+    this.gameLifecycle.leaveGame();
+    await this.modalService.showForceExitModal(message);
+    this.router.navigate(['/home']);
+  }
+
+  private handleInitialGameRequest() {
+    const connected = this.rabbit.getBrokerConnectionState();
+
+    if (!connected) {
+      // Wait for connection and then send the request
+      this.rabbit.waitForBrokerConnection().then(() => {
+        this.sendGameRequestIfNeeded();
+      });
+    } else {
+      this.sendGameRequestIfNeeded();
+    }
+  }
+
+  private sendGameRequestIfNeeded() {
+    const general = this.gameData.value.general;
+    this.user.set(this.gameData.value.user);
+
+    if (general.code !== '0000' || this.user().organizer) {
+      this.rabbit.sendGameRequest(
+        this.authHandler.currentUser?.firebaseUser?.uid || ''
+      );
+
+      this.translate.get('SEARCH_MATCH_INFO').subscribe((text) => {
+        this.joinMessage = text;
+      });
+    }
+  }
+
+  handleMessageSend(body: string) {
+    const chatMessage = this.rabbit.sendChatMessage(body);
+    this.chatService.enqueueChatMessage(chatMessage);
+    this.chatBubbles = this.chatService.getChatMessages();
+  }
+
+  goToCreateMatch() {
+    this.audio.playSound('menu-click');
+    this.router.navigate(['/custom-new-match'], { replaceUrl: true });
+  }
+
+  joinGame(codeValue: string) {
+    this.mmakingRequested = true;
+    this.audio.playSound('menu-click');
+    this.translate.get('SEARCH_MATCH_INFO').subscribe((text) => {
+      this.joinMessage = text;
+    });
+    this.gameData.update('general', { code: codeValue });
+    this.rabbit.sendGameRequest(
+      this.authHandler.currentUser?.firebaseUser?.uid || ''
+    );
+  }
+
+  playerReady() {
+    this.readyClicked = true;
+    this.rabbit.sendReadyMessage();
+    if (!this.enemyReady) this.changeScreen(this.screens.waitingReady);
+  }
+
+  validPlayer() {
+    this.playerValidated = true;
+    this.gameData.update('user', { nickname: this.nickname });
+    this.rabbit.sendValidationMessage();
+    // this.session.enableNoSleep();
+    this.audio.splashStartBase();
+  }
+
+  copyLink() {
+    this.audio.playSound('menu-click');
+    this.shareService.copyTextToClipboard(this.matchUrl);
+    this.linkCopied = true;
+    this.codeCopied = false;
+  }
+
+  copyCode() {
+    this.audio.playSound('menu-click');
+    this.shareService.copyTextToClipboard(this.gameData.value.general.code);
+    this.linkCopied = false;
+    this.codeCopied = true;
+  }
+
+  changeScreen(newScreen: string) {
+    this.mmakingState = this.screens.loadingScreen;
+    setTimeout(() => {
+      this.mmakingState = newScreen;
+    }, 200);
+  }
+
+  private loadTimerSettings() {
+    this.translate
+      .get(['15_SECONDS', '30_SECONDS', '1_MINUTE', '2_MINUTES'])
+      .subscribe((translations) => {
+        this.timerSettings = [
+          { text: translations['15_SECONDS'], value: 15000 },
+          { text: translations['30_SECONDS'], value: 30000 },
+          { text: translations['1_MINUTE'], value: 60000 },
+          { text: translations['2_MINUTES'], value: 120000 },
+        ];
+      });
+  }
+
+  requestMMaking() {
+    this.audio.playSound('menu-click');
+    this.creatingMatch = true;
+    this.gameData.update('general', { code: '0000' });
+    this.gameData.update('user', { nickname: this.nickname, organizer: true });
+    this.router.navigate(['/custom-mmaking']);
+  }
+}

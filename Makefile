@@ -1,11 +1,14 @@
 SHELL := /bin/bash
 
-DC := docker-compose -f docker-compose.yml -f docker-compose.custom.yml
-DC_RUN := ${DC} run --rm
+DC := docker compose -f docker-compose.yml
+
+# Uncomment one of the following lines to use a specific override file
+DC := $(DC) -f docker-compose.custom.yml
+# DC := $(DC) -f docker-compose.local.yml
 
 .PHONY: cmd
 cmd:
-	@echo 'Docker-Compose command:'
+	@echo 'Docker compose command:'
 	@echo '${DC}'
 
 .PHONY: up
@@ -20,7 +23,15 @@ up:
 rebuild:
 	${DC} rm -sf server
 	${DC} build server
+	${DC} up -d --force-recreate
+
+.PHONY: rebuild-full
+rebuild-full:
+	${DC} down -v         # stop and remove containers & volumes
+	docker image prune -f  # optional: remove dangling images
+	${DC} build --no-cache
 	${DC} up -d
+	${DC} ps
 
 .PHONY: ps
 ps:

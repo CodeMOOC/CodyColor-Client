@@ -231,7 +231,6 @@ export class ArcadeAftermatchComponent implements OnInit, OnDestroy {
   }
 
   private async handleEnemyQuit(message: string) {
-    this.gameLifecycle.leaveGame();
     await this.modalService.showForceExitModal(message);
     this.router.navigate(['/home']);
   }

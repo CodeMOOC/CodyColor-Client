@@ -13,9 +13,7 @@ export const environment = {
     username: 'guest',
     password: 'guest',
     vHost: '/',
-    // socketUrl: 'wss://codycolor.codemooc.net/api/ws',
-    socketUrl: 'wss://codycolor-beta.codemooc.net/api/ws',
-    // socketUrl: 'ws://localhost:15674/ws',
+    socketUrl: 'wss://codycolor.codemooc.net/api/ws',
   },
   webBaseUrl: 'https://codycolor-beta.codemooc.net',
 };

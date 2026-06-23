@@ -2,110 +2,110 @@
   <div class="page--wrapper">
     <div class="page--body">
       <!-- countdown component -->
-      <app-countdown-cody
-        *ngIf="countdownInProgress"
-        (startMatchTimers)="startMatchTimer()"
-      />
+      @if (countdownInProgress) {
+        <app-countdown-cody
+          (startMatchTimers)="startMatchTimer()"
+          />
+      }
 
       <!-- match component -->
-      <div
-        id="match-in-progress"
-        class="page--component"
-        *ngIf="!countdownInProgress"
-      >
-        <div class="two-columns flex justify-between">
-          <div class="clock ellipsize" [ngClass]="clockAnimation">
-            <span class="material-symbols-outlined">schedule</span>
-            {{ formattedStartTimer() }}
-          </div>
-
-          <div class="">
-            <div class="ellipsize">
-              <i class="material-symbols-outlined">smart_toy</i>
-              {{
+      @if (!countdownInProgress) {
+        <div
+          id="match-in-progress"
+          class="page--component"
+          >
+          <div class="two-columns flex justify-between">
+            <div class="clock ellipsize" [ngClass]="clockAnimation">
+              <span class="material-symbols-outlined">schedule</span>
+              {{ formattedStartTimer() }}
+            </div>
+            <div class="">
+              <div class="ellipsize">
+                <i class="material-symbols-outlined">smart_toy</i>
+                {{
                 "PLAYERS_COMPOSITE"
-                  | translate : { numPlayers: aggregated.connectedPlayers }
-              }}
-            </div>
-            <div class="ellipsize">
-              <i class="material-symbols-outlined">timer</i>
-
-              {{
+                | translate : { numPlayers: aggregated.connectedPlayers }
+                }}
+              </div>
+              <div class="ellipsize">
+                <i class="material-symbols-outlined">timer</i>
+                {{
                 "POSITIONED_COMPOSITE"
-                  | translate : { numPositioned: aggregated.positionedPlayers }
-              }}
+                | translate : { numPositioned: aggregated.positionedPlayers }
+                }}
+              </div>
             </div>
           </div>
-        </div>
-
-        <!-- Playground module -->
-        <div class="playground">
-          <app-match-grid
-            *ngIf="grid.length"
-            [grid]="grid"
-            [tilesCss]="tilesCss"
-            [executeAnimation]="executeAnimation"
-            [skipAnimation]="askedForSkip"
-            [playerPath]="playerPath"
-            [enemyPaths]="enemyPaths"
-            [botSetting]="general.botSetting || 0"
-            [isBot]="false"
-            [Side]="Side"
-            [endRoute]="'/arcade-aftermatch'"
-            [isTimeout]="isTimeout"
-            (tileDropped)="onTileDropped($event.side, $event.distance)"
-            (dragStarted)="onDragStarted()"
-            (dragEnded)="onDragEnded()"
-          ></app-match-grid>
-
-          <!-- Time display -->
-          <div
-            class="centered-container"
-            *ngIf="match.positioned && match.time > 0"
-          >
-            <i class="fas fa-stopwatch"></i>
-            {{
-              "TIME_PLAYER"
+          <!-- Playground module -->
+          <div class="playground">
+            @if (grid.length) {
+              <app-match-grid
+                [grid]="grid"
+                [tilesCss]="tilesCss"
+                [executeAnimation]="executeAnimation"
+                [skipAnimation]="askedForSkip"
+                [playerPath]="playerPath"
+                [enemyPaths]="enemyPaths"
+                [botSetting]="general.botSetting || 0"
+                [isBot]="false"
+                [Side]="Side"
+                [endRoute]="'/arcade-aftermatch'"
+                [isTimeout]="isTimeout"
+                (tileDropped)="onTileDropped($event.side, $event.distance)"
+                (dragStarted)="onDragStarted()"
+                (dragEnded)="onDragEnded()"
+              ></app-match-grid>
+            }
+            <!-- Time display -->
+            @if (match.positioned && match.time > 0) {
+              <div
+                class="centered-container"
+                >
+                <i class="fas fa-stopwatch"></i>
+                {{
+                "TIME_PLAYER"
                 | translate : { time: finalTimeFormatter(match.time) }
-            }}
+                }}
+              </div>
+            }
+            @if (match?.positioned && match?.time === 0) {
+              <div
+                class="centered-container"
+                >
+                <span class="material-symbols-outlined">timer</span>
+                {{ "TIME_OUT" | translate }}
+              </div>
+            }
+            <!-- Skip button -->
+            @if (startAnimation && !askedForSkip) {
+              <div
+                class="centered-container"
+                >
+                <button
+                  class="navigation--button flashing-animation"
+                  (click)="skip()"
+                  >
+                  {{ "SKIP" | translate }}
+                  <span
+                    class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
+                    >keyboard_double_arrow_right</span
+                    >
+                  </button>
+                </div>
+              }
+              <!-- Wait for enemy to skip -->
+              @if (startAnimation && askedForSkip) {
+                <div
+                  class="centered-container flashing-animation"
+                  >
+                  {{ "WAIT_SKIP" | translate }}
+                </div>
+              }
+            </div>
           </div>
+        }
 
-          <div
-            class="centered-container"
-            *ngIf="match?.positioned && match?.time === 0"
-          >
-            <span class="material-symbols-outlined">timer</span>
-            {{ "TIME_OUT" | translate }}
-          </div>
-
-          <!-- Skip button -->
-          <div
-            class="centered-container"
-            *ngIf="startAnimation && !askedForSkip"
-          >
-            <button
-              class="navigation--button flashing-animation"
-              (click)="skip()"
-            >
-              {{ "SKIP" | translate }}
-              <span
-                class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
-                >keyboard_double_arrow_right</span
-              >
-            </button>
-          </div>
-
-          <!-- Wait for enemy to skip -->
-          <div
-            class="centered-container flashing-animation"
-            *ngIf="startAnimation && askedForSkip"
-          >
-            {{ "WAIT_SKIP" | translate }}
-          </div>
-        </div>
+        <div class="page--push"></div>
       </div>
-
-      <div class="page--push"></div>
     </div>
   </div>
-</div>

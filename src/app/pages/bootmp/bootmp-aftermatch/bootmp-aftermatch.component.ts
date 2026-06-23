@@ -10,7 +10,7 @@ import { SessionService } from '../../../services/session.service';
 import { LanguageService } from '../../../services/language.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { ShareService } from '../../../services/share.service';
-import { CommonModule } from '@angular/common';
+
 import { PathService } from '../../../services/path.service';
 import { Subject, takeUntil } from 'rxjs';
 import { MatchManagerService } from '../../../services/match-manager.service';
@@ -18,7 +18,7 @@ import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-bootmp-aftermatch',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './bootmp-aftermatch.component.html',
   styleUrl: './bootmp-aftermatch.component.scss',
   standalone: true,

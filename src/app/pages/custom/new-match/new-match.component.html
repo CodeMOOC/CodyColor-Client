@@ -29,14 +29,15 @@
               required
               autofocus
               #nicknameModel="ngModel"
-            />
+              />
           </li>
-          <div
-            class="input-error"
-            *ngIf="nicknameModel.errors?.['minlength'] && nicknameModel.touched"
-          >
-            {{ "NICKNAME_REQUIRED" | translate }}
-          </div>
+          @if (nicknameModel.errors?.['minlength'] && nicknameModel.touched) {
+            <div
+              class="input-error"
+              >
+              {{ "NICKNAME_REQUIRED" | translate }}
+            </div>
+          }
 
           <li class="list--simple-element">
             {{ "MATCH_TIME" | translate }}
@@ -65,24 +66,26 @@
               type="submit"
               class="navigation--button flashing-animation"
               [disabled]="customMatchForm.invalid"
-            >
+              >
               {{ "CREATE_MATCH" | translate }}
               <i
                 class="material-symbols-outlined inline-block animate-slide-left icon-lg"
                 >{{ "keyboard_double_arrow_right" }}</i
-              >
-            </button>
-          </li>
+                >
+              </button>
+            </li>
 
-          <li class="list--spaced-element" *ngIf="creatingMatch">
-            <div class="flashing-animation">
-              {{ "CREATING_MATCH" | translate }}
-            </div>
-          </li>
-        </ul>
-      </form>
+            @if (creatingMatch) {
+              <li class="list--spaced-element">
+                <div class="flashing-animation">
+                  {{ "CREATING_MATCH" | translate }}
+                </div>
+              </li>
+            }
+          </ul>
+        </form>
+      </div>
+
+      <div class="page--push"></div>
     </div>
-
-    <div class="page--push"></div>
   </div>
-</div>

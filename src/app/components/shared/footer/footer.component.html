@@ -1,12 +1,13 @@
 <div class="page--footer flex justify-between">
   <div class="page--footer-column-left ellipsize flex items-center">
-    <button
-      *ngIf="showExitButton"
-      class="page--footer-button material-symbols-outlined"
-      (click)="openExitGameDialog()"
-    >
-      close
-    </button>
+    @if (showExitButton) {
+      <button
+        class="page--footer-button material-symbols-outlined"
+        (click)="openExitGameDialog()"
+        >
+        close
+      </button>
+    }
 
     <button class="page--footer-button" (click)="toggleBase()">
       <span class="page--footer-icons material-symbols-outlined">
@@ -16,16 +17,16 @@
     <button
       class="page--footer-button material-symbols-outlined"
       (click)="openLanguageModal()"
-    >
-    <span class="page--footer-icons">
-      <img
-      [src]="'assets/img/flags/' + language + '.svg'"
-      alt=""
-      width="30"
-      height="24"
-    />
-    </span>
-    
+      >
+      <span class="page--footer-icons">
+        <img
+          [src]="'assets/img/flags/' + language + '.svg'"
+          alt=""
+          width="30"
+          height="24"
+          />
+      </span>
+
     </button>
   </div>
 
@@ -35,7 +36,7 @@
         account_circle
       </span>
       <span class="ellipsize">
-    
+
         {{ userNickname }}
       </span>
     </button>

@@ -1,10 +1,10 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { AudioService } from '../../services/audio.service';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-countdown-cody',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './countdown-cody.component.html',
   styleUrl: './countdown-cody.component.scss',
 })

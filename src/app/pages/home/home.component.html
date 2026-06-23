@@ -38,42 +38,46 @@
           </button>
         </li>
         @if(brokerConnected) {
-        <li class="list--simple-element">
-          <div [ngClass]="brokerConnected ? 'flashing-animation' : ''">
-            {{
+          <li class="list--simple-element">
+            <div [ngClass]="brokerConnected ? 'flashing-animation' : ''">
+              {{
               "NOTIF_GENERAL"
-                | translate
-                  : {
-                      totalMatches: totalMatches,
-                      connectedPlayers: connectedPlayers
-                    }
+              | translate
+              : {
+              totalMatches: totalMatches,
+              connectedPlayers: connectedPlayers
+            }
             }}
           </div>
         </li>
-        }
-        <li class="list--simple-element" *ngIf="!brokerConnected">
+      }
+      @if (!brokerConnected) {
+        <li class="list--simple-element">
           <div [ngClass]="!brokerConnected ? 'flashing-animation' : ''">
             {{ "NOTIF_OFFLINE" | translate }}
           </div>
         </li>
-      </ul>
-    </div>
-
-    <div class="page--push"></div>
+      }
+    </ul>
   </div>
 
-  <!-- No connection modal -->
-  <div class="modal" *ngIf="noOnlineModal">
+  <div class="page--push"></div>
+</div>
+
+<!-- No connection modal -->
+@if (noOnlineModal) {
+  <div class="modal">
     <div class="modal--content">
       <p>{{ noOnlineModalText }}</p>
       <div class="modal--buttons-container">
         <button
           class="modal--button-primary"
           (click)="closeNoConnectionModal()"
-        >
+          >
           {{ "OK" | translate }}
         </button>
       </div>
     </div>
   </div>
+}
 </div>

@@ -1,11 +1,11 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-rules',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   standalone: true,
   templateUrl: './rules.component.html',
   styleUrl: './rules.component.scss',

@@ -3,5 +3,7 @@
     <router-outlet></router-outlet>
   </div>
 
-  <app-footer *ngIf="showFooter" class="flex-shrink-0" />
+  @if (showFooter) {
+    <app-footer class="flex-shrink-0" />
+  }
 </div>

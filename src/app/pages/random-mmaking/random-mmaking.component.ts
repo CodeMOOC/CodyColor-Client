@@ -10,7 +10,7 @@ import { VisibilityService } from '../../services/visibility.service';
 import { Subscription } from 'rxjs';
 import { ChatHandlerService } from '../../services/chat.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
 import { ModalService } from '../../services/modal-service.service';
@@ -26,11 +26,10 @@ import { GameLifecycleService } from '../../services/game-lifecycle.service';
   selector: 'app-random-mmaking',
   imports: [
     TranslateModule,
-    CommonModule,
     FormsModule,
     SpinnerComponent,
-    ChatComponent,
-  ],
+    ChatComponent
+],
   standalone: true,
   templateUrl: './random-mmaking.component.html',
   styleUrl: './random-mmaking.component.scss',

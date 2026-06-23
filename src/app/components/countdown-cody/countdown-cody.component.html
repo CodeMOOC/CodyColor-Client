@@ -1,3 +1,5 @@
-<div id="countdown" *ngIf="countdownInProgress" class="page--component">
-  {{ startCountdownText }}
-</div>
+@if (countdownInProgress) {
+  <div id="countdown" class="page--component">
+    {{ startCountdownText }}
+  </div>
+}

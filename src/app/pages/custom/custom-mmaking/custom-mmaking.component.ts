@@ -7,7 +7,7 @@ import { AudioService } from '../../../services/audio.service';
 import { SessionService } from '../../../services/session.service';
 import { AuthService } from '../../../services/auth.service';
 import { VisibilityService } from '../../../services/visibility.service';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Player } from '../../../models/player.model';
 import { environment } from '../../../../environments/environment';
@@ -23,12 +23,11 @@ import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 @Component({
   selector: 'app-custom-mmaking',
   imports: [
-    CommonModule,
     FormsModule,
     TranslateModule,
     SpinnerComponent,
-    ChatComponent,
-  ],
+    ChatComponent
+],
   standalone: true,
   templateUrl: './custom-mmaking.component.html',
   styleUrl: './custom-mmaking.component.scss',

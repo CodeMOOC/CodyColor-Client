@@ -6,7 +6,7 @@ import { AuthService } from '../../../services/auth.service';
 import { AudioService } from '../../../services/audio.service';
 import { SessionService } from '../../../services/session.service';
 import { VisibilityService } from '../../../services/visibility.service';
-import { CommonModule } from '@angular/common';
+
 import { LanguageService } from '../../../services/language.service';
 import { FormsModule, NgForm } from '@angular/forms';
 import { PathService } from '../../../services/path.service';
@@ -15,7 +15,7 @@ import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-bootmp-mmaking',
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [FormsModule, TranslateModule],
   standalone: true,
   templateUrl: './bootmp-mmaking.component.html',
   styleUrl: './bootmp-mmaking.component.scss',

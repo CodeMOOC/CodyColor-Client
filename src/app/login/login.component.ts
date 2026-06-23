@@ -3,7 +3,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { AudioService } from '../services/audio.service';
-import { CommonModule } from '@angular/common';
+
 import {
   FormBuilder,
   FormGroup,
@@ -28,13 +28,12 @@ enum ScreenState {
 @Component({
   selector: 'app-login',
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MultiOptionsModalComponent,
     SingleOptionModalComponent,
-    TranslateModule,
-  ],
+    TranslateModule
+],
   standalone: true,
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',

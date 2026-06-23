@@ -4,17 +4,21 @@
       <ul class="list">
         <!-- Match winner -->
         <li class="list--spaced-element">
-          <h2 class="capitalize" *ngIf="!draw">
-            {{
+          @if (!draw) {
+            <h2 class="capitalize">
+              {{
               "WINNER"
-                | translate
-                  : { winner: winner, matchCount: aggregated?.matchCount }
-            }}
-          </h2>
+              | translate
+              : { winner: winner, matchCount: aggregated?.matchCount }
+              }}
+            </h2>
+          }
 
-          <h2 *ngIf="draw">
-            {{ "DRAW" | translate }}
-          </h2>
+          @if (draw) {
+            <h2>
+              {{ "DRAW" | translate }}
+            </h2>
+          }
         </li>
 
         <!-- Player-Enemy match ranking -->
@@ -33,41 +37,46 @@
                 <th>{{ "STATS_TIME_R" | translate }}</th>
               </tr>
 
-              <tr *ngFor="let player of matchRanking; index as i">
-                <td>{{ i + 1 }}.</td>
-                <td>{{ player.nickname }}</td>
-                <td>{{ player.points }}</td>
-                <td>{{ player.pathLength }}</td>
-                <td>{{ timeFormatter(player.time) }}</td>
-              </tr>
+              @for (player of matchRanking; track player; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}.</td>
+                  <td>{{ player.nickname }}</td>
+                  <td>{{ player.points }}</td>
+                  <td>{{ player.pathLength }}</td>
+                  <td>{{ timeFormatter(player.time) }}</td>
+                </tr>
+              }
 
               <!-- row of dots -->
-              <tr
-                *ngIf="
-                  !(userInMatchPodium() && aggregated?.connectedPlayers <= 3)
-                "
-              >
-                <td></td>
-                <td>...</td>
-                <td>...</td>
-                <td>...</td>
-                <td>...</td>
-              </tr>
+              @if (
+                !(userInMatchPodium() && aggregated?.connectedPlayers <= 3)
+                ) {
+                <tr
+                  >
+                  <td></td>
+                  <td>...</td>
+                  <td>...</td>
+                  <td>...</td>
+                  <td>...</td>
+                </tr>
+              }
 
               <!-- user row -->
-              <tr *ngIf="!userInMatchPodium()">
-                <td></td>
-                <td>{{ userMatchResult?.nickname }}</td>
-                <td>{{ userMatchResult?.points }}</td>
-                <td>{{ userMatchResult?.pathLength }}</td>
-                <td>
-                  {{
+              @if (!userInMatchPodium()) {
+                <tr>
+                  <td></td>
+                  <td>{{ userMatchResult?.nickname }}</td>
+                  <td>{{ userMatchResult?.points }}</td>
+                  <td>{{ userMatchResult?.pathLength }}</td>
+                  <td>
+                    {{
                     userMatchResult?.time >= 0
-                      ? timeFormatter(userMatch?.time)
-                      : "00:00"
-                  }}
-                </td>
-              </tr>
+                    ? timeFormatter(userMatch?.time)
+                    : "00:00"
+                    }}
+                  </td>
+                </tr>
+              }
             </table>
           </div>
         </li>
@@ -87,30 +96,35 @@
                 <th>{{ "STATS_WINS_R" | translate }}</th>
               </tr>
 
-              <tr *ngFor="let player of globalRanking; index as i">
-                <td>{{ i + 1 }}.</td>
-                <td>{{ player.nickname }}</td>
-                <td>{{ player.points }}</td>
-                <td>{{ player.wonMatches }}</td>
-              </tr>
+              @for (player of globalRanking; track player; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}.</td>
+                  <td>{{ player.nickname }}</td>
+                  <td>{{ player.points }}</td>
+                  <td>{{ player.wonMatches }}</td>
+                </tr>
+              }
 
-              <tr
-                *ngIf="
-                  !(userInGlobalPodium() && aggregated?.connectedPlayers <= 3)
-                "
-              >
-                <td></td>
-                <td>...</td>
-                <td>...</td>
-                <td>...</td>
-              </tr>
+              @if (
+                !(userInGlobalPodium() && aggregated?.connectedPlayers <= 3)
+                ) {
+                <tr
+                  >
+                  <td></td>
+                  <td>...</td>
+                  <td>...</td>
+                  <td>...</td>
+                </tr>
+              }
 
-              <tr *ngIf="!userInGlobalPodium()">
-                <td></td>
-                <td>{{ userGlobalResult?.nickname }}</td>
-                <td>{{ userGlobalResult?.points }}</td>
-                <td>{{ userGlobalResult?.wonMatches }}</td>
-              </tr>
+              @if (!userInGlobalPodium()) {
+                <tr>
+                  <td></td>
+                  <td>{{ userGlobalResult?.nickname }}</td>
+                  <td>{{ userGlobalResult?.points }}</td>
+                  <td>{{ userGlobalResult?.wonMatches }}</td>
+                </tr>
+              }
             </table>
           </div>
         </li>
@@ -119,14 +133,14 @@
         <li class="list--simple-element">
           <i class="material-symbols-outlined">smart_toy</i>
           {{
-            "NUM_PLAYERS_AFTERMATCH"
-              | translate : { numPlayers: aggregated?.connectedPlayers }
+          "NUM_PLAYERS_AFTERMATCH"
+          | translate : { numPlayers: aggregated?.connectedPlayers }
           }}<br />
 
           <i class="far fa-play-circle"></i>
           {{
-            "NUM_READY_AFTERMATCH"
-              | translate : { numReady: aggregated?.readyPlayers }
+          "NUM_READY_AFTERMATCH"
+          | translate : { numReady: aggregated?.readyPlayers }
           }}
         </li>
 
@@ -135,55 +149,63 @@
           <button
             class="navigation--button flashing-animation"
             (click)="share()"
-          >
+            >
             {{ "SHARE" | translate }}
             <i
               class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"
             ></i>
           </button>
 
-          <div class="copyable--copy-text" *ngIf="sharedLegacy()">
-            <i class="far fa-copy copyable--copy-icon"></i>
-            {{ "COPIED" | translate }}
-          </div>
+          @if (sharedLegacy()) {
+            <div class="copyable--copy-text">
+              <i class="far fa-copy copyable--copy-icon"></i>
+              {{ "COPIED" | translate }}
+            </div>
+          }
         </li>
 
         <!-- New Match -->
         <li id="aftermatch-options" class="list--spaced-element">
-          <div *ngIf="!newMatchClicked">
-            <button
-              class="navigation--button flashing-animation"
-              (click)="newMatch()"
-            >
-              {{ "PLAY_AGAIN" | translate }}
-              <i
-                class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"
-              ></i>
-            </button>
-          </div>
+          @if (!newMatchClicked) {
+            <div>
+              <button
+                class="navigation--button flashing-animation"
+                (click)="newMatch()"
+                >
+                {{ "PLAY_AGAIN" | translate }}
+                <i
+                  class="fas fa-angle-double-right floating-right-animation navigation--icon-in-text"
+                ></i>
+              </button>
+            </div>
+          }
 
           <div>
             {{
-              "MAT_START_COUNTDOWN"
-                | translate
-                  : { countdown: timeFormatterCountdown(newMatchTimerValue) }
+            "MAT_START_COUNTDOWN"
+            | translate
+            : { countdown: timeFormatterCountdown(newMatchTimerValue) }
             }}
           </div>
 
-          <div *ngIf="newMatchClicked">
-            <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
-          </div>
+          @if (newMatchClicked) {
+            <div>
+              <div class="flashing-animation">{{ "ENEMY_WAIT" | translate }}</div>
+            </div>
+          }
         </li>
 
-        <div *ngIf="user">
-          <!-- Chat -->
-          <app-chat
-            [playerId]="user.playerId"
-            [chatBubbles]="chatBubbles()"
-            [chatHints]="chatHints()"
-            (messageSent)="handleMessageSend($event)"
-          />
-        </div>
+        @if (user) {
+          <div>
+            <!-- Chat -->
+            <app-chat
+              [playerId]="user.playerId"
+              [chatBubbles]="chatBubbles()"
+              [chatHints]="chatHints()"
+              (messageSent)="handleMessageSend($event)"
+              />
+          </div>
+        }
       </ul>
     </div>
 

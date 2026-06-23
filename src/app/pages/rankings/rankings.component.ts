@@ -10,12 +10,12 @@ import { AudioService } from '../../services/audio.service';
 import { SessionService } from '../../services/session.service';
 import { VisibilityService } from '../../services/visibility.service';
 import { RankingsData } from '../../models/ranking.model';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-rankings',
   templateUrl: './rankings.component.html',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   standalone: true,
   styleUrls: ['./rankings.component.scss'],
 })

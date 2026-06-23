@@ -2,126 +2,130 @@
   <div class="page--wrapper">
     <div class="page--body">
       <!-- Inserimento nickname -->
-      <div
-        *ngIf="mmakingState === screens.nicknameSelection"
-        class="page--component"
-      >
-        <form #nickForm="ngForm">
-          <ul class="list">
-            <li class="list--simple-element">
-              <h2>{{ "RANDOM_MATCH" | translate }}</h2>
-            </li>
-            <li class="list--spaced-element">
-              {{ "RANDOM_MMAKING_DESC" | translate }}
-            </li>
-            <li class="list--simple-element">
-              <label for="nickname">{{ "NICKNAME" | translate }}</label>
-            </li>
-            <li class="list--spaced-element">
-              <input
-                type="text"
-                name="nickname"
-                id="nickname"
-                [(ngModel)]="nickname"
-                maxlength="22"
-                minlength="3"
-                [placeholder]="'NICKNAME_EXAMPLE' | translate"
-                class="standard-input"
-                required
-                autofocus
-                #nicknameModel="ngModel"
-              />
-            </li>
-            <div
-              class="input-error"
-              *ngIf="nicknameModel.errors?.['minlength'] && nicknameModel.touched"
+      @if (mmakingState === screens.nicknameSelection) {
+        <div
+          class="page--component"
+          >
+          <form #nickForm="ngForm">
+            <ul class="list">
+              <li class="list--simple-element">
+                <h2>{{ "RANDOM_MATCH" | translate }}</h2>
+              </li>
+              <li class="list--spaced-element">
+                {{ "RANDOM_MMAKING_DESC" | translate }}
+              </li>
+              <li class="list--simple-element">
+                <label for="nickname">{{ "NICKNAME" | translate }}</label>
+              </li>
+              <li class="list--spaced-element">
+                <input
+                  type="text"
+                  name="nickname"
+                  id="nickname"
+                  [(ngModel)]="nickname"
+                  maxlength="22"
+                  minlength="3"
+                  [placeholder]="'NICKNAME_EXAMPLE' | translate"
+                  class="standard-input"
+                  required
+                  autofocus
+                  #nicknameModel="ngModel"
+                  />
+              </li>
+              @if (nicknameModel.errors?.['minlength'] && nicknameModel.touched) {
+                <div
+                  class="input-error"
+                  >
+                  {{ "NICKNAME_REQUIRED" | translate }}
+                </div>
+              }
+              <li class="list--spaced-element flex justify-center">
+                <button
+                  class="navigation--button flashing-animation flex items-end gap-4"
+                  (click)="requestMMaking()"
+                  [disabled]="!nickForm.valid || mmakingRequested"
+                  >
+                  <span [innerHTML]="'FIND_ENEMY' | translate"></span>
+                  <span
+                    class="material-symbols-outlined inline-block animate-slide-left icon-lg"
+                    >{{ "keyboard_double_arrow_right" }}</span
+                    >
+                  </button>
+                </li>
+                <li class="list--spaced-element">
+                  <p class="flashing-animation">
+                    {{ "ENEMIES_WAITING" | translate : { randomWaitingPlayers } }}
+                  </p>
+                </li>
+              </ul>
+            </form>
+          </div>
+        }
+
+        <!-- Entrato nella gameRoom, aspetta un avversario -->
+        <!-- Waiting Ready -->
+        @if (mmakingState === screens.waitingEnemy) {
+          <app-spinner
+            id="waiting-confirm"
+            class="page--component"
+            [messageKey]="'WAITING_NEW_PLAYERS'"
+            [timerValue]="mmakingTimerValue"
+          ></app-spinner>
+        }
+
+        <!-- Players accoppiati, in attesa di ready -->
+        @if (mmakingState === screens.enemyFound) {
+          <div
+            id="enemy-found"
+            class="page--component"
             >
-              {{ "NICKNAME_REQUIRED" | translate }}
-            </div>
-            <li class="list--spaced-element flex justify-center">
-              <button
-                class="navigation--button flashing-animation flex items-end gap-4"
-                (click)="requestMMaking()"
-                [disabled]="!nickForm.valid || mmakingRequested"
-              >
-                <span [innerHTML]="'FIND_ENEMY' | translate"></span>
+            <ul class="list">
+              <li class="list--spaced-element">
+                {{ "NEW_ENEMY" | translate : { enemyNickname: enemy.nickname } }}
+              </li>
+              <li class="list--simple-element">
+                <button
+                  class="navigation--button flashing-animation"
+                  (click)="playerReady()"
+                  [disabled]="readyClicked"
+                  >
+                  {{ "START" | translate }}
+                  <i
+                    class="material-symbols-outlined inline-block animate-slide-left icon-lg"
+                    >
+                    keyboard_double_arrow_right
+                  </i>
+                </button>
+              </li>
+            </ul>
+          </div>
+        }
 
-                <span
-                  class="material-symbols-outlined inline-block animate-slide-left icon-lg"
-                  >{{ "keyboard_double_arrow_right" }}</span
-                >
-              </button>
-            </li>
-            <li class="list--spaced-element">
-              <p class="flashing-animation">
-                {{ "ENEMIES_WAITING" | translate : { randomWaitingPlayers } }}
-              </p>
-            </li>
-          </ul>
-        </form>
-      </div>
+        <!-- Ready clicked, aspettando il segnale di ready dell'avversario -->
+        @if (mmakingState === screens.waitingReady) {
+          <app-spinner
+            id="waiting-confirm"
+            class="page--component"
+            [messageKey]="'ENEMY_WAIT'"
+          ></app-spinner>
+        }
 
-      <!-- Entrato nella gameRoom, aspetta un avversario -->
-      <!-- Waiting Ready -->
-      <app-spinner
-        *ngIf="mmakingState === screens.waitingEnemy"
-        id="waiting-confirm"
-        class="page--component"
-        [messageKey]="'WAITING_NEW_PLAYERS'"
-        [timerValue]="mmakingTimerValue"
-      ></app-spinner>
-
-      <!-- Players accoppiati, in attesa di ready -->
-      <div
-        id="enemy-found"
-        *ngIf="mmakingState === screens.enemyFound"
-        class="page--component"
-      >
-        <ul class="list">
-          <li class="list--spaced-element">
-            {{ "NEW_ENEMY" | translate : { enemyNickname: enemy.nickname } }}
-          </li>
-          <li class="list--simple-element">
-            <button
-              class="navigation--button flashing-animation"
-              (click)="playerReady()"
-              [disabled]="readyClicked"
-            >
-              {{ "START" | translate }}
-
-              <i
-                class="material-symbols-outlined inline-block animate-slide-left icon-lg"
-              >
-                keyboard_double_arrow_right
-              </i>
-            </button>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Ready clicked, aspettando il segnale di ready dell'avversario -->
-      <app-spinner
-        *ngIf="mmakingState === screens.waitingReady"
-        id="waiting-confirm"
-        class="page--component"
-        [messageKey]="'ENEMY_WAIT'"
-      ></app-spinner>
-
-      <!-- Chat module -->
-      <div
-        *ngIf="
+        <!-- Chat module -->
+        @if (
           mmakingState === screens.waitingReady ||
           mmakingState === screens.enemyFound
-        "
-      >
-        <app-chat
-          [playerId]="user.playerId"
-          [chatBubbles]="chatBubbles"
-          [chatHints]="chatHints"
-          (messageSent)="handleMessageSend($event)"
-        />
+          ) {
+          <div
+            >
+            <app-chat
+              [playerId]="user.playerId"
+              [chatBubbles]="chatBubbles"
+              [chatHints]="chatHints"
+              (messageSent)="handleMessageSend($event)"
+              />
+          </div>
+        }
       </div>
+      <div class="page--push"></div>
     </div>
-    <div class="page--push"></div>
   </div>
-</div>

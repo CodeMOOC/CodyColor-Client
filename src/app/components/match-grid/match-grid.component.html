@@ -1,308 +1,319 @@
-<div *ngIf="!showCompleteGrid" class="playground">
-  <table class="playground--table">
-    <tr *ngFor="let row of tilesCss; let rowIndex = index">
-      <td *ngFor="let tileClass of row; let colIndex = index">
-        <div [ngClass]="tileClass"></div>
-      </td>
-    </tr>
-  </table>
-</div>
+@if (!showCompleteGrid) {
+  <div class="playground">
+    <table class="playground--table">
+      @for (row of tilesCss; track row; let rowIndex = $index) {
+        <tr>
+          @for (tileClass of row; track tileClass; let colIndex = $index) {
+            <td>
+              <div [ngClass]="tileClass"></div>
+            </td>
+          }
+        </tr>
+      }
+    </table>
+  </div>
+}
 <div class="w-full relative" cdkDropListGroup>
   <div
     class="small-grid"
     [ngClass]="{ hidden: !showCompleteGrid }"
     #smallGridRef
-  >
+    >
     <div class="robot-overlay">
-      <app-roby-animation
-        *ngIf="playerPath && playerPath.pathLength > 0"
-        #playerAnim
-        [executeAnimation]="executeAnimation"
-        [path]="playerPath"
-        [startPixel]="rectCurrentArrow"
-        [image]="'roby-positioned'"
-        (finished)="executeEndSequence({ source: 'animation', role: 'player' })"
-        class="roby-wrapper"
-      ></app-roby-animation>
-      @for (enemyPath of enemyPaths; track enemyPath) {
-      <div *ngIf="botSetting !== 0">
+      @if (playerPath && playerPath.pathLength > 0) {
         <app-roby-animation
-          #enemyAnim
-          *ngIf="enemyPath && enemyPath.pathLength > 0"
+          #playerAnim
           [executeAnimation]="executeAnimation"
-          [isBot]="isBot"
-          [isBotOrEnemy]="true"
-          [path]="enemyPath"
+          [path]="playerPath"
           [startPixel]="rectCurrentArrow"
-          [image]="'enemy-positioned'"
+          [image]="'roby-positioned'"
+          (finished)="executeEndSequence({ source: 'animation', role: 'player' })"
+          class="roby-wrapper"
+        ></app-roby-animation>
+      }
+      @for (enemyPath of enemyPaths; track enemyPath) {
+        @if (botSetting !== 0) {
+          <div>
+            @if (enemyPath && enemyPath.pathLength > 0) {
+              <app-roby-animation
+                #enemyAnim
+                [executeAnimation]="executeAnimation"
+                [isBot]="isBot"
+                [isBotOrEnemy]="true"
+                [path]="enemyPath"
+                [startPixel]="rectCurrentArrow"
+                [image]="'enemy-positioned'"
           (finished)="
             executeEndSequence({ source: 'animation', role: 'enemy' })
           "
-          class="roby-wrapper"
-        ></app-roby-animation>
-      </div>
+                class="roby-wrapper"
+              ></app-roby-animation>
+            }
+          </div>
+        }
       }
     </div>
     <!-- Top row -->
     <div class="cell placeholder"></div>
     @for (col of grid[0]; let colIndex = $index; track colIndex) {
-    <div
-      class="cell arrow-cell"
-      [attr.data-side]="Side.Top"
-      [attr.data-index]="colIndex"
-      (mouseenter)="hoveredArrow[Side.Top + '-' + colIndex] = true"
-      (mouseleave)="hoveredArrow[Side.Top + '-' + colIndex] = false"
-    >
-      <span
-        class="material-symbols-outlined"
+      <div
+        class="cell arrow-cell"
+        [attr.data-side]="Side.Top"
+        [attr.data-index]="colIndex"
+        (mouseenter)="hoveredArrow[Side.Top + '-' + colIndex] = true"
+        (mouseleave)="hoveredArrow[Side.Top + '-' + colIndex] = false"
+        >
+        <span
+          class="material-symbols-outlined"
         [ngClass]="{
           'over-arrow': hoveredArrow[Side.Top + '-' + colIndex]
         }"
-      >
-        {{ getArrowIcon(Side.Top) }}
-      </span>
-    </div>
+          >
+          {{ getArrowIcon(Side.Top) }}
+        </span>
+      </div>
 
     }
     <div class="cell placeholder"></div>
     <!-- Playable rows -->
     @for (row of grid; let rowIndex = $index; track rowIndex) {
-    <!-- Left arrow -->
-    <div
-      class="cell arrow-cell"
-      [attr.data-side]="Side.Left"
-      [attr.data-index]="rowIndex"
-      (mouseenter)="hoveredArrow[Side.Left + '-' + rowIndex] = true"
-      (mouseleave)="hoveredArrow[Side.Left + '-' + rowIndex] = false"
-    >
-      <span
-        class="material-symbols-outlined"
+      <!-- Left arrow -->
+      <div
+        class="cell arrow-cell"
+        [attr.data-side]="Side.Left"
+        [attr.data-index]="rowIndex"
+        (mouseenter)="hoveredArrow[Side.Left + '-' + rowIndex] = true"
+        (mouseleave)="hoveredArrow[Side.Left + '-' + rowIndex] = false"
+        >
+        <span
+          class="material-symbols-outlined"
         [ngClass]="{
           'over-arrow': hoveredArrow[Side.Left + '-' + rowIndex]
         }"
-      >
-        {{ getArrowIcon(Side.Left) }}
-      </span>
-    </div>
+          >
+          {{ getArrowIcon(Side.Left) }}
+        </span>
+      </div>
 
-    <!-- Tiles -->
-    @for (cell of row; track cell) {
-    <div class="cell" [ngClass]="tilesCss[cell.row][cell.col]"></div>
-    }
+      <!-- Tiles -->
+      @for (cell of row; track cell) {
+        <div class="cell" [ngClass]="tilesCss[cell.row][cell.col]"></div>
+      }
 
-    <!-- Right arrow -->
-    <div
-      class="cell arrow-cell"
-      [attr.data-side]="Side.Right"
-      [attr.data-index]="rowIndex"
-      (mouseenter)="hoveredArrow[Side.Right + '-' + rowIndex] = true"
-      (mouseleave)="hoveredArrow[Side.Right + '-' + rowIndex] = false"
-    >
-      <span
-        class="material-symbols-outlined"
+      <!-- Right arrow -->
+      <div
+        class="cell arrow-cell"
+        [attr.data-side]="Side.Right"
+        [attr.data-index]="rowIndex"
+        (mouseenter)="hoveredArrow[Side.Right + '-' + rowIndex] = true"
+        (mouseleave)="hoveredArrow[Side.Right + '-' + rowIndex] = false"
+        >
+        <span
+          class="material-symbols-outlined"
         [ngClass]="{
           'over-arrow': hoveredArrow[Side.Right + '-' + rowIndex]
         }"
-      >
-        {{ getArrowIcon(Side.Right) }}
-      </span>
-    </div>
+          >
+          {{ getArrowIcon(Side.Right) }}
+        </span>
+      </div>
     }
 
     <!-- Bottom row -->
     <div class="cell placeholder"></div>
     @for (col of grid[0]; let colIndex = $index; track colIndex) {
-    <div
-      class="cell arrow-cell"
-      [attr.data-side]="Side.Bottom"
-      [attr.data-index]="colIndex"
-      (mouseenter)="hoveredArrow[Side.Bottom + '-' + colIndex] = true"
-      (mouseleave)="hoveredArrow[Side.Bottom + '-' + colIndex] = false"
-    >
-      <span
-        class="material-symbols-outlined"
+      <div
+        class="cell arrow-cell"
+        [attr.data-side]="Side.Bottom"
+        [attr.data-index]="colIndex"
+        (mouseenter)="hoveredArrow[Side.Bottom + '-' + colIndex] = true"
+        (mouseleave)="hoveredArrow[Side.Bottom + '-' + colIndex] = false"
+        >
+        <span
+          class="material-symbols-outlined"
         [ngClass]="{
           'over-arrow': hoveredArrow[Side.Bottom + '-' + colIndex]
         }"
-      >
-        {{ getArrowIcon(Side.Bottom) }}
-      </span>
-    </div>
+          >
+          {{ getArrowIcon(Side.Bottom) }}
+        </span>
+      </div>
 
     }
     <div class="cell placeholder"></div>
   </div>
 
-  <div
-    *ngIf="!executeAnimation && playerPath?.pathLength === 0"
-    cdkDropList
-    class="z-20 flex justify-center items-center"
-  >
+  @if (!executeAnimation && playerPath?.pathLength === 0) {
     <div
-      cdkDrag
-      class="robot-drag"
-      (cdkDragStarted)="onDragStarted($event)"
-      (cdkDragMoved)="onDragMoved($event)"
-      (cdkDragEnded)="onDragEnded($event)"
-    >
-      <svg
-        width="92"
-        height="117"
-        viewBox="0 0 247 315"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+      cdkDropList
+      class="z-20 flex justify-center items-center"
       >
-        <g id="Frame 1">
-          <path
-            id="body"
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M73 283.5L78.5 250C67.5762 241.269 62.6824 234.407 57.5 216.5V152.5C59.5616 143.41 62.5598 139.175 73 134H159C167.993 137.229 171.323 141.533 175 152.5V216.5C171.591 232.53 166.92 239.37 154 248V250L159 285.5C159 285.5 159 292.5 151 293.5C143 294.5 139 287.5 139 287.5L133.5 256H98L93 285.5C82.8113 296.659 76.3889 288.045 73.276 283.87C73.1809 283.742 73.0889 283.619 73 283.5Z"
-            fill="#64F2D4"
-          />
-          <path
-            id="outside-head"
-            d="M171 127H61C61 127 38 114 37.5 88C37 62 61 49 61 49H72L67 20C67 20 67 17 70.5 15.5C74 14 76 18 76 18L82 49H150L157.5 18C157.5 18 158 15.5 162 15.5C166 15.5 166 20 166 20L159.5 49H171C171 49 193 62 193.5 88C194 114 171 127 171 127Z"
-            fill="#67F2D6"
-          />
-          <path
-            id="inside-head"
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M64.5 116.5H168.5C168.5 116.5 183 114 182.5 88C182 62 168.5 59.5 168.5 59.5H64.5C64.5 59.5 47.5 62 48 88C48.5 114 64.5 116.5 64.5 116.5Z"
-            fill="#666767"
-          />
-          <g id="outside-left-eye" filter="url(#filter0_d_11_4)">
-            <path
-              d="M66 87C66 99.1503 75.8497 109 88 109C100.15 109 110 99.1503 110 87C110 74.8497 100.15 65 88 65C75.8497 65 66 74.8497 66 87Z"
-              fill="#65F4D6"
-            />
-          </g>
-          <g id="outside-right-eye" filter="url(#filter1_d_11_4)">
-            <path
-              d="M166 87C166 99.1503 156.15 109 144 109C131.85 109 122 99.1503 122 87C122 74.8497 131.85 65 144 65C156.15 65 166 74.8497 166 87Z"
-              fill="#65F5D6"
-            />
-          </g>
-          <circle
-            id="inside-right-eye"
-            cx="144"
-            cy="87"
-            r="13"
-            fill="#434342"
-          />
-          <circle id="inside-left-eye" cx="88" cy="87" r="13" fill="#434342" />
-          <rect
-            id="left-heart"
-            x="79.236"
-            y="195.535"
-            width="24.5731"
-            height="24.5731"
-            transform="rotate(-45 79.236 195.535)"
-            fill="#727272"
-          />
-          <rect
-            id="right-heart"
-            x="118.236"
-            y="195.535"
-            width="24.5731"
-            height="24.5731"
-            transform="rotate(-45 118.236 195.535)"
-            fill="#4A4B4B"
-          />
-          <rect
-            id="up-heart"
-            x="99.236"
-            y="176.535"
-            width="24.5731"
-            height="24.5731"
-            transform="rotate(-45 99.236 176.535)"
-            fill="#D8D8D9"
-          />
-          <path
-            id="arm-right"
-            d="M181 152.5C184.905 175.15 187.595 190.35 191.5 213C198.5 219.5 205.5 219.5 212 210L202 150C193.383 142.468 188.78 142.993 181 152.5Z"
-            fill="#64F2D4"
-          />
-          <path
-            id="arm-left"
-            d="M51.5 152.5C47.5948 175.15 44.9052 190.35 41 213C34 219.5 27 219.5 20.5 210L30.5 150C39.117 142.468 43.72 142.993 51.5 152.5Z"
-            fill="#64F2D4"
-          />
-        </g>
-        <defs>
-          <filter
-            id="filter0_d_11_4"
-            x="62"
-            y="65"
-            width="52"
-            height="52"
-            filterUnits="userSpaceOnUse"
-            color-interpolation-filters="sRGB"
+      <div
+        cdkDrag
+        class="robot-drag"
+        (cdkDragStarted)="onDragStarted($event)"
+        (cdkDragMoved)="onDragMoved($event)"
+        (cdkDragEnded)="onDragEnded($event)"
+        >
+        <svg
+          width="92"
+          height="117"
+          viewBox="0 0 247 315"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
           >
-            <feFlood flood-opacity="0" result="BackgroundImageFix" />
-            <feColorMatrix
-              in="SourceAlpha"
-              type="matrix"
-              values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-              result="hardAlpha"
-            />
-            <feOffset dy="4" />
-            <feGaussianBlur stdDeviation="2" />
-            <feComposite in2="hardAlpha" operator="out" />
-            <feColorMatrix
-              type="matrix"
-              values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-            />
-            <feBlend
-              mode="normal"
-              in2="BackgroundImageFix"
-              result="effect1_dropShadow_11_4"
-            />
-            <feBlend
-              mode="normal"
-              in="SourceGraphic"
-              in2="effect1_dropShadow_11_4"
-              result="shape"
-            />
-          </filter>
-          <filter
-            id="filter1_d_11_4"
-            x="118"
-            y="65"
-            width="52"
-            height="52"
-            filterUnits="userSpaceOnUse"
-            color-interpolation-filters="sRGB"
-          >
-            <feFlood flood-opacity="0" result="BackgroundImageFix" />
-            <feColorMatrix
-              in="SourceAlpha"
-              type="matrix"
-              values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-              result="hardAlpha"
-            />
-            <feOffset dy="4" />
-            <feGaussianBlur stdDeviation="2" />
-            <feComposite in2="hardAlpha" operator="out" />
-            <feColorMatrix
-              type="matrix"
-              values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-            />
-            <feBlend
-              mode="normal"
-              in2="BackgroundImageFix"
-              result="effect1_dropShadow_11_4"
-            />
-            <feBlend
-              mode="normal"
-              in="SourceGraphic"
-              in2="effect1_dropShadow_11_4"
-              result="shape"
-            />
-          </filter>
-        </defs>
-      </svg>
+          <g id="Frame 1">
+            <path
+              id="body"
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M73 283.5L78.5 250C67.5762 241.269 62.6824 234.407 57.5 216.5V152.5C59.5616 143.41 62.5598 139.175 73 134H159C167.993 137.229 171.323 141.533 175 152.5V216.5C171.591 232.53 166.92 239.37 154 248V250L159 285.5C159 285.5 159 292.5 151 293.5C143 294.5 139 287.5 139 287.5L133.5 256H98L93 285.5C82.8113 296.659 76.3889 288.045 73.276 283.87C73.1809 283.742 73.0889 283.619 73 283.5Z"
+              fill="#64F2D4"
+              />
+            <path
+              id="outside-head"
+              d="M171 127H61C61 127 38 114 37.5 88C37 62 61 49 61 49H72L67 20C67 20 67 17 70.5 15.5C74 14 76 18 76 18L82 49H150L157.5 18C157.5 18 158 15.5 162 15.5C166 15.5 166 20 166 20L159.5 49H171C171 49 193 62 193.5 88C194 114 171 127 171 127Z"
+              fill="#67F2D6"
+              />
+            <path
+              id="inside-head"
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M64.5 116.5H168.5C168.5 116.5 183 114 182.5 88C182 62 168.5 59.5 168.5 59.5H64.5C64.5 59.5 47.5 62 48 88C48.5 114 64.5 116.5 64.5 116.5Z"
+              fill="#666767"
+              />
+            <g id="outside-left-eye" filter="url(#filter0_d_11_4)">
+              <path
+                d="M66 87C66 99.1503 75.8497 109 88 109C100.15 109 110 99.1503 110 87C110 74.8497 100.15 65 88 65C75.8497 65 66 74.8497 66 87Z"
+                fill="#65F4D6"
+                />
+            </g>
+            <g id="outside-right-eye" filter="url(#filter1_d_11_4)">
+              <path
+                d="M166 87C166 99.1503 156.15 109 144 109C131.85 109 122 99.1503 122 87C122 74.8497 131.85 65 144 65C156.15 65 166 74.8497 166 87Z"
+                fill="#65F5D6"
+                />
+            </g>
+            <circle
+              id="inside-right-eye"
+              cx="144"
+              cy="87"
+              r="13"
+              fill="#434342"
+              />
+            <circle id="inside-left-eye" cx="88" cy="87" r="13" fill="#434342" />
+            <rect
+              id="left-heart"
+              x="79.236"
+              y="195.535"
+              width="24.5731"
+              height="24.5731"
+              transform="rotate(-45 79.236 195.535)"
+              fill="#727272"
+              />
+            <rect
+              id="right-heart"
+              x="118.236"
+              y="195.535"
+              width="24.5731"
+              height="24.5731"
+              transform="rotate(-45 118.236 195.535)"
+              fill="#4A4B4B"
+              />
+            <rect
+              id="up-heart"
+              x="99.236"
+              y="176.535"
+              width="24.5731"
+              height="24.5731"
+              transform="rotate(-45 99.236 176.535)"
+              fill="#D8D8D9"
+              />
+            <path
+              id="arm-right"
+              d="M181 152.5C184.905 175.15 187.595 190.35 191.5 213C198.5 219.5 205.5 219.5 212 210L202 150C193.383 142.468 188.78 142.993 181 152.5Z"
+              fill="#64F2D4"
+              />
+            <path
+              id="arm-left"
+              d="M51.5 152.5C47.5948 175.15 44.9052 190.35 41 213C34 219.5 27 219.5 20.5 210L30.5 150C39.117 142.468 43.72 142.993 51.5 152.5Z"
+              fill="#64F2D4"
+              />
+          </g>
+          <defs>
+            <filter
+              id="filter0_d_11_4"
+              x="62"
+              y="65"
+              width="52"
+              height="52"
+              filterUnits="userSpaceOnUse"
+              color-interpolation-filters="sRGB"
+              >
+              <feFlood flood-opacity="0" result="BackgroundImageFix" />
+              <feColorMatrix
+                in="SourceAlpha"
+                type="matrix"
+                values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                result="hardAlpha"
+                />
+              <feOffset dy="4" />
+              <feGaussianBlur stdDeviation="2" />
+              <feComposite in2="hardAlpha" operator="out" />
+              <feColorMatrix
+                type="matrix"
+                values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+                />
+              <feBlend
+                mode="normal"
+                in2="BackgroundImageFix"
+                result="effect1_dropShadow_11_4"
+                />
+              <feBlend
+                mode="normal"
+                in="SourceGraphic"
+                in2="effect1_dropShadow_11_4"
+                result="shape"
+                />
+            </filter>
+            <filter
+              id="filter1_d_11_4"
+              x="118"
+              y="65"
+              width="52"
+              height="52"
+              filterUnits="userSpaceOnUse"
+              color-interpolation-filters="sRGB"
+              >
+              <feFlood flood-opacity="0" result="BackgroundImageFix" />
+              <feColorMatrix
+                in="SourceAlpha"
+                type="matrix"
+                values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                result="hardAlpha"
+                />
+              <feOffset dy="4" />
+              <feGaussianBlur stdDeviation="2" />
+              <feComposite in2="hardAlpha" operator="out" />
+              <feColorMatrix
+                type="matrix"
+                values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+                />
+              <feBlend
+                mode="normal"
+                in2="BackgroundImageFix"
+                result="effect1_dropShadow_11_4"
+                />
+              <feBlend
+                mode="normal"
+                in="SourceGraphic"
+                in2="effect1_dropShadow_11_4"
+                result="shape"
+                />
+            </filter>
+          </defs>
+        </svg>
+      </div>
     </div>
-  </div>
+  }
 </div>

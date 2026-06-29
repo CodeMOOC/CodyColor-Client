@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import {
   FormBuilder,
@@ -21,7 +21,7 @@ import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-royale-new-match',
-  imports: [ReactiveFormsModule, TranslateModule, CommonModule, FormsModule],
+  imports: [ReactiveFormsModule, TranslateModule, FormsModule],
   standalone: true,
   templateUrl: './royale-new-match.component.html',
   styleUrl: './royale-new-match.component.scss',

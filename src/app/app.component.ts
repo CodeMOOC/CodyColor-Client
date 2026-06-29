@@ -2,7 +2,7 @@ import { Component, inject, NgZone, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { FooterComponent } from './components/shared/footer/footer.component';
 import { filter } from 'rxjs';
-import { CommonModule } from '@angular/common';
+
 
 import { Firestore } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
@@ -12,7 +12,7 @@ import { RabbitService } from './services/rabbit.service';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, FooterComponent],
+  imports: [RouterOutlet, FooterComponent],
   standalone: true,
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

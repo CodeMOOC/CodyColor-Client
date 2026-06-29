@@ -17,7 +17,7 @@ import { AuthService } from '../../../services/auth.service';
 import { SessionService } from '../../../services/session.service';
 import { VisibilityService } from '../../../services/visibility.service';
 import { LanguageService } from '../../../services/language.service';
-import { CommonModule } from '@angular/common';
+
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChatComponent } from '../../../components/chat/chat.component';
 import { Player } from '../../../models/player.model';
@@ -29,7 +29,7 @@ import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-royale-aftermatch',
-  imports: [ChatComponent, CommonModule, TranslateModule],
+  imports: [ChatComponent, TranslateModule],
   standalone: true,
   templateUrl: './royale-aftermatch.component.html',
   styleUrl: './royale-aftermatch.component.scss',

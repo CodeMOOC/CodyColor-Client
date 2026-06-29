@@ -1,13 +1,13 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { RabbitService } from '../../services/rabbit.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
+
 import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-exit-game-modal',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   standalone: true,
   templateUrl: './exit-game-modal.component.html',
   styleUrl: './exit-game-modal.component.scss',

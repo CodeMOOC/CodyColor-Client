@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, NgZone, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { interval, Subject, Subscription, takeUntil } from 'rxjs';
@@ -22,7 +22,7 @@ import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 @Component({
   selector: 'app-arcade-aftermatch',
   standalone: true,
-  imports: [ChatComponent, CommonModule, TranslateModule],
+  imports: [ChatComponent, TranslateModule],
   templateUrl: './arcade-aftermatch.component.html',
   styleUrls: ['./arcade-aftermatch.component.scss'],
 })

@@ -1,11 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { GameDataService } from '../../services/game-data.service';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-spinner',
-  imports: [TranslateModule, CommonModule],
+  imports: [TranslateModule],
   templateUrl: './spinner.component.html',
   standalone: true,
   styleUrl: './spinner.component.scss',

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
@@ -18,7 +18,7 @@ import { GameLifecycleService } from '../../../services/game-lifecycle.service';
 
 @Component({
   selector: 'app-footer',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   standalone: true,
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss',

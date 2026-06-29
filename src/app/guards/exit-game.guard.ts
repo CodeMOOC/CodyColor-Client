@@ -83,7 +83,7 @@ export class exitGameGuard implements CanDeactivate<unknown> {
   ): Observable<boolean> | boolean {
     const currentMode = currentRoute.data['gameMode'];
 
-    const navigation = this.router.getCurrentNavigation();
+    const navigation = this.router.currentNavigation();
     // Only block browser back/forward
     if (navigation?.trigger === 'popstate') {
       const dialogRef = this.dialog.open(ExitGameModalComponent, {

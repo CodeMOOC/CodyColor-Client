@@ -3,7 +3,7 @@
   id="waiting-confirm"
   ng-show="mmakingState === screens.waitingReady"
   class="page--component"
->
+  >
   <ul class="list">
     <li class="list--spaced-element">
       <div class="loading-spinner">
@@ -19,18 +19,18 @@
       </div>
     </li>
     <li class="list--spaced-element">
-      <div
-        *ngIf="timerValue !== undefined; else noTimerValue"
-        class="flashing-animation"
-      >
-        {{ messageKey | translate }} <br />
-        {{ formattedTimer }}
-      </div>
-      <ng-template #noTimerValue>
+      @if (timerValue !== undefined) {
+        <div
+          class="flashing-animation"
+          >
+          {{ messageKey | translate }} <br />
+          {{ formattedTimer }}
+        </div>
+      } @else {
         <div class="flashing-animation">
           {{ messageKey | translate }} <br />
         </div>
-      </ng-template>
+      }
     </li>
   </ul>
 </div>

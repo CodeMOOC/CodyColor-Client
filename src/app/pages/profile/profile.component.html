@@ -1,152 +1,158 @@
 <div class="h-full flex flex-col justify-between">
   <ul class="list">
     <!-- User image -->
-    <li class="list--simple-element" *ngIf="firebaseUser as user">
-      <img
-        class="profile--image"
-        [src]="user.photoURL || 'assets/img/user-avatar.png'"
-        (error)="onImageError($event)"
-        alt="User Avatar"
-      />
-    </li>
+    @if (firebaseUser; as user) {
+      <li class="list--simple-element">
+        <img
+          class="profile--image"
+          [src]="user.photoURL || 'assets/img/user-avatar.png'"
+          (error)="onImageError($event)"
+          alt="User Avatar"
+          />
+      </li>
+    }
 
     <!-- Welcome text -->
     <li class="user-info">
       <div class="profile-row">
         <h2 class="profile-text">
           {{ "WELCOME_USER" | translate }}
-          <span *ngIf="!editMode" style="color: #fff">{{
-            serverUser.nickname
-          }}</span>
+          @if (!editMode) {
+            <span style="color: #fff">{{
+              serverUser.nickname
+            }}</span>
+          }
         </h2>
 
         <!-- Edit button -->
-        <div *ngIf="!editMode">
-          <i
-            class="material-symbols-outlined"
-            title="Edit nickname"
-            (click)="enterEditMode()"
-            >{{ "edit" }}</i
+        @if (!editMode) {
+          <div>
+            <i
+              class="material-symbols-outlined"
+              title="Edit nickname"
+              (click)="enterEditMode()"
+              >{{ "edit" }}</i
+              >
+            </div>
+          }
+
+          <!-- Edit mode -->
+          @if (editMode) {
+            <div class="nickname-edit-row">
+              <input
+                type="text"
+                [(ngModel)]="editableNickname"
+                maxlength="22"
+                placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
+                class="standard-input"
+                required
+                autofocus
+                />
+              <!-- Confirm -->
+              <i
+                class="material-symbols-outlined icon-confirm"
+                title="Save nickname"
+                (click)="saveNickname()"
+                >check</i
+                >
+                <!-- Cancel -->
+                <i
+                  class="material-symbols-outlined icon-cancel"
+                  title="Cancel"
+                  (click)="cancelEdit()"
+                  >close</i
+                  >
+                </div>
+              }
+            </div>
+
+            <div class="profile-row">
+              <p class="profile-text">
+                {{ "EMAIL_USER" | translate
+                }}<span style="color: #fff">{{
+                firebaseUser && firebaseUser.email
+              }}</span>
+            </p>
+          </div>
+        </li>
+
+        <!-- Stats -->
+        <li class="list--spaced-element">
+          @if (serverUser) {
+            <div class="stats">
+              <span>{{ "USER_STATS" | translate }}</span>
+              <p class="stats--line">
+                {{ "TOTAL_POINTS" | translate }}
+                <span class="stats--player-text">{{ serverUser.totalPoints }}</span>
+              </p>
+              <p class="stats--line">
+                {{ "TOTAL_WINS" | translate }}
+                <span class="stats--player-text">{{ serverUser.wonMatches }}</span>
+              </p>
+              <p class="stats--line">
+                {{ "AVG_MATCH" | translate }}
+                <span class="stats--player-text">{{ serverUser.avgPoints }}</span>
+              </p>
+              <p class="stats--line">
+                {{ "TOT_MATCHES" | translate }}
+                <span class="stats--player-text">{{ serverUser.totalMatches }}</span>
+              </p>
+              <!-- Best match shown only if present -->
+              @if (serverUser.bestMatch) {
+                <p class="stats--line">
+                  {{ "BEST_MATCH" | translate }}
+                  <span class="stats--player-text">
+                    {{
+                    "BEST_MATCH_DESC"
+                    | translate
+                    : {
+                    points: serverUser.bestMatch.points,
+                    pathLength: serverUser.bestMatch.pathLength,
+                    time: serverUser.bestMatch.time | number : "1.0-2"
+                  }
+                  }}
+                </span>
+              </p>
+            }
+          </div>
+        }
+      </li>
+    </ul>
+
+    <div class="flex justify-start w-full mb-[25px]">
+      <div class="flex flex-col items-center">
+        <button
+          class="navigation--button flex justify-between items-center w-full gap-6"
+          type="button"
+          (click)="logout()"
           >
-        </div>
-
-        <!-- Edit mode -->
-        <div *ngIf="editMode" class="nickname-edit-row">
-          <input
-            type="text"
-            [(ngModel)]="editableNickname"
-            maxlength="22"
-            placeholder="{{ 'NICKNAME_EXAMPLE' | translate }}"
-            class="standard-input"
-            required
-            autofocus
-          />
-
-          <!-- Confirm -->
-          <i
-            class="material-symbols-outlined icon-confirm"
-            title="Save nickname"
-            (click)="saveNickname()"
-            >check</i
-          >
-
-          <!-- Cancel -->
-          <i
-            class="material-symbols-outlined icon-cancel"
-            title="Cancel"
-            (click)="cancelEdit()"
-            >close</i
-          >
-        </div>
-      </div>
-
-      <div class="profile-row">
-        <p class="profile-text">
-          {{ "EMAIL_USER" | translate
-          }}<span style="color: #fff">{{
-            firebaseUser && firebaseUser.email
-          }}</span>
-        </p>
-      </div>
-    </li>
-
-    <!-- Stats -->
-    <li class="list--spaced-element">
-      <div class="stats" *ngIf="serverUser">
-        <span>{{ "USER_STATS" | translate }}</span>
-
-        <p class="stats--line">
-          {{ "TOTAL_POINTS" | translate }}
-          <span class="stats--player-text">{{ serverUser.totalPoints }}</span>
-        </p>
-
-        <p class="stats--line">
-          {{ "TOTAL_WINS" | translate }}
-          <span class="stats--player-text">{{ serverUser.wonMatches }}</span>
-        </p>
-
-        <p class="stats--line">
-          {{ "AVG_MATCH" | translate }}
-          <span class="stats--player-text">{{ serverUser.avgPoints }}</span>
-        </p>
-
-        <p class="stats--line">
-          {{ "TOT_MATCHES" | translate }}
-          <span class="stats--player-text">{{ serverUser.totalMatches }}</span>
-        </p>
-
-        <!-- Best match shown only if present -->
-        <p class="stats--line" *ngIf="serverUser.bestMatch">
-          {{ "BEST_MATCH" | translate }}
-          <span class="stats--player-text">
-            {{
-              "BEST_MATCH_DESC"
-                | translate
-                  : {
-                      points: serverUser.bestMatch.points,
-                      pathLength: serverUser.bestMatch.pathLength,
-                      time: serverUser.bestMatch.time | number : "1.0-2"
-                    }
-            }}
+          <span>{{ "LOGOUT" | translate }}</span>
+          <span
+            class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
+            >
+            keyboard_double_arrow_right
           </span>
-        </p>
+        </button>
+
+        <button
+          class="navigation--button flex justify-between items-center w-full gap-6"
+          type="button"
+          (click)="deleteAccount()"
+          >
+          <span>{{ "DELETE_ACCOUNT" | translate }}</span>
+          <span
+            class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
+            >
+            keyboard_double_arrow_right
+          </span>
+        </button>
       </div>
-    </li>
-  </ul>
-
-  <div class="flex justify-start w-full mb-[25px]">
-    <div class="flex flex-col items-center">
-      <button
-        class="navigation--button flex justify-between items-center w-full gap-6"
-        type="button"
-        (click)="logout()"
-      >
-        <span>{{ "LOGOUT" | translate }}</span>
-        <span
-          class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
-        >
-          keyboard_double_arrow_right
-        </span>
-      </button>
-
-      <button
-        class="navigation--button flex justify-between items-center w-full gap-6"
-        type="button"
-        (click)="deleteAccount()"
-      >
-        <span>{{ "DELETE_ACCOUNT" | translate }}</span>
-        <span
-          class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
-        >
-          keyboard_double_arrow_right
-        </span>
-      </button>
     </div>
+    @if (multiOptionsModal) {
+      <app-multi-options-modal
+        [text]="multiOptionsText"
+        (ok)="multiOptionsOk()"
+        (cancel)="multiOptionsCancel()"
+        />
+    }
   </div>
-  <app-multi-options-modal
-    *ngIf="multiOptionsModal"
-    [text]="multiOptionsText"
-    (ok)="multiOptionsOk()"
-    (cancel)="multiOptionsCancel()"
-  />
-</div>

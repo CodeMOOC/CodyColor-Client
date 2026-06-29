@@ -12,7 +12,7 @@ import { AudioService } from '../../services/audio.service';
   styleUrl: './splash.component.scss',
 })
 export class SplashComponent implements OnInit {
-  clientVersion = '3.3.4';
+  clientVersion = '4.0.0';
   basePlaying = false;
   currentYear = new Date().getFullYear();
 

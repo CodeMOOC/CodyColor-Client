@@ -1,6 +1,7 @@
-<div *ngIf="executeAnimation; else placedRoby">
-  <div
-    class="roby"
+@if (executeAnimation) {
+  <div>
+    <div
+      class="roby"
     [@move]="{
       value: state,
       params: {
@@ -11,22 +12,24 @@
         turnDuration: turnDuration
       }
     }"
-  >
+    >
     <img
       [src]="'assets/img/' + currentImage + '.png'"
       alt="Roby"
       class="roby-image"
-    />
+      />
   </div>
 </div>
-<ng-template #placedRoby>
-  <div *ngIf="!isBot">
-    <div class="roby placed-roby" [ngStyle]="getPlacedRobyStyles()">
-      <img
-        [src]="'assets/img/' + currentImage + '.png'"
-        alt="Roby"
-        class="roby-image"
-      />
+} @else {
+  @if (!isBot) {
+    <div>
+      <div class="roby placed-roby" [ngStyle]="getPlacedRobyStyles()">
+        <img
+          [src]="'assets/img/' + currentImage + '.png'"
+          alt="Roby"
+          class="roby-image"
+          />
+      </div>
     </div>
-  </div>
-</ng-template>
+  }
+}

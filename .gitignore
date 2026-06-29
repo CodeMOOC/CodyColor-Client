@@ -1,7 +1,5 @@
 \.vscode
 \.idea
-src/settings.js
-build/settings.js
 node_modules
 src/environments/environment.prod.ts
 src/environments/environment.ts

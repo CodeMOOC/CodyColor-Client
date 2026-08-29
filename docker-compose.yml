@@ -1,4 +1,4 @@
-# Base Docker Compose configuration
+# Docker Compose configuration for deployment
 
 networks:
   web:
@@ -12,3 +12,11 @@ services:
     expose:
       - "80"
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.codycolor-client.rule=Host(`codycolor.codyroby.it`)"
+      - "traefik.http.routers.codycolor-client.entrypoints=web,websecure"
+      - "traefik.http.routers.codycolor-client.middlewares=codycolor-client-redirectscheme"
+      - "traefik.http.middlewares.codycolor-client-redirectscheme.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.codycolor-client-redirectscheme.redirectscheme.permanent=true"

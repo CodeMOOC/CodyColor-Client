@@ -1,0 +1,43 @@
+version: '3'
+
+vars:
+  DC: docker compose -f docker-compose.yml
+
+tasks:
+  cmd:
+    desc: Show the docker compose command
+    cmds:
+      - echo 'Docker compose command:'
+      - echo '{{.DC}}'
+
+  up:
+    desc: Start the CodyColor client service
+    cmds:
+      - '{{.DC}} up -d'
+      - '{{.DC}} ps'
+
+  rebuild:
+    desc: Rebuild and restart the CodyColor client service
+    cmds:
+      - '{{.DC}} build server'
+      - '{{.DC}} up -d --force-recreate'
+
+  ps:
+    desc: Show running containers
+    cmds:
+      - '{{.DC}} ps'
+
+  rs:
+    desc: Restart all services
+    cmds:
+      - '{{.DC}} restart'
+
+  stop:
+    desc: Stop all services
+    cmds:
+      - '{{.DC}} stop'
+
+  rm:
+    desc: Remove all containers (force, stop)
+    cmds:
+      - '{{.DC}} rm -fs'

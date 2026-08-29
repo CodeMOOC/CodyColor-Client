@@ -6,11 +6,12 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci --omit=optional --no-audit --no-fund
+RUN npm install -g npm@latest
+RUN npm ci --no-audit --no-fund
 
 # Copy source code and build
 COPY . .
-RUN npm run build --configuration=production
+RUN npm run build -- --configuration=production
 
 
 # === Stage 2: Nginx

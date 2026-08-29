@@ -56,8 +56,7 @@
       "@angular/common": "$@angular/common",
       "@angular/core": "$@angular/core",
       "@angular/platform-browser": "$@angular/platform-browser",
-      "@angular/platform-browser-dynamic": "$@angular/platform-browser-dynamic",
-      "@angular/platform-server": "$@angular/platform-server"
+      "@angular/platform-browser-dynamic": "$@angular/platform-browser-dynamic"
     }
   }
 }

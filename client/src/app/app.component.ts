@@ -72,7 +72,12 @@ export class AppComponent implements OnInit {
       browserLang && ['it', 'en'].includes(browserLang) ? browserLang : 'it';
 
     this.translate.use(langToUse);
-    this.rabbit.connect();
+
+    // RabbitService.connect() is already called from the RabbitService
+    // constructor (triggered on first injection, which happens before
+    // ngOnInit runs). Do not call connect() again here — the duplicate
+    // call caused two STOMP Client instances to race and threw
+    // "TypeError: There is no underlying STOMP connection".
 
     // If the page was reloaded, navigate to slashash to avoid issues with the app state
     const navigationEntry = performance.getEntriesByType(

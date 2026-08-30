@@ -20,6 +20,7 @@ export class RabbitService {
   private client!: Client;
   private connectedToBroker = false;
   private connectedToServer = false;
+  private isConnecting = false;
   private pageCallbacks: any = {};
   private heartbeatTimer: any;
   private subscriptions: Record<string, StompSubscription> = {};
@@ -104,6 +105,17 @@ export class RabbitService {
   }
 
   connect(): void {
+    // Idempotent: if already connected or connecting, do not create a new
+    // STOMP client.  The constructor and AppComponent both call connect(),
+    // so without this guard two Client instances race and the first one's
+    // onConnect fires on a this.client that has been replaced by the
+    // second (not-yet-connected) one — producing
+    // "TypeError: There is no underlying STOMP connection".
+    if (this.isConnecting || this.connectedToBroker) {
+      return;
+    }
+    this.isConnecting = true;
+
     this.client = new Client({
       brokerURL: environment.rabbit.socketUrl,
       connectHeaders: {
@@ -186,6 +198,7 @@ export class RabbitService {
   }
 
   private onConnected(): void {
+    this.isConnecting = false;
     this.setBrokerConnected(true);
     this.connectedToBroker = true;
     const serverDirectEndpoint = `${
@@ -210,6 +223,7 @@ export class RabbitService {
   }
 
   private onConnectionLost(): void {
+    this.isConnecting = false;
     this.connectedToBroker = false;
     this.connectedToServer = false;
     this.pageCallbacks?.onConnectionLost?.();

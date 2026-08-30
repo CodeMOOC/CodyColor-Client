@@ -30,11 +30,19 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
+      # Main router — codycolor.codyroby.it
       - "traefik.http.routers.codycolor-client.rule=Host(`codycolor.codyroby.it`)"
       - "traefik.http.routers.codycolor-client.entrypoints=web,websecure"
       - "traefik.http.routers.codycolor-client.middlewares=codycolor-client-redirectscheme"
       - "traefik.http.middlewares.codycolor-client-redirectscheme.redirectscheme.scheme=https"
       - "traefik.http.middlewares.codycolor-client-redirectscheme.redirectscheme.permanent=true"
+      # Legacy domain redirect — codycolor.codemooc.net → codycolor.codyroby.it
+      - "traefik.http.routers.codycolor-redirect.rule=Host(`codycolor.codemooc.net`)"
+      - "traefik.http.routers.codycolor-redirect.entrypoints=web,websecure"
+      - "traefik.http.routers.codycolor-redirect.middlewares=codycolor-legacy-redirect"
+      - "traefik.http.middlewares.codycolor-legacy-redirect.redirectregex.regex=^https?://codycolor\\.codemooc\\.net/(.*)"
+      - "traefik.http.middlewares.codycolor-legacy-redirect.redirectregex.replacement=https://codycolor.codyroby.it/$${1}"
+      - "traefik.http.middlewares.codycolor-legacy-redirect.redirectregex.permanent=true"
 
   rabbit:
     image: beevelop/rabbitmq-stomp

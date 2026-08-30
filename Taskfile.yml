@@ -11,15 +11,15 @@ tasks:
       - echo '{{.DC}}'
 
   up:
-    desc: Start the CodyColor client service
+    desc: Start the CodyColor services
     cmds:
-      - '{{.DC}} up -d'
+      - '{{.DC}} up -d website server'
       - '{{.DC}} ps'
 
   rebuild:
-    desc: Rebuild and restart the CodyColor client service
+    desc: Rebuild and restart the CodyColor client and server
     cmds:
-      - '{{.DC}} build server'
+      - '{{.DC}} build website server'
       - '{{.DC}} up -d --force-recreate'
 
   ps:

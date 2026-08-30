@@ -95,6 +95,21 @@ services:
     logging:
       driver: "none"
     restart: unless-stopped
+    mem_limit: 1024m
+    memswap_limit: 1024m
+    mem_swappiness: 0
+    command:
+    - --innodb-buffer-pool-size=512M
+    - --innodb-log-file-size=64M
+    - --innodb-log-buffer-size=8M
+    - --key-buffer-size=16M
+    - --max-connections=50
+    - --table-open-cache=200
+    - --thread-cache-size=8
+    - --query-cache-size=32M
+    - --query-cache-limit=2M
+    - --tmp-table-size=32M
+    - --max-heap-table-size=32M
 
   database-client:
     build: ./database-operator

@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
@@ -46,20 +45,26 @@ export class FooterComponent implements OnInit {
     private translate: TranslateService
   ) {}
 
+  private updateExitButton(url: string): void {
+    this.showExitButton = url !== '/home';
+  }
+
   ngOnInit(): void {
     this.userLogin();
-    // get current lang
+
     this.language =
       this.translate.currentLang || this.translate.getDefaultLang() || 'it';
 
-    // react to language changes
     this.translate.onLangChange.subscribe((event) => {
       this.language = event.lang;
     });
+
+    this.updateExitButton(this.router.url);
+
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((event: any) => {
-        this.showExitButton = event.urlAfterRedirects !== '/home';
+      .subscribe((event: NavigationEnd) => {
+        this.updateExitButton(event.urlAfterRedirects);
       });
   }
 

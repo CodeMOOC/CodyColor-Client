@@ -1,0 +1,34 @@
+.match-scoreboard {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 20px;
+}
+
+.match-player {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.match-player--nickname {
+  margin-top: 4px;
+}
+
+.match-player--timer {
+  margin-top: 8px;
+}
+
+@media screen and (max-width: 780px) {
+  .match-scoreboard {
+    gap: 10px;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .big-text {
+    font-size: 50px;
+    font-family: "Baloo Chettan", cursive;
+    margin: -20px;
+  }
+}

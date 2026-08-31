@@ -1,8 +1,8 @@
 <div id="splash" class="page">
-  <div class="page--wrapper" (click)="goToHome()">
-    <div class="page--body">
+  <div (click)="goToHome()">
+    <div class="page--body flex flex-col items-center">
       <img
-        class="big-image floating-up-animation"
+        class="floating-up-animation w-[100px] h-[100px] md:w-[150px] md:h-[150px] text-center"
         src="assets/img/logo.png"
         alt="game-logo"
       />
@@ -14,7 +14,6 @@
         {{ "PRESS_TO_CONTINUE" | translate }}
       </div>
     </div>
-    <div class="page--push"></div>
   </div>
 
   <div class="page--footer">

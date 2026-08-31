@@ -1,6 +1,7 @@
 .small-grid {
   position: relative;
   display: grid;
+  gap: 5px;
   justify-items: center;
   grid-template-columns: 1fr repeat(5, 50px) 1fr;
   grid-template-rows: 1fr repeat(5, 50px) 1fr;

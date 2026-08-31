@@ -4,9 +4,9 @@
  * ------------------------------------------------------------------------- */
 
 .chat {
-  margin: 20px auto 0 auto;
-  overflow: auto;
+  margin: 20px auto 0;
   display: flex;
+  gap: 20px;
 }
 
 #aftermatch .chat {
@@ -15,17 +15,15 @@
 
 .chat--hints-container,
 .chat--bubbles-container {
-  width: 100%;
+  flex: 1 1 0;
+  min-width: 0;
   height: 40vh;
   margin: 10px 0;
   box-sizing: border-box;
-  border-style: solid;
-  border-width: 1px;
+  border: 1px solid white;
   border-radius: 8px;
-  border-color: White;
-  display: inline-block;
   background-color: rgba(255, 255, 255, 0.11);
-  overflow: scroll;
+  overflow: auto;
 }
 
 @media only screen and (min-width: 716px) {
@@ -47,6 +45,7 @@
 .chat--hints-sub-container {
   width: 100%;
   box-sizing: border-box;
+  color: black;
 }
 
 button.chat--hint {
@@ -66,33 +65,32 @@ button.chat--hint {
 }
 
 .chat--bubble-row {
-  overflow: auto;
-  margin: 10px auto 0 auto;
+  display: flex;
+  width: 100%;
+  margin-top: 10px;
+  box-sizing: border-box;
 }
 
 .chat--bubble-player,
 .chat--bubble-enemy {
-  display: inline-block;
-  max-width: 100%;
+  display: block;
+  max-width: calc(100% - 40px);
   box-sizing: border-box;
-  margin: 0 10px;
   border-radius: 8px;
   color: white;
   padding: 10px 20px;
   position: relative;
 }
 
-.chat--bubble-sender {
-  box-sizing: border-box;
-  font-size: small;
-  text-align: inherit;
-}
-
 .chat--bubble-player {
-  float: left;
-  text-align: left;
   margin-left: 20px;
   background-color: #48af9b;
+}
+
+.chat--bubble-enemy {
+  margin-left: auto;
+  margin-right: 20px;
+  background-color: #ba793a;
 }
 
 .chat--bubble-enemy {
@@ -139,5 +137,12 @@ button.chat--hint {
 @media screen and (max-width: 716px) {
   .chat {
     flex-direction: column;
+  }
+
+  .chat--hints-container,
+  .chat--bubbles-container {
+    width: 100%;
+    flex: none;
+    margin: 10px 0;
   }
 }

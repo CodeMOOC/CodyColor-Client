@@ -1,42 +1,32 @@
-<div class="page--footer flex justify-between">
-  <div class="page--footer-column-left ellipsize flex items-center">
+<div class="flex justify-between mx-6 my-2 items-center">
+  <div class="ellipsize flex justify-center items-center gap-4">
     @if (showExitButton) {
-      <button
-        class="page--footer-button material-symbols-outlined"
-        (click)="openExitGameDialog()"
-        >
-        close
-      </button>
+    <button class="material-symbols-outlined" (click)="openExitGameDialog()">
+      home
+    </button>
     }
 
-    <button class="page--footer-button" (click)="toggleBase()">
-      <span class="page--footer-icons material-symbols-outlined">
-        {{ basePlaying ? "volume_up" : "volume_off" }}
-      </span>
+    <button class="material-symbols-outlined" (click)="toggleBase()">
+      {{ basePlaying ? "volume_up" : "volume_off" }}
     </button>
-    <button
-      class="page--footer-button material-symbols-outlined"
-      (click)="openLanguageModal()"
-      >
+    <button class="material-symbols-outlined" (click)="openLanguageModal()">
       <span class="page--footer-icons">
         <img
           [src]="'assets/img/flags/' + language + '.svg'"
           alt=""
           width="30"
           height="24"
-          />
+        />
       </span>
-
     </button>
   </div>
 
-  <div class="page--footer-column-right ellipsize">
-    <button class="page--footer-button" (click)="navigateToLogin()">
+  <div class="ellipsize">
+    <button class="" (click)="navigateToLogin()">
       <span class="page--footer-icons material-symbols-outlined">
         account_circle
       </span>
       <span class="ellipsize">
-
         {{ userNickname }}
       </span>
     </button>

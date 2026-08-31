@@ -1,9 +1,9 @@
-<div class="h-screen page flex flex-col">
-  <div class="flex-grow overflow-y-auto">
+<div class="w-full flex h-dvh flex-col">
+  <div class="flex-1 min-h-0 overflow-y-auto">
     <router-outlet></router-outlet>
   </div>
 
   @if (showFooter) {
-    <app-footer class="flex-shrink-0" />
+  <app-footer class="shrink-0" />
   }
 </div>

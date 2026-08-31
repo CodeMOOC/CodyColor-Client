@@ -1,6 +1,6 @@
-<div id="arcade-aftermatch" class="page--container">
-  <div class="page--wrapper">
-    <div class="page--body">
+<div id="arcade-aftermatch" class="app-page">
+  <div class="app-page-body">
+    <div class="app-page-text">
       <ul class="list">
         <!-- Player-Enemy total points -->
         <div class="points-row">
@@ -17,139 +17,118 @@
             </div>
           </div>
         </div>
+
+        <!-- Match winner -->
         <li class="list--spaced-element">
-          <!-- <div class="centered-columns">
-          <div class="centered-columns--pair">
-            <div class="centered-columns--column"></div>
-            <div class="centered-columns--column">
-              <div class="big-text ellipsize">{{ enemyGlobal.points }}</div>
-            </div>
-          </div>
-
-          <div class="centered-columns--pair">
-            <div class="centered-columns--column ellipsize">
-              {{ enemy.nickname }}
-            </div>
-          </div>
-        </div> -->
-      </li>
-
-      <!-- Match winner -->
-      <li class="list--spaced-element">
-        @if (!draw) {
+          @if (!draw) {
           <h2 class="">
             {{
-            "WINNER" | translate : { winner: winner, matchCount: matchCount }
+              "WINNER" | translate : { winner: winner, matchCount: matchCount }
             }}
           </h2>
-        }
-        @if (draw) {
+          } @if (draw) {
           <h2>
             {{ "DRAW" | translate }}
           </h2>
-        }
-      </li>
+          }
+        </li>
 
-      <!-- Match stats -->
-      <li class="list--simple-element">
-        <div class="stats">
-          <span>{{ "STATS_TITLE" | translate }}</span>
-          <p class="stats--line">
-            <i class="material-symbols-outlined">footprint</i>
-            {{ "STATS_MOVES" | translate }}
-            <span class="stats--player-text">{{ userMatch.pathLength }}</span>
-            -
-            <span class="stats--enemy-text">{{ enemyMatch.pathLength }}</span>
-          </p>
-          <p class="stats--line">
-            <i class="material-symbols-outlined">schedule</i>
-            {{ "STATS_TIME" | translate }}
-            <span class="stats--player-text">{{
-              userMatch?.time >= 0 ? timeFormatter(userMatch?.time) : "00:00"
-            }}</span>
-            -
-            <span class="stats--enemy-text">{{
-              userMatch?.time >= 0 ? timeFormatter(enemyMatch?.time) : "00:00"
-            }}</span>
-          </p>
-          <p class="stats--line">
-            <i class="material-symbols-outlined">smart_toy</i>
-            {{ "STATS_POINTS" | translate }}
-            <span class="stats--player-text">{{ userMatch.points }}</span> -
-            <span class="stats--enemy-text">{{ enemyMatch.points }}</span>
-          </p>
-        </div>
-      </li>
+        <!-- Match stats -->
+        <li class="list--simple-element">
+          <div class="stats">
+            <span>{{ "STATS_TITLE" | translate }}</span>
+            <p class="stats--line">
+              <i class="material-symbols-outlined">footprint</i>
+              {{ "STATS_MOVES" | translate }}
+              <span class="stats--player-text">{{ userMatch.pathLength }}</span>
+              -
+              <span class="stats--enemy-text">{{ enemyMatch.pathLength }}</span>
+            </p>
+            <p class="stats--line">
+              <i class="material-symbols-outlined">schedule</i>
+              {{ "STATS_TIME" | translate }}
+              <span class="stats--player-text">{{
+                userMatch?.time >= 0 ? timeFormatter(userMatch?.time) : "00:00"
+              }}</span>
+              -
+              <span class="stats--enemy-text">{{
+                userMatch?.time >= 0 ? timeFormatter(enemyMatch?.time) : "00:00"
+              }}</span>
+            </p>
+            <p class="stats--line">
+              <i class="material-symbols-outlined">smart_toy</i>
+              {{ "STATS_POINTS" | translate }}
+              <span class="stats--player-text">{{ userMatch.points }}</span> -
+              <span class="stats--enemy-text">{{ enemyMatch.points }}</span>
+            </p>
+          </div>
+        </li>
 
-      <!-- Share button -->
-      <li class="list--simple-element">
-        <button
-          class="navigation--button flashing-animation"
-          (click)="shareResult()"
+        <!-- Share button -->
+        <li class="list--simple-element">
+          <button
+            class="navigation--button flashing-animation"
+            (click)="shareResult()"
           >
-          {{ "SHARE" | translate }}
-          <i
-            class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
-            >keyboard_double_arrow_right</i
+            {{ "SHARE" | translate }}
+            <i
+              class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
+              >keyboard_double_arrow_right</i
             >
           </button>
           @if (shareCopied) {
-            <div class="copyable--copy-text">
-              <i class="material-symbols-outlined">content_copy</i>
-              {{ "COPIED" | translate }}
-            </div>
+          <div class="copyable--copy-text">
+            <i class="material-symbols-outlined">content_copy</i>
+            {{ "COPIED" | translate }}
+          </div>
           }
         </li>
 
         <!-- New match options -->
         <li id="aftermatch-options" class="list--spaced-element">
           @if (!newMatchClicked) {
-            <div>
-              <button
-                class="navigation--button flashing-animation"
-                (click)="newMatch()"
-                >
-                {{ "PLAY_AGAIN" | translate }}
-                <i
-                  class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
-                  >keyboard_double_arrow_right</i
-                  >
-                </button>
-              </div>
-            }
-            <div class="action-secondary">
-              {{
+          <div>
+            <button
+              class="navigation--button flashing-animation"
+              (click)="newMatch()"
+            >
+              {{ "PLAY_AGAIN" | translate }}
+              <i
+                class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
+                >keyboard_double_arrow_right</i
+              >
+            </button>
+          </div>
+          }
+          <div class="action-secondary">
+            {{
               "MAT_START_COUNTDOWN"
-              | translate : { countdown: timeFormatter(newMatchTimerValue) }
-              }}
+                | translate : { countdown: timeFormatter(newMatchTimerValue) }
+            }}
+          </div>
+
+          <!-- Status area (reserved space) -->
+          <div class="action-status">
+            @if (enemyRequestNewMatch) {
+            <div class="flashing-animation">
+              {{ "ENEMY_REQUEST_NM" | translate }}
             </div>
-
-            <!-- Status area (reserved space) -->
-            <div class="action-status">
-              @if (enemyRequestNewMatch) {
-                <div class="flashing-animation">
-                  {{ "ENEMY_REQUEST_NM" | translate }}
-                </div>
-              }
-
-              @if (!enemyRequestNewMatch && newMatchClicked) {
-                <div
-                  class="flashing-animation"
-                  >
-                  {{ "ENEMY_WAIT" | translate }}
-                </div>
-              }
+            } @if (!enemyRequestNewMatch && newMatchClicked) {
+            <div class="flashing-animation">
+              {{ "ENEMY_WAIT" | translate }}
             </div>
-          </li>
+            }
+          </div>
+        </li>
 
-          <!-- Chat module -->
-          <app-chat
-            [playerId]="user.playerId"
-            [chatBubbles]="chatBubbles"
-            [chatHints]="chatHints"
-            (messageSent)="handleMessageSend($event)"
-            />
-        </ul>
-      </div>
+        <!-- Chat module -->
+        <app-chat
+          [playerId]="user.playerId"
+          [chatBubbles]="chatBubbles"
+          [chatHints]="chatHints"
+          (messageSent)="handleMessageSend($event)"
+        />
+      </ul>
     </div>
   </div>
+</div>

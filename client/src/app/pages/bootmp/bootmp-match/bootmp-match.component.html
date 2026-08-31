@@ -1,129 +1,117 @@
-<div id="bootmp-match" class="page">
-  <div class="page--wrapper">
-    <div class="page--body">
+<div id="bootmp-match" class="app-page">
+  <div class="app-page-body">
+    <div class="app-page-text">
       <!-- countdown component -->
       @if (countdownInProgress) {
-        <app-countdown-cody
-          (startMatchTimers)="startMatchTimers()"
-          />
+      <app-countdown-cody (startMatchTimers)="startMatchTimers()" />
       }
 
       <!-- match component -->
       @if (!countdownInProgress) {
-        <div
-          id="match-in-progress"
-          class="page--component"
-          >
-          <div>
-            <!-- Top centered columns with player-enemy data -->
-            @if (general.botSetting !== 0) {
-              <div class="centered-columns">
-                <div class="centered-columns--pair">
-                  <div class="centered-columns--column">
-                    <div class="big-text ellipsize">{{ userPoints }}</div>
-                  </div>
-                  <div class="centered-columns--column">
-                    <div class="big-text ellipsize">{{ enemyPoints }}</div>
-                  </div>
-                </div>
-                <div class="centered-columns--pair">
-                  <div class="centered-columns--column ellipsize">
-                    {{ user.nickname }}
-                  </div>
-                  <div class="centered-columns--column ellipsize">
-                    {{ enemy.nickname }}
-                  </div>
-                </div>
-                <div class="centered-columns--pair">
-                  <div
-                    class="centered-columns--column ellipsize"
-                    [ngClass]="userTimerAnimation"
-                    >
-                    <span class="material-symbols-outlined">schedule</span>
-                    {{ timerFormatter(userTimerValue) }}
-                  </div>
-                  <div
-                    class="centered-columns--column ellipsize"
-                    [ngClass]="enemyTimerAnimation"
-                    >
-                    <span class="material-symbols-outlined">schedule</span>
-                    {{ timerFormatter(enemyTimerValue) }}
-                  </div>
-                </div>
+      <div id="match-in-progress" class="page--component">
+        <div>
+          <!-- Top centered columns with player-enemy data -->
+          @if (general.botSetting !== 0) {
+          <div class="centered-columns">
+            <div class="centered-columns--pair">
+              <div class="centered-columns--column">
+                <div class="big-text ellipsize">{{ userPoints }}</div>
               </div>
-            }
-            <!-- Top player-only data -->
-            @if (general.botSetting === 0) {
-              <div class="two-columns">
-                <div
-                  class="two-columns--column clock ellipsize"
-                  [ngClass]="userTimerAnimation"
-                  >
-                  <span class="material-symbols-outlined">schedule</span>
-                  {{ timerFormatter(userTimerValue) }}
-                </div>
-                <div class="two-columns--column">
-                  <div class="big-text ellipsize">{{ userPoints }}</div>
-                  <div class="ellipsize">{{ user.nickname }}</div>
-                </div>
+              <div class="centered-columns--column">
+                <div class="big-text ellipsize">{{ enemyPoints }}</div>
               </div>
-            }
-            <!-- Playground module -->
-            <!-- Small grid -->
-            <app-match-grid
-              [grid]="grid"
-              [tilesCss]="tilesCss"
-              [executeAnimation]="executeAnimation"
-              [playerPath]="playerPath"
-              [enemyPaths]="enemyPath ? [enemyPath] : []"
-              [botSetting]="botSetting"
-              [isBot]="true"
-              [Side]="Side"
-              [endRoute]="'/bootmp-aftermatch'"
-              (tileDropped)="onTileDropped($event.side, $event.distance)"
-              (dragStarted)="onDragStarted()"
-              (dragEnded)="onDragEnded()"
-            ></app-match-grid>
-            <!-- Time display -->
-            @if (match.positioned && match.time > 0) {
+            </div>
+            <div class="centered-columns--pair">
+              <div class="centered-columns--column ellipsize">
+                {{ user.nickname }}
+              </div>
+              <div class="centered-columns--column ellipsize">
+                {{ enemy.nickname }}
+              </div>
+            </div>
+            <div class="centered-columns--pair">
               <div
-                class="centered-container"
-                >
+                class="centered-columns--column ellipsize"
+                [ngClass]="userTimerAnimation"
+              >
                 <span class="material-symbols-outlined">schedule</span>
-                {{
-                "TIME_PLAYER" | translate : { time: timerFormatter(match.time) }
-                }}
+                {{ timerFormatter(userTimerValue) }}
               </div>
-            }
-            @if (match.positioned && match.time === 0) {
               <div
-                class="centered-container"
-                >
+                class="centered-columns--column ellipsize"
+                [ngClass]="enemyTimerAnimation"
+              >
                 <span class="material-symbols-outlined">schedule</span>
-                {{ "TIME_OUT" | translate }}
+                {{ timerFormatter(enemyTimerValue) }}
               </div>
-            }
-            <!-- Skip button -->
-            <!-- <div class="centered-container" *ngIf="startAnimation && !askedForSkip"> -->
-            @if (isAnimationReady) {
-              <div class="centered-container">
-                <button
-                  class="navigation--button flashing-animation"
-                  (click)="skip()"
-                  >
-                  {{ "SKIP" | translate }}
-                  <span
-                    class="material-symbols-outlined inline-block animate-slide-left icon-lg"
-                    >{{ "keyboard_double_arrow_right" }}</span
-                    >
-                  </button>
-                </div>
-              }
             </div>
           </div>
-        }
-
-        <div class="page--push"></div>
+          }
+          <!-- Top player-only data -->
+          @if (general.botSetting === 0) {
+          <div class="two-columns">
+            <div
+              class="two-columns--column clock ellipsize"
+              [ngClass]="userTimerAnimation"
+            >
+              <span class="material-symbols-outlined">schedule</span>
+              {{ timerFormatter(userTimerValue) }}
+            </div>
+            <div class="two-columns--column">
+              <div class="big-text ellipsize">{{ userPoints }}</div>
+              <div class="ellipsize">{{ user.nickname }}</div>
+            </div>
+          </div>
+          }
+          <!-- Playground module -->
+          <!-- Small grid -->
+          <app-match-grid
+            [grid]="grid"
+            [tilesCss]="tilesCss"
+            [executeAnimation]="executeAnimation"
+            [playerPath]="playerPath"
+            [enemyPaths]="enemyPath ? [enemyPath] : []"
+            [botSetting]="botSetting"
+            [isBot]="true"
+            [Side]="Side"
+            [endRoute]="'/bootmp-aftermatch'"
+            (tileDropped)="onTileDropped($event.side, $event.distance)"
+            (dragStarted)="onDragStarted()"
+            (dragEnded)="onDragEnded()"
+          ></app-match-grid>
+          <!-- Time display -->
+          @if (match.positioned && match.time > 0) {
+          <div class="centered-container">
+            <span class="material-symbols-outlined">schedule</span>
+            {{
+              "TIME_PLAYER" | translate : { time: timerFormatter(match.time) }
+            }}
+          </div>
+          } @if (match.positioned && match.time === 0) {
+          <div class="centered-container">
+            <span class="material-symbols-outlined">schedule</span>
+            {{ "TIME_OUT" | translate }}
+          </div>
+          }
+          <!-- Skip button -->
+          <!-- <div class="centered-container" *ngIf="startAnimation && !askedForSkip"> -->
+          @if (isAnimationReady) {
+          <div class="centered-container">
+            <button
+              class="navigation--button flashing-animation"
+              (click)="skip()"
+            >
+              {{ "SKIP" | translate }}
+              <span
+                class="material-symbols-outlined inline-block animate-slide-left icon-lg"
+                >{{ "keyboard_double_arrow_right" }}</span
+              >
+            </button>
+          </div>
+          }
+        </div>
       </div>
+      }
     </div>
   </div>
+</div>

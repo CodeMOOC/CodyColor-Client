@@ -1,3 +1,32 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
 .material-symbols-outlined {
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48;
 }
@@ -175,15 +204,21 @@ button:hover {
   cursor: pointer;
 }
 
-input[type="text"].standard-input,
-input[type="email"].standard-input,
-input[type="password"].standard-input,
-input[type="number"].standard-input {
+.standard-input {
+  display: block;
   width: 100%;
-  padding: 12px 20px;
+  max-width: 280px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 6px 20px;
   font-size: 20px;
   box-sizing: border-box;
+
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-radius: 4px;
+
+  background-color: white;
+  color: black;
   text-align: center;
 }
 
@@ -195,19 +230,6 @@ button {
   color: #ff4d4f;
   font-size: 0.85rem;
   margin-top: 4px;
-}
-
-.standard-input.ng-invalid.ng-touched {
-  border-color: #ff4d4f;
-}
-
-@media only screen and (min-width: 310px) {
-  input[type="text"].standard-input,
-  input[type="email"].standard-input,
-  input[type="password"].standard-input,
-  input[type="number"].standard-input {
-    width: 280px;
-  }
 }
 
 /* -------------------------------------------------------------------------
@@ -263,23 +285,6 @@ img.profile--image {
   .page {
     width: 800px;
   }
-}
-
-.page--container {
-  height: 100%;
-  text-align: center;
-  width: 90%;
-  margin: 0 auto;
-}
-
-.page--wrapper {
-  min-height: 100%;
-}
-
-/* la schermata splash presenta un footer più alto */
-#splash .page--wrapper {
-  min-height: 100%;
-  margin-bottom: -120px;
 }
 
 .page--header {
@@ -345,57 +350,6 @@ img.profile--image {
   font-size: 60px;
   font-family: "Baloo Chettan", cursive;
   margin: 40px -20px -20px -20px;
-}
-
-.page--push,
-.page--footer {
-  height: 60px;
-}
-
-#splash .page--push,
-#splash .page--footer {
-  height: 120px;
-}
-
-.page--footer {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-}
-
-.page--footer-icons {
-  color: white;
-  font-size: 28px;
-  margin-right: 10px;
-  vertical-align: middle;
-  transition: 0.2ms;
-}
-
-.page--footer-button {
-  color: white;
-  padding: 0;
-  min-width: 42px;
-  background: transparent;
-}
-
-.page--footer-column-left {
-  text-align: left;
-  padding-left: 5px;
-  display: inline-block;
-}
-
-.page--footer-column-right {
-  float: right;
-  text-align: right;
-  flex-grow: 1;
-  padding-right: 5px;
-  box-sizing: border-box;
-}
-
-.page--footer-single-column {
-  display: inline-block;
-  text-align: center;
 }
 
 #bootcampmaking .page--body.ng-hide-remove {
@@ -465,10 +419,8 @@ li.list--super-spaced-element {
 
 button.navigation--button {
   width: 100%;
-  background-color: Transparent;
   color: white;
   font-size: 30px;
-  margin-bottom: 5px;
 }
 
 button.navigation--button:hover {
@@ -484,7 +436,7 @@ button.navigation--disabled-button {
 
 .navigation--icon-in-text {
   color: white;
-  vertical-align: middle;
+  vertical-align: end;
 }
 
 /* -------------------------------------------------------------------------
@@ -588,7 +540,7 @@ button.modal--button-secondary:hover {
 
 @media only screen and (min-width: 310px) {
   .selector {
-    width: 280px;
+    width: 300px;
   }
 }
 
@@ -653,7 +605,7 @@ button.modal--button-secondary:hover {
   align-items: center;
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.11);
-  overflow: scroll;
+  overflow: auto;
   font-size: 12pt;
 }
 
@@ -690,7 +642,7 @@ button.modal--button-secondary:hover {
   border-color: White;
   display: inline-block;
   background-color: rgba(255, 255, 255, 0.11);
-  overflow: scroll;
+  overflow: auto;
   transition-duration: 0.2s;
 }
 
@@ -865,6 +817,8 @@ button.modal--button-secondary:hover {
   left: 50%;
   transform: translate(-50%, 0);
   margin: 0 auto;
+  border-collapse: separate;
+  border-spacing: 5px;
 }
 
 @media only screen and (min-width: 320px) {
@@ -912,9 +866,6 @@ button.modal--button-secondary:hover {
   overflow: auto;
 }
 
-@media only screen and (min-width: 716px) {
-}
-
 .stats--header {
   margin: 0 0 15px 0;
 }
@@ -947,7 +898,7 @@ button.modal--button-secondary:hover {
   border-color: White;
   display: inline-block;
   background-color: rgba(255, 255, 255, 0.11);
-  overflow: scroll;
+  overflow: auto;
   padding: 10px 0;
 }
 
@@ -984,7 +935,7 @@ button.modal--button-secondary:hover {
   text-align: center;
   display: inline-block;
   padding: 8px;
-  overflow-x: scroll;
+  overflow-x: auto;
   background-color: rgba(255, 255, 255, 0.11);
 }
 
@@ -1125,13 +1076,6 @@ table.playerlist-match-table {
 .big-text {
   font-size: 60px;
   font-family: "Baloo Chettan", cursive;
-  margin: -20px;
-}
-
-/* formatta un'immagine di grandi dimensioni, come il logo della splash screen */
-.big-image {
-  width: 100px;
-  height: 100px;
 }
 
 /* formatta ul testo 'press to continue' della splash screen */
@@ -1517,5 +1461,14 @@ input[type="number"] {
 
   .icon-lg {
     font-size: 24px;
+  }
+
+  .big-text {
+    font-size: 50px;
+    font-family: "Baloo Chettan", cursive;
+  }
+
+  .centered-columns {
+    font-size: 14px;
   }
 }

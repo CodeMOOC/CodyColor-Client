@@ -1,111 +1,126 @@
-<div id="royale-match" class="page">
-  <div class="page--wrapper">
-    <div class="page--body">
-      <!-- countdown component -->
+<div id="royale-match" class="app-page">
+  <div class="app-page-body">
+    <div class="app-page-text">
+      <!-- Countdown -->
       @if (countdownInProgress) {
-        <app-countdown-cody
-          (startMatchTimers)="startMatchTimer()"
-          />
+      <app-countdown-cody (startMatchTimers)="startMatchTimer()" />
       }
 
-      <!-- match component -->
+      <!-- Match -->
       @if (!countdownInProgress) {
-        <div
-          id="match-in-progress"
-          class="page--component"
-          >
-          <div class="two-columns flex justify-between">
-            <div class="clock ellipsize" [ngClass]="clockAnimation">
-              <span class="material-symbols-outlined">schedule</span>
+      <div id="match-in-progress" class="page--component">
+        <!-- Match header -->
+        <div class="match-header">
+          <!-- Timer -->
+          <div class="match-header--timer clock" [ngClass]="clockAnimation">
+            <span class="material-symbols-outlined">schedule</span>
+            <span class="ellipsize">
               {{ formattedStartTimer() }}
-            </div>
-            <div class="">
-              <div class="ellipsize">
-                <i class="material-symbols-outlined">smart_toy</i>
-                {{
-                "PLAYERS_COMPOSITE"
-                | translate : { numPlayers: aggregated.connectedPlayers }
-                }}
-              </div>
-              <div class="ellipsize">
-                <i class="material-symbols-outlined">timer</i>
-                {{
-                "POSITIONED_COMPOSITE"
-                | translate : { numPositioned: aggregated.positionedPlayers }
-                }}
-              </div>
-            </div>
+            </span>
           </div>
-          <!-- Playground module -->
-          <div class="playground">
-            @if (grid.length) {
-              <app-match-grid
-                [grid]="grid"
-                [tilesCss]="tilesCss"
-                [executeAnimation]="executeAnimation"
-                [skipAnimation]="askedForSkip"
-                [playerPath]="playerPath"
-                [enemyPaths]="enemyPaths"
-                [botSetting]="general.botSetting || 0"
-                [isBot]="false"
-                [Side]="Side"
-                [endRoute]="'/arcade-aftermatch'"
-                [isTimeout]="isTimeout"
-                (tileDropped)="onTileDropped($event.side, $event.distance)"
-                (dragStarted)="onDragStarted()"
-                (dragEnded)="onDragEnded()"
-              ></app-match-grid>
-            }
-            <!-- Time display -->
-            @if (match.positioned && match.time > 0) {
-              <div
-                class="centered-container"
-                >
-                <i class="fas fa-stopwatch"></i>
-                {{
-                "TIME_PLAYER"
-                | translate : { time: finalTimeFormatter(match.time) }
-                }}
-              </div>
-            }
-            @if (match?.positioned && match?.time === 0) {
-              <div
-                class="centered-container"
-                >
-                <span class="material-symbols-outlined">timer</span>
-                {{ "TIME_OUT" | translate }}
-              </div>
-            }
-            <!-- Skip button -->
-            @if (startAnimation && !askedForSkip) {
-              <div
-                class="centered-container"
-                >
-                <button
-                  class="navigation--button flashing-animation"
-                  (click)="skip()"
-                  >
-                  {{ "SKIP" | translate }}
-                  <span
-                    class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
-                    >keyboard_double_arrow_right</span
-                    >
-                  </button>
-                </div>
-              }
-              <!-- Wait for enemy to skip -->
-              @if (startAnimation && askedForSkip) {
-                <div
-                  class="centered-container flashing-animation"
-                  >
-                  {{ "WAIT_SKIP" | translate }}
-                </div>
-              }
-            </div>
-          </div>
-        }
 
-        <div class="page--push"></div>
+          <!-- Match information -->
+          <div class="match-header--info">
+            <div class="match-header--info-row">
+              <span class="material-symbols-outlined">smart_toy</span>
+              <span class="ellipsize">
+                {{
+                  "PLAYERS_COMPOSITE"
+                    | translate
+                      : {
+                          numPlayers: aggregated.connectedPlayers
+                        }
+                }}
+              </span>
+            </div>
+
+            <div class="match-header--info-row">
+              <span class="material-symbols-outlined">timer</span>
+              <span class="ellipsize">
+                {{
+                  "POSITIONED_COMPOSITE"
+                    | translate
+                      : {
+                          numPositioned: aggregated.positionedPlayers
+                        }
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Playground -->
+        <div class="playground">
+          @if (grid.length) {
+          <app-match-grid
+            [grid]="grid"
+            [tilesCss]="tilesCss"
+            [executeAnimation]="executeAnimation"
+            [skipAnimation]="askedForSkip"
+            [playerPath]="playerPath"
+            [enemyPaths]="enemyPaths"
+            [botSetting]="general.botSetting || 0"
+            [isBot]="false"
+            [Side]="Side"
+            [endRoute]="'/arcade-aftermatch'"
+            [isTimeout]="isTimeout"
+            (tileDropped)="onTileDropped($event.side, $event.distance)"
+            (dragStarted)="onDragStarted()"
+            (dragEnded)="onDragEnded()"
+          ></app-match-grid>
+          }
+
+          <!-- Player time -->
+          @if (match.positioned && match.time > 0) {
+          <div class="centered-container">
+            <span class="material-symbols-outlined"> timer </span>
+
+            {{
+              "TIME_PLAYER"
+                | translate
+                  : {
+                      time: finalTimeFormatter(match.time)
+                    }
+            }}
+          </div>
+          }
+
+          <!-- Timeout -->
+          @if (match.positioned && match.time === 0) {
+          <div class="centered-container">
+            <span class="material-symbols-outlined"> timer </span>
+
+            {{ "TIME_OUT" | translate }}
+          </div>
+          }
+
+          <!-- Skip -->
+          @if (startAnimation && !askedForSkip) {
+          <div class="centered-container">
+            <button
+              class="navigation--button flashing-animation"
+              (click)="skip()"
+            >
+              {{ "SKIP" | translate }}
+
+              <span
+                class="material-symbols-outlined floating-right-animation navigation--icon-in-text icon-lg"
+              >
+                keyboard_double_arrow_right
+              </span>
+            </button>
+          </div>
+          }
+
+          <!-- Waiting for opponent -->
+          @if (startAnimation && askedForSkip) {
+          <div class="centered-container flashing-animation">
+            {{ "WAIT_SKIP" | translate }}
+          </div>
+          }
+        </div>
       </div>
+      }
     </div>
   </div>
+</div>

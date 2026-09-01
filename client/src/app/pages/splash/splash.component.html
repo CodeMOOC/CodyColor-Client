@@ -1,28 +1,33 @@
-<div id="splash" class="page">
-  <div (click)="goToHome()">
-    <div class="page--body flex flex-col items-center">
-      <img
-        class="floating-up-animation w-[100px] h-[100px] md:w-[150px] md:h-[150px] text-center"
-        src="assets/img/logo.png"
-        alt="game-logo"
-      />
-      <h1 class="ellipsize">{{ "APP_NAME_SHORT" | translate }}</h1>
-      <div class="ellipsize">{{ "APP_SUBTITLE" | translate }}</div>
-      <div
-        class="press-to-continue flashing-animation ellipsize cursor-pointer"
-      >
-        {{ "PRESS_TO_CONTINUE" | translate }}
+<div id="splash" class="app-page">
+  <div class="app-page-body">
+    <div class="app-page-text">
+      <div (click)="goToHome()">
+        <div class="page--body flex flex-col items-center">
+          <img
+            class="floating-up-animation w-[100px] h-[100px] md:w-[150px] md:h-[150px] text-center"
+            src="assets/img/logo.png"
+            alt="game-logo"
+          />
+          <h1 class="ellipsize">{{ "APP_NAME_SHORT" | translate }}</h1>
+          <div class="ellipsize">{{ "APP_SUBTITLE" | translate }}</div>
+          <div
+            class="press-to-continue flashing-animation ellipsize cursor-pointer"
+          >
+            {{ "PRESS_TO_CONTINUE" | translate }}
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <div class="page--footer">
-    <div class="page--footer-single-column ellipsize">
-      v.{{ clientVersion }}
+      <div class="page--footer">
+        <div class="page--footer-single-column ellipsize">
+          v.{{ clientVersion }}
 
-      <div
-        [innerHTML]="'SPLASH_FOOTER' | translate : { year: currentYear }"
-      ></div>
+          <p
+            class="text-[0.7rem] leading-5 sm:text-[1rem] sm:leading-7"
+            [innerHTML]="'SPLASH_FOOTER' | translate : { year: currentYear }"
+          ></p>
+        </div>
+      </div>
     </div>
   </div>
 </div>
